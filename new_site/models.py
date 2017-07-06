@@ -18,8 +18,6 @@ from sqlalchemy.orm import (
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from .security import hash_password
-
 
 DBSession = scoped_session(
     sessionmaker(extension=ZopeTransactionExtension(), expire_on_commit=False))
@@ -34,7 +32,7 @@ class User(Base):
     uid = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True)
     email = Column(String(256), unique=True)
-    hash_string = Column(String(256))
+    hash_string = Column(String(256)) #change to password
     created_at = Column(DateTime)
     admin = Column(Boolean, default=False)
 
@@ -58,6 +56,8 @@ class Root(object):
 
     def __init__(self, request):
         pass
+
+
 """
 class Team(Base):
     __tablename__ = 'team'

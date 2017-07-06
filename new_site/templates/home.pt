@@ -12,7 +12,7 @@
 </div>
 
 <h1>Hi ${name}</h1>
-<p>Visit <a href="${request.route_url('hello')}">hello</a></p>
+<p tal:condition="name == 'admin'">Visit <a href="${request.route_url('hello')}">hello</a></p>
 
 <div>
 
@@ -28,6 +28,7 @@
     <input type="submit" name="form.submitted"
            value="Log In"/>
 </form>
+<p>Don't have an account? <a href="${request.route_url('register')}">Click Here to register</a></p>
 </div>
 </body>
 </html>

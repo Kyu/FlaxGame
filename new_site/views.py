@@ -9,16 +9,10 @@ from pyramid.view import (
     view_config,
     view_defaults
 )
-'''
-from .models import (
-    User,
-    DBSession,
-)
-'''
+
 from .security import (
-    # create_user,
-    check_password,
-    # verify_login
+    create_user,
+    verify_login
 )
 
 
@@ -36,11 +30,11 @@ class MainViews(object):
     @view_config(route_name='register', renderer='templates/register.pt')
     def register(self):
         request = self.request
-        referrer = request.url
-        came_from = request.params.get('came_from', referrer)
+        # referrer = request.url
+        # came_from = request.params.get('came_from', referrer)
 
         if self.logged_in:
-            return HTTPFound(location=came_from)
+            return HTTPFound(location='/')
         
         message = ''
         username = ''
@@ -73,8 +67,9 @@ class MainViews(object):
         if 'form.submitted' in request.params:
             login = request.params['login'] # change to username
             password = request.params['password']
-            if verify_login(login, password):
-                headers = remember(request, login)
+            verified = verify_login(login, password)
+            if verified:
+                headers = remember(request, verified['username'])
                 return HTTPFound(location='/', headers=headers, comment='wew')
             message = 'Failed Login'
         
