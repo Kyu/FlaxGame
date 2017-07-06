@@ -5,7 +5,8 @@ from sqlalchemy import (
     Integer,
     Float,
     String,
-    DateTime
+    DateTime,
+    Boolean,
 )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -17,9 +18,15 @@ from sqlalchemy.orm import (
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
+from .security import hash_password
+
+
 DBSession = scoped_session(
-    sessionmaker(extension=ZopeTransactionExtension()))
+    sessionmaker(extension=ZopeTransactionExtension(), expire_on_commit=False))
+
 Base = declarative_base()
+
+
 
 
 class User(Base):
@@ -29,10 +36,11 @@ class User(Base):
     email = Column(String(256), unique=True)
     hash_string = Column(String(256))
     created_at = Column(DateTime)
+    admin = Column(Boolean, default=False)
 
 
 class Captain(Base):
-    __tablename__ = 'captain'
+    __tablename__ = 'captains'
     uid = Column(Integer, primary_key=True, autoincrement=False)
     username = Column(String(20))
     team = Column(String(20))
@@ -46,7 +54,7 @@ class Captain(Base):
 
 class Root(object):
     __acl__ = [(Allow, Everyone, 'view'),
-               (Allow, 'group:Black', 'edit')]
+               (Allow, 'group:Black', 'actions')]
 
     def __init__(self, request):
         pass

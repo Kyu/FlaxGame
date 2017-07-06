@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pyramid.httpexceptions import HTTPFound
 
 from pyramid.security import (
@@ -11,15 +9,16 @@ from pyramid.view import (
     view_config,
     view_defaults
 )
-
+'''
 from .models import (
+    User,
     DBSession,
-    User
 )
-
+'''
 from .security import (
+    # create_user,
     check_password,
-    hash_password
+    # verify_login
 )
 
 
@@ -42,22 +41,20 @@ class MainViews(object):
 
         if self.logged_in:
             return HTTPFound(location=came_from)
+        
         message = ''
-        login = ''
+        username = ''
         password = ''
         email = ''
         if 'form.submitted' in request.params:
-            login = request.params['login'] # change to username
+            username = request.params['login'] # change to username
             password = request.params['password']
             email = request.params['email']
-            if email and password and email:
-                new_user = User(username=login, email=email, hash_string=hash_password(password),
-                                created_at=datetime.utcnow())
-                DBSession.add(new_user)
-                return HTTPFound(location='/')
-            
+            if email and password and username:
+                if create_user(username, email, password):
+                    return HTTPFound(location='/')
             message = 'Failed to register'
-        # DBSession.add(User(username=, email=, hash_string=, created_at=))
+        
         return {'name': 'Register', 'message': message}
 
 
@@ -72,20 +69,15 @@ class MainViews(object):
         message = ''
         login = ''
         password = ''
+        
         if 'form.submitted' in request.params:
             login = request.params['login'] # change to username
             password = request.params['password']
-            try:
-                expected_password = DBSession.query(User).filter_by(username=login).one().hash_string
-                verified = check_password(password, expected_password)
-                if verified:
-                    headers = remember(request, login)
-                    return HTTPFound(location='/', headers=headers, comment='wew')
-            except Exception as e: # sqlalchemy.orm.exc.NoResultFound :: when username not found
-                print(type(e).__name__ + ': ' + str(e))
-                pass
-            
+            if verify_login(login, password):
+                headers = remember(request, login)
+                return HTTPFound(location='/', headers=headers, comment='wew')
             message = 'Failed Login'
+        
         return dict(
             name='',
             message=message,

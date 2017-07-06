@@ -41,7 +41,10 @@ def main(argv=sys.argv):
         user_model = User(username='admin', email='kyuthegamer@gmail.com', 
             hash_string=hash_password('#Precious0'),
             created_at=datetime.utcnow())
+        DBSession.add(user_model)
+        transaction.commit()
         player_model = Captain(uid=user_model.uid, username=user_model.username,
             team='Black', experience=1, level=1, troops=50, location=2.2, last_active=datetime.utcnow())
-        DBSession.add(user_model)
+        print(player_model.uid)
         DBSession.add(player_model)
+
