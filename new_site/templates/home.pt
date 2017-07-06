@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Quick Tutorial: ${name}</title>
+</head>
+<body>
+
+<div>
+    <a tal:condition="view.logged_in is not None"
+            href="${request.application_url}/logout">Logout</a>
+</div>
+
+<h1>Hi ${name}</h1>
+<p>Visit <a href="${request.route_url('hello')}">hello</a></p>
+
+<div>
+
+<div tal:condition="view.logged_in is None">
+<span tal:replace="message"/>
+<form action="${request.route_url('login')}" method="post">
+    <label for="login">Username</label>
+    <input type="text" id="login"
+           name="login"/><br/>
+    <label for="password">Password</label>
+    <input type="password" id="password"
+           name="password"/><br/>
+    <input type="submit" name="form.submitted"
+           value="Log In"/>
+</form>
+</div>
+</body>
+</html>

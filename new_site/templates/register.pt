@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>Quick Tutorial: ${name}</title>
+</head>
+<body>
+
+<div tal:condition="view.logged_in is None">
+<span tal:replace="message"/>
+<form action="${request.route_url('register')}" method="post">
+    <label for="register">Username</label>
+    <input type="text" id="login"
+           name="login"/><br/>
+    <label for="register">Email</label>
+    <input type="text" id="email"
+           name="email"/><br/>
+    <label for="password">Password</label>
+    <input type="password" id="password"
+           name="password"/><br/>
+    <input type="submit" name="form.submitted"
+           value="Register"/>
+</form>
+</div>
+</body>
+</html>
