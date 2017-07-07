@@ -52,7 +52,7 @@ class Captain(Base):
 
 class Root(object):
     __acl__ = [(Allow, Everyone, 'view'),
-               (Allow, 'group:Black', 'actions')]
+               (Allow, 'group:Black', 'play')]
 
     def __init__(self, request):
         pass

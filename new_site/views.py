@@ -7,7 +7,8 @@ from pyramid.security import (
 
 from pyramid.view import (
     view_config,
-    view_defaults
+    view_defaults,
+    forbidden_view_config
 )
 
 from .security import (
@@ -24,8 +25,17 @@ class MainViews(object):
         self.view_name = 'HomePageViews'
 
     @view_config(route_name='home')
+    @forbidden_view_config(renderer='templates/home.pt')
     def home(self):
         return {'name': self.request.authenticated_userid, 'message': ''}
+
+    @view_config(route_name='hello', renderer='templates/mytemplate.pt')
+    def my_view(request):
+        return {'project': 'new_site'}
+
+    @view_config(route_name='game', renderer='templates/game.pt', permission='play')
+    def game(self):
+        return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': self.logged_in}
 
     @view_config(route_name='register', renderer='templates/register.pt')
     def register(self):
@@ -50,7 +60,6 @@ class MainViews(object):
             message = 'Failed to register'
         
         return {'name': 'Register', 'message': message}
-
 
     @view_config(request_method='POST', route_name='login')
     def login(self):
@@ -83,16 +92,13 @@ class MainViews(object):
         )
         return HTTPFound(location=came_from, comment=message)
     
-    @view_config(route_name='hello', renderer='templates/mytemplate.pt')
-    def my_view(request):
-        return {'project': 'new_site'}
-
     @view_config(route_name='logout')
     def logout(self):
         request = self.request
         headers = forget(request)
         url = request.route_url('home')
         return HTTPFound(location=url, headers=headers)
+    
     '''
     @view_config(route_name='home', renderer='templates/home.pt')
     def home(self):

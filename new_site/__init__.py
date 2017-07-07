@@ -20,13 +20,13 @@ def main(global_config, **settings):
 
     # Session, config
     my_session_factory = SignedCookieSessionFactory('itsaseekreet')
-    config = Configurator(settings=settings, session_factory=my_session_factory)
-                         #root_factory='new_site.models.Root')
+    config = Configurator(settings=settings, session_factory=my_session_factory,
+                          root_factory='.models.Root')
     config.include('pyramid_chameleon')
 
     # Security policies
     authn_policy = AuthTktAuthenticationPolicy(
-        settings['new_site.secret'], #callback=groupfinder,
+        settings['new_site.secret'], callback=groupfinder,
         hashalg='sha512')
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
@@ -35,6 +35,7 @@ def main(global_config, **settings):
     # Views
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
+    config.add_route('game', '/game')
     config.add_route('hello', '/howdy')
     config.add_route('register', '/register')
     config.add_route('login', '/login')
