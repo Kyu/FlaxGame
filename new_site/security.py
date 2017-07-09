@@ -1,5 +1,6 @@
 import transaction
 from datetime import datetime
+from random import randrange
 
 import bcrypt
 
@@ -10,10 +11,12 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
 
 from .models import (
-    Captain,
+    Player,
     User,
     DBSession,
 )
+
+teams = {'Black': '2.9', 'Red':'2.2', 'Blue': '9.9', 'Yellow': '9.2'}
 
 
 def hash_password(pw):
@@ -26,46 +29,61 @@ def check_password(pw, hashed_pw):
 
 
 def create_user(username, email, password):
-    try:
-        with transaction.manager:
-            new_user = User(username=username, email=email, hash_string=hash_password(password),
-                            created_at=datetime.utcnow())
-            DBSession.add(new_user)
-            transaction.commit()
-            # Location, team should be random
-            player_model = Captain(uid=new_user.uid, username=new_user.username, team='Black', 
-                                   experience=1, level=1, troops=50, location=2.2, last_active=datetime.utcnow())
-            DBSession.add(player_model)
-            return True
-    except transaction.interfaces.TransactionFailedError:
-        pass
-    except IntegrityError:
-        pass
-    except Exception as e:
-        print(type(e).__name__ + ': ' + str(e))
+    if not username:
+        return "Enter a username"
+    elif not email:
+        return "Enter an email"
+    elif not password:
+        return "Enter a password"
+    else:
+        try:
+            team = list(teams.keys())[randrange(0, 4)]
+            location = teams[team]
+            with transaction.manager:
+                new_user = User(username=username, email=email, password=hash_password(password),
+                                created_at=datetime.utcnow())
+                DBSession.add(new_user)
+                transaction.commit()
+                # Location, team should be random
+                player_model = Player(uid=new_user.uid, username=new_user.username, team=team, squad_type="Captain",
+                                      experience=1, level=1, troops=50, location=2.2, last_active=datetime.utcnow())
+                DBSession.add(player_model)
+
+                return "Account created Sucessfully"
+        except transaction.interfaces.TransactionFailedError as e:
+            return "Error: {}".format(type(e).__name__ + ': ' + str(e))
+        except IntegrityError:
+            return "This username or email already exists"
+        except Exception as e:
+            return "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
     
-    return False
+    return "?????"
 
 
 def verify_login(username, password):
     usr = {}
-    try:
-        expected_user = DBSession.query(User).filter(or_(User.username == username, User.email == username)).one()
-        expected_password = expected_user.hash_string
-        if check_password(password, expected_password):
-            usr['username'] = expected_user.username
-    except NoResultFound:
-        pass
-    except Exception as e:
-        print(type(e).__name__ + ': ' + str(e))
-        
+    if not username:
+        usr['status'] = "Enter a username"
+    elif not password:
+        usr['status'] = "Enter a password"
+    else:
+        try:
+            expected_user = DBSession.query(User).filter(or_(User.username == username, User.email == username)).one()
+            expected_password = expected_user.password
+            if check_password(password, expected_password):
+                usr['username'] = expected_user.username
+        except NoResultFound:
+            pass
+        except Exception as e:
+            print(type(e).__name__ + ': ' + str(e))
+        usr['status'] = "Login Failed"
     return usr
 
 
 def groupfinder(userid, request):
     result = []
     try:
-        team = DBSession.query(Captain).filter_by(username=userid).one().team
+        team = DBSession.query(Player).filter_by(username=userid).one().team
         result.append("group:{}".format(team))
     except NoResultFound:
         pass

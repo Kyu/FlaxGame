@@ -1,34 +1,21 @@
-<!DOCTYPE html>
+<!DOCTYPE html metal:define-macro="home">
 
 <html lang="en">
 <head>
-    <title>Quick Tutorial: ${name}</title>
+    <title>NewSite: ${name}</title>
 </head>
+
 <body>
 
 <div>
-    <a tal:condition="view.logged_in is not None"
-            href="${request.application_url}/logout">Logout</a>
+<a href="${request.application_url}/logout">Logout</a>
 </div>
+  
 
-<h1>Hi ${name}</h1>
-<p tal:condition="name == 'admin'">Visit <a href="${request.route_url('hello')}">hello</a></p>
+<h1>Logged in as ${name}</h1>
+<a tal:condition="name == 'admin'" href="${request.route_url('hello')}">Default Page Link</a>
 
-<div>
 
-<div tal:condition="view.logged_in is None">
-<span tal:replace="message"/>
-<form action="${request.route_url('login')}" method="post">
-    <label for="login">Username</label>
-    <input type="text" id="login"
-           name="login"/><br/>
-    <label for="password">Password</label>
-    <input type="password" id="password"
-           name="password"/><br/>
-    <input type="submit" name="form.submitted"
-           value="Log In"/>
-</form>
-<p>Don't have an account? <a href="${request.route_url('register')}">Click Here to register</a></p>
-</div>
+
 </body>
 </html>

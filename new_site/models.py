@@ -32,22 +32,31 @@ class User(Base):
     uid = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True)
     email = Column(String(256), unique=True)
-    hash_string = Column(String(256)) #change to password
+    password = Column(String(256))
     created_at = Column(DateTime)
     admin = Column(Boolean, default=False)
 
 
-class Captain(Base):
-    __tablename__ = 'captains'
+class Player(Base):
+    __tablename__ = 'players'
     uid = Column(Integer, primary_key=True, autoincrement=False)
     username = Column(String(20))
+    squad_type = Column(String(20))
     team = Column(String(20))
     experience = Column(Integer)
     level = Column(Integer)
     troops = Column(Integer)
-    location = Column(Float)
+    location = Column(String(20))
     '''insert attributes and shit here'''
     last_active = Column(DateTime)
+
+
+class Hex(Base):
+    __tablename__ = 'hexes'
+    name = Column(String(20), primary_key=True)
+    x = Column(Integer)
+    y = Column(Integer)
+
 
 
 class Root(object):
@@ -63,18 +72,5 @@ class Team(Base):
     __tablename__ = 'team'
     name = Column(String(20))
     colour = Column(String(20))
-
-
-
-
-
-
-class General(Base):
-    '''Everyone past lvl 10 becomes a General, if there are more than 2, a vote ensues'''
-    __tablename__ = 'general'
-    uid = Column(Integer, primary_key=True, autoincrement=False)
-    username = Column(String(20))
-    team = Column(String(20))
-    votes = Column(String(20))
 """
 '''add table for portraits next'''

@@ -18,11 +18,10 @@
     <label for="password">Password</label>
     <input type="password" id="password"
            name="password"/><br/>
-    <input type="submit" name="form.submitted"
+    <input type="submit" name="register"
            value="Register"/>
 </form>
 <p>Already have an account? <a href="${request.route_url('home')}">Login here</a></p>
-<p>Forgot your password? <a href="/TODO_RECOVER_PASSWORD">Click here to tecover your password</a></p>
 </div>
 </body>
 </html>
