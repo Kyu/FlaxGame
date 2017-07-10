@@ -46,7 +46,7 @@ def create_user(username, email, password):
                 transaction.commit()
                 # Location, team should be random
                 player_model = Player(uid=new_user.uid, username=new_user.username, team=team, squad_type="Captain",
-                                      experience=1, level=1, troops=50, location=2.2, last_active=datetime.utcnow())
+                                      experience=1, level=1, troops=50, location=location, last_active=datetime.utcnow())
                 DBSession.add(player_model)
 
                 return "Account created Sucessfully"
