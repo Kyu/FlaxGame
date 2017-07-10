@@ -22,9 +22,10 @@
     <a href="${request.application_url}/logout">Logout</a>
 </div>
 
-<h1>Logged in as: ${name} at location ${player.location}</h1>
+<h1>Logged in as: ${name} on ${player.team} team with ${player.troops} troops. You are currently standing on <a href="${request.route_url('game')}/${player.location}">${player.location}</a> </h1>
 <!-- TODO chat -->
 <table>
+
 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
     <td tal:repeat="hex_row [i.name for i in hexes if i.x == hex_col]" class="hexes">
         <h3><a href="${request.route_url('game')}/${hex_row}">${hex_row}</a></h3>
@@ -41,12 +42,15 @@
   </span>
 </div>
 
+
 <div tal:condition="current_hex" class="hex">
     <h3>Viewing hex ${current_hex.name}</h3>
-
-    <table tal:condition="currently_here">
+    <div tal:condition="current_hex.name == player.location">
+        <h3>You are here!</h3>
+    </div>
+    <table tal:condition="currently_here and [i for i in currently_here if i.username is not player.username]">
         <h2>Currently here:</h2>
-        <!-- TODO interact with other players (attack, give stuff?)  -->
+        <!-- TODO interact with hex (take ammo, recruit?)  -->
         <tr tal:repeat="here_info [i for i in currently_here if i.username != view.logged_in]">
         <td>
             <p>${here_info.username} who is a ${here_info.squad_type} for team ${here_info.team} with ${here_info.troops} troops</p>
@@ -60,8 +64,6 @@
     <form tal:condition="movable" action="${request.route_url('move_to')}" method="post">
     <button name="position" value="${current_hex.name}">You can move here!</button>
     </form>
-
-
 </div>
 
 </body>

@@ -9,7 +9,7 @@ from .models import (
 )
 
 
-# TODO: come up with better hex variable naming convention (hex is a builtin)
+# TODO: change hex variables to `location`
 def get_hexes():
     hexes = DBSession.query(Hex)
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))
@@ -22,6 +22,14 @@ def get_hex_called(name):
     except NoResultFound:
         the_hex = None
     return the_hex
+
+
+def remove_actions_from(player, actions):
+    player = get_player_info(player)
+    if not player.actions >= actions:
+        return "Not enough actions"
+    else:
+        update_player_info(player=player, update='actions', new=player.actions-actions)
 
 
 def can_move_to(player, hexes):
@@ -52,6 +60,19 @@ def can_move(to, from_loc):
     return False
 
 
+def update_player_info(player, update, new):
+    if type(player) is Player:
+        username = player.username
+    else:
+        username = player
+    try:
+        with transaction.manager:
+            DBSession.query(Player).filter_by(username=username).update({update: new})
+        return True, 'success'
+    except Exception as e:
+        return False, type(e).__name__ + ': ' + str(e)
+
+
 def player_can_attack(attacker, defender):
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
@@ -60,28 +81,30 @@ def player_can_attack(attacker, defender):
 
     return True
 
+
 # TODO morale, ammo, actions
 def player_attack(attacker, defender):
     if not player_can_attack(attacker=attacker, defender=defender):
         return False
     attacker, defender = get_player_info(attacker), get_player_info(defender)
-    try:
-        with transaction.manager:
-            # Battle formula v1
-            if attacker.troops < defender.troops:
-                DBSession.query(Player).filter_by(username=attacker.username).update({'troops': attacker.troops - 5})
-                DBSession.query(Player).filter_by(username=defender.username).update({'troops': defender.troops - 2})
-            elif attacker.troops > defender.troops:
-                DBSession.query(Player).filter_by(username=attacker.username).update({'troops': attacker.troops - 2})
-                DBSession.query(Player).filter_by(username=defender.username).update({'troops': defender.troops - 5})
-            else:
-                DBSession.query(Player).filter_by(username=attacker.username).update({'troops': attacker.troops - 3})
-                DBSession.query(Player).filter_by(username=defender.username).update({'troops': defender.troops - 3})
-            transaction.commit()
-            return True
-    except Exception as e:
-        print(type(e).__name__ + ': ' + str(e))
-        return False
+    if attacker.troops < defender.troops:
+        attack1 = update_player_info(attacker.username, 'troops', attacker.troops-5)
+        attack2 = update_player_info(defender.username, 'troops', defender.troops-2)
+    elif attacker.troops > defender.troops:
+        attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 2)
+        attack2 = update_player_info(defender.username, 'troops', defender.troops - 5)
+    else:
+        attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 3)
+        attack2 = update_player_info(defender.username, 'troops', defender.troops - 3)
+
+    if attack1[0] is not attack2[0]:
+        # TODO loging errors
+        return
+    elif attack1[0] is False:
+        return attack1[1]
+    else:
+        return "Sucessfully attacked"
+        # TODO add attack details, whether attack send player back
 
 
 def send_player_to(position, player):

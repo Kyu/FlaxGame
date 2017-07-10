@@ -21,15 +21,19 @@ from .game import (
     get_player_info,
     can_move,
     send_player_to,
-    player_can_attack,
     player_attack
 )
-# TODO maybe change this all to functions?
+# TODO maybe change all views classes to functions?
+
+def return_to_sender(request):
+    if request.referer == request.url:
+        return '/'
+    return request.referer
 
 
 @view_defaults(route_name='main', renderer='templates/default.pt')
 class MainViews(object):
-    '''Maybe use view funcs instead?'''
+    # Maybe use view funcs instead?
     
     def __init__(self, request):
         self.request = request
@@ -58,10 +62,7 @@ class MainViews(object):
 
         if self.logged_in:
             return HTTPFound(location='/')
-        
-        username = ''
-        password = ''
-        email = ''
+
         if 'register' in request.params:
             if 'username' not in request.params:
                 request.session.flash("No username defined")
@@ -146,8 +147,8 @@ class GameViews:
             player_location = get_player_info(self.logged_in).location
             if can_move(to_go, player_location):
                 send_player_to(to_go, self.logged_in)
-        # TODO redirect to location url
-        return HTTPFound(location='/')
+
+        return HTTPFound(location=return_to_sender(self.request))
 
     @view_config(route_name='attack_player', renderer='templates/game.pt', request_method='POST')
     def attack(self):
@@ -157,8 +158,8 @@ class GameViews:
                 self.request.session.flash("Attack completed")
             else:
                 self.request.session.flash("Attack failed")
-        # TODO redirect to sender
-        return HTTPFound(location='/')
+
+        return HTTPFound(location=return_to_sender(self.request))
 
 
 
