@@ -1,3 +1,5 @@
+import transaction
+
 from sqlalchemy.orm.exc import NoResultFound
 
 from .models import (
@@ -26,7 +28,7 @@ def can_move_to(player, hexes):
     visitable = []
     currently_at = [i for i in hexes if i.name == player.location][0]
 
-    #if player.type is regular foot soldier
+    # if player.type is regular foot soldier
     diff_is_one = (-1, 0 , 1)
     for i in hexes:
         if currently_at.x - i.x in diff_is_one and currently_at.y - i.y in diff_is_one:
@@ -35,15 +37,29 @@ def can_move_to(player, hexes):
     return visitable
 
 
-def can_visit_hex_called(the_hex, location):
-    currently_at = get_hex_called(location)
+def can_move(to, from_loc):
+    currently_at = get_hex_called(from_loc)
     diff_is_one = (-1, 0, 1)
 
-    if location == the_hex.name:
+    if not currently_at:
         return False
-    if currently_at.x - the_hex.x in diff_is_one and currently_at.y - the_hex.y in diff_is_one:
+    if type(to) is str:
+        to = get_hex_called(to)
+    if from_loc == to.name:
+        return False
+    if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
         return True
     return False
+
+
+def send_player_to(position, player):
+    try:
+        with transaction.manager:
+            movement = DBSession.query(Player).filter_by(username=player).update({'location': position})
+            transaction.commit()
+    except Exception as e:
+        print(type(e).__name__ + ': ' + str(e))
+
 
 def get_player_private_info(username):
     info = dict()
@@ -64,6 +80,6 @@ def get_all_game_info_for(player, hex_at=''):
     if hex_at:
         game_info['current_hex'] = get_hex_called(hex_at)
         game_info['currently_here'] = get_players_located_at(hex_at)
-        game_info['movable'] = can_visit_hex_called(game_info['current_hex'], game_info['player']['location'])
+        game_info['movable'] = can_move(game_info['current_hex'], game_info['player']['location'])
 
     return game_info

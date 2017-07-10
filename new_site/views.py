@@ -17,7 +17,10 @@ from .security import (
 )
 
 from .game import (
-    get_all_game_info_for
+    get_all_game_info_for,
+    get_player_private_info,
+    can_move,
+    send_player_to
 )
 
 
@@ -85,7 +88,7 @@ class MainViews(object):
             elif 'password' not in request.params:
                 request.session.flash("Enter a password")
             else:
-                username = request.params['username'] # change to username
+                username = request.params['username']
                 password = request.params['password']
                 verified = verify_login(username, password)
                 if 'username' in verified:
@@ -131,3 +134,18 @@ class GameViews:
         return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': self.logged_in, 'hexes': info['hexes'],
                 'hex': info['current_hex'], 'currently_here': info['currently_here'], 'player': info['player'],
                 'movable': info['movable']}
+
+    @view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST')
+    def move_to(self):
+        request = self.request
+        if 'position' in request.params:
+            to_go = request.params['position']
+            player_location = get_player_private_info(self.logged_in)['location']
+            if can_move(to_go, player_location):
+                send_player_to(to_go, self.logged_in)
+        return HTTPFound(location='/')
+
+
+
+
+
