@@ -47,7 +47,11 @@
         </tr>
     </table>
     <!-- TODO move from location to location -->
-    <a tal:condition="movable" href="$/moveto/">You can move here</a>
+    <form tal:condition="movable" action="${request.route_url('move_to')}" method="post">
+    <button name="position" value="${hex.name}">You can move here!</button>
+    </form>
+
+
 </div>
 
 </body>
