@@ -18,10 +18,13 @@ from .security import (
 
 from .game import (
     get_all_game_info_for,
-    get_player_private_info,
+    get_player_info,
     can_move,
-    send_player_to
+    send_player_to,
+    player_can_attack,
+    player_attack
 )
+# TODO maybe change this all to functions?
 
 
 @view_defaults(route_name='main', renderer='templates/default.pt')
@@ -124,7 +127,7 @@ class GameViews:
     def game(self):
         info = get_all_game_info_for(self.logged_in)
         return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': self.logged_in, 'hexes': info['hexes'],
-                'player': info['player'], 'hex': {}}
+                'player': info['player'], 'current_hex': {}}
 
     @view_config(route_name='hex_view', renderer='templates/game.pt')
     def hex_view(self):
@@ -132,7 +135,7 @@ class GameViews:
         info = get_all_game_info_for(self.logged_in, hex_name)
 
         return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': self.logged_in, 'hexes': info['hexes'],
-                'hex': info['current_hex'], 'currently_here': info['currently_here'], 'player': info['player'],
+                'current_hex': info['current_hex'], 'currently_here': info['currently_here'], 'player': info['player'],
                 'movable': info['movable']}
 
     @view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST')
@@ -140,9 +143,21 @@ class GameViews:
         request = self.request
         if 'position' in request.params:
             to_go = request.params['position']
-            player_location = get_player_private_info(self.logged_in)['location']
+            player_location = get_player_info(self.logged_in).location
             if can_move(to_go, player_location):
                 send_player_to(to_go, self.logged_in)
+        # TODO redirect to location url
+        return HTTPFound(location='/')
+
+    @view_config(route_name='attack_player', renderer='templates/game.pt', request_method='POST')
+    def attack(self):
+        if 'player_called' in self.request.params:
+            attacker, defender = self.logged_in, self.request.params['player_called']
+            if player_attack(attacker=attacker, defender=defender):
+                self.request.session.flash("Attack completed")
+            else:
+                self.request.session.flash("Attack failed")
+        # TODO redirect to sender
         return HTTPFound(location='/')
 
 

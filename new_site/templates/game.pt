@@ -34,21 +34,31 @@
 
 </table>
 
-<div tal:condition="hex" class="hex">
-    <h3>Viewing hex ${hex.name} sitting on ${hex.x} point ${hex.y}</h3>
+<div id="flash" tal:condition="request.session.peek_flash()">
+  <span tal:omit-tag=""
+        tal:repeat="message request.session.pop_flash()">
+      ${message}<br>
+  </span>
+</div>
+
+<div tal:condition="current_hex" class="hex">
+    <h3>Viewing hex ${current_hex.name}</h3>
 
     <table tal:condition="currently_here">
-        <h2>Also here:</h2>
+        <h2>Currently here:</h2>
         <!-- TODO interact with other players (attack, give stuff?)  -->
         <tr tal:repeat="here_info [i for i in currently_here if i.username != view.logged_in]">
         <td>
             <p>${here_info.username} who is a ${here_info.squad_type} for team ${here_info.team} with ${here_info.troops} troops</p>
+            <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
+                <button name="player_called" value="${here_info.username}">Attack!</button>
+             </form>
+
         </td>
         </tr>
     </table>
-    <!-- TODO move from location to location -->
     <form tal:condition="movable" action="${request.route_url('move_to')}" method="post">
-    <button name="position" value="${hex.name}">You can move here!</button>
+    <button name="position" value="${current_hex.name}">You can move here!</button>
     </form>
 
 
