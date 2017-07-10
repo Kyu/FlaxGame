@@ -25,8 +25,6 @@ DBSession = scoped_session(
 Base = declarative_base()
 
 
-
-
 class User(Base):
     __tablename__ = 'users'
     uid = Column(Integer, primary_key=True)
