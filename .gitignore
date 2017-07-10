@@ -4,6 +4,8 @@
 
 *.sublime-project
 *.sublime-workspace
+.idea/*
+!.idea/vcs.xml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
