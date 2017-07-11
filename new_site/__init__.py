@@ -39,6 +39,7 @@ def main(global_config, **settings):
 
     config.add_route('game', '/game')
     config.add_route('hex_view', '/game/{name}')
+    config.add_route('team_info', '/team/{team}')
     config.add_route('attack_player', '/attack')
     config.add_route('move_to', 'goto')
 

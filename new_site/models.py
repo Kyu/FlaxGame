@@ -46,7 +46,9 @@ class Player(Base):
     troops = Column(Integer)
     location = Column(String(20))
     '''insert attributes and shit here'''
+    is_active = Column(Boolean, default=True)
     last_active = Column(DateTime)
+
 
 
 class Hex(Base):
@@ -55,6 +57,11 @@ class Hex(Base):
     x = Column(Integer)
     y = Column(Integer)
 
+
+class Team(Base):
+    __tablename__ = 'teams'
+    name = Column(String(20), primary_key=True)
+    capital = Column(String(20))
 
 
 class Root(object):

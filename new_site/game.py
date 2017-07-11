@@ -1,11 +1,13 @@
 import transaction
 
+from sqlalchemy import and_
 from sqlalchemy.orm.exc import NoResultFound
 
 from .models import (
     DBSession,
     Hex,
-    Player
+    Player,
+    Team
 )
 
 
@@ -22,6 +24,24 @@ def get_hex_called(name):
     except NoResultFound:
         the_hex = None
     return the_hex
+
+
+def get_team_info(team, all=None):
+    try:
+        team_info = DBSession.query(Team).filter_by(name=team).one()
+    except NoResultFound:
+        return {}
+
+    team = dict()
+    team['name'] = team_info.name
+    team['capital'] = team_info.capital
+    # TODO use https://stackoverflow.com/a/32527383/3875151 to calc active users on turn
+    active_users = DBSession.query(Player).filter(and_(Player.team == team_info.name, Player.is_active)).all()
+    team['active_members'] = active_users
+    if all:
+        team['members'] = DBSession.query(Player).filter(team=team_info.name).all()
+
+    return team
 
 
 def remove_actions_from(player, actions):

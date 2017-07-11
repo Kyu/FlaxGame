@@ -21,9 +21,11 @@ from .game import (
     get_player_info,
     can_move,
     send_player_to,
-    player_attack
+    player_attack,
+    get_team_info
 )
 # TODO maybe change all views classes to functions?
+
 
 def return_to_sender(request):
     if request.referer == request.url:
@@ -128,7 +130,7 @@ class GameViews:
     def game(self):
         info = get_all_game_info_for(self.logged_in)
         return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': self.logged_in, 'hexes': info['hexes'],
-                'player': info['player'], 'current_hex': {}}
+                'player': info['player'], 'current_hex': ''}
 
     @view_config(route_name='hex_view', renderer='templates/game.pt')
     def hex_view(self):
@@ -160,6 +162,15 @@ class GameViews:
                 self.request.session.flash("Attack failed")
 
         return HTTPFound(location=return_to_sender(self.request))
+
+    @view_config(route_name='team_info', renderer='templates/team.pt')
+    def team_info(self):
+        team_name = self.request.matchdict['team']
+        team_info = get_team_info(team_name)
+        print(team_name)
+        if team_info:
+            return {'team': team_info, 'player': get_player_info(self.logged_in)}
+        return HTTPFound(location=self.request.route_url('home'))
 
 
 
