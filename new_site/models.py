@@ -3,7 +3,6 @@ from pyramid.security import Allow, Everyone
 from sqlalchemy import (
     Column,
     Integer,
-    Float,
     String,
     DateTime,
     Boolean,
@@ -32,6 +31,7 @@ class User(Base):
     email = Column(String(256), unique=True)
     password = Column(String(256))
     created_at = Column(DateTime)
+    verified = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
 
 
@@ -41,14 +41,24 @@ class Player(Base):
     username = Column(String(20))
     squad_type = Column(String(20))
     team = Column(String(20))
-    experience = Column(Integer)
-    level = Column(Integer)
     troops = Column(Integer)
     location = Column(String(20))
-    '''insert attributes and shit here'''
+
     is_active = Column(Boolean, default=True)
     last_active = Column(DateTime)
+    is_new = Column(Boolean, default=True)
 
+    actions = Column(Integer)
+    ammo = Column(Integer, default=200)
+    morale = Column(Integer, default=100)
+
+    experience = Column(Integer, default=1)
+    attack = Column(Integer, default=1)  # For better defense
+    defense = Column(Integer, default=1)  # For better attack
+    charisma = Column(Integer, default=1)  # For more troops gained per recruit
+    rallying = Column(Integer, default=1)  # For increasing morale
+    pathfinder = Column(Integer, default=1)  # For the amount of action you use per movement
+    logistics = Column(Integer, default=1)  # For less ammo used per attack
 
 
 class Hex(Base):
@@ -56,6 +66,11 @@ class Hex(Base):
     name = Column(String(20), primary_key=True)
     x = Column(Integer)
     y = Column(Integer)
+    controlled_by = Column(String(20))
+    redcontrol = Column(Integer)
+    bluecontrol = Column(Integer)
+    blackcontrol = Column(Integer)
+    yellowcontrol = Column(Integer)
 
 
 class Team(Base):
