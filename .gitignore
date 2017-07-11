@@ -1,11 +1,15 @@
-*.egg
-*.egg-info
-*.pyc
 
 *.sublime-project
 *.sublime-workspace
 .idea/*
-!.idea/vcs.xml
+new_site/static/bootstrap/*
+new_site/static/jquery/*
+
+
+# Eggs
+*.egg
+*.egg-info
+*.pyc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
