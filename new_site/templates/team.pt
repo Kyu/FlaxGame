@@ -20,17 +20,26 @@
 
 <body>
     <div tal:condition="team">
-        <ul>
+        <ul class="teammates">
             <li>Team Name: ${team['name']}</li>
             <li>Team Capital: ${team['capital']}</li>
         </ul>
 
-        <ul tal:condition="team['name'] == player.team">
+        <ul class="teammates" tal:condition="team['name'] == player.team">
             <tr tal:repeat="member_amt [i for i in range(1, len(team['active_members']))]">
                 <td tal:repeat="team_member [i for i in team['active_members']]" class="hexes">
                     <h3>Name: ${team_member.username}</h3>
                     <p>Location: <a href="${request.route_url('game')}/${team_member.location}">${team_member.location}</a></p>
                     <p>Troops: ${team_member.troops}</p>
+                </td>
+            </tr>
+        </ul>
+
+        <ul tal:condition="team['name'] != player.team">
+            <h1>Members:</h1>
+            <tr tal:repeat="member_amt [i for i in range(1, len(team['active_members']))]">
+                <td tal:repeat="team_member [i for i in team['active_members']]" class="hexes">
+                    <h3>${team_member.username}</h3>
                 </td>
             </tr>
         </ul>
