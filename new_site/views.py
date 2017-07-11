@@ -19,7 +19,6 @@ from .security import (
 from .game import (
     get_all_game_info_for,
     get_player_info,
-    can_move,
     send_player_to,
     player_attack,
     get_team_info
@@ -143,12 +142,10 @@ class GameViews:
 
     @view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST')
     def move_to(self):
-        request = self.request
-        if 'position' in request.params:
-            to_go = request.params['position']
-            player_location = get_player_info(self.logged_in).location
-            if can_move(to_go, player_location):
-                send_player_to(to_go, self.logged_in)
+        if 'position' in self.request.params:
+            location = self.request.params['position']
+            movement = send_player_to(location, self.logged_in)
+            self.request.session.flash(movement)
 
         return HTTPFound(location=return_to_sender(self.request))
 
@@ -156,10 +153,8 @@ class GameViews:
     def attack(self):
         if 'player_called' in self.request.params:
             attacker, defender = self.logged_in, self.request.params['player_called']
-            if player_attack(attacker=attacker, defender=defender):
-                self.request.session.flash("Attack completed")
-            else:
-                self.request.session.flash("Attack failed")
+            attack = player_attack(attacker=attacker, defender=defender)
+            self.request.session.flash(attack)
 
         return HTTPFound(location=return_to_sender(self.request))
 
@@ -167,7 +162,6 @@ class GameViews:
     def team_info(self):
         team_name = self.request.matchdict['team']
         team_info = get_team_info(team_name)
-        print(team_name)
         if team_info:
             return {'team': team_info, 'player': get_player_info(self.logged_in)}
         return HTTPFound(location=self.request.route_url('home'))

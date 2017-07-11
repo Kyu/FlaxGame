@@ -18,7 +18,7 @@ def get_hexes():
     return sorted_hexes
 
 
-def get_hex_called(name):
+def get_location_called(name):
     try:
         the_hex = DBSession.query(Hex).filter_by(name=name).one()
     except NoResultFound:
@@ -44,42 +44,6 @@ def get_team_info(team, all=None):
     return team
 
 
-def remove_actions_from(player, actions):
-    player = get_player_info(player)
-    if not player.actions >= actions:
-        return "Not enough actions"
-    else:
-        update_player_info(player=player, update='actions', new=player.actions-actions)
-
-
-def can_move_to(player, hexes):
-    visitable = []
-    currently_at = [i for i in hexes if i.name == player.location][0]
-
-    # if player.type is regular foot soldier
-    diff_is_one = (-1, 0 , 1)
-    for i in hexes:
-        if currently_at.x - i.x in diff_is_one and currently_at.y - i.y in diff_is_one:
-            visitable.append(i)
-
-    return visitable
-
-
-def can_move(to, from_loc):
-    currently_at = get_hex_called(from_loc)
-    diff_is_one = (-1, 0, 1)
-
-    if not currently_at:
-        return False
-    if type(to) is str:
-        to = get_hex_called(to)
-    if from_loc == to.name:
-        return False
-    if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
-        return True
-    return False
-
-
 def update_player_info(player, update, new):
     if type(player) is Player:
         username = player.username
@@ -90,7 +54,45 @@ def update_player_info(player, update, new):
             DBSession.query(Player).filter_by(username=username).update({update: new})
         return True, 'success'
     except Exception as e:
+        # TODO when you get to logging
         return False, type(e).__name__ + ': ' + str(e)
+
+
+def remove_actions_from(player, actions):
+    player = get_player_info(player)
+    if not player.actions >= actions:
+        return False
+    else:
+        update_player_info(player=player, update='actions', new=player.actions-actions)
+        return True
+
+
+def can_move_to(player, locations):
+    visitable = []
+    currently_at = [i for i in locations if i.name == player.location][0]
+
+    # if player.type is regular foot soldier
+    diff_is_one = (-1, 0 , 1)
+    for i in locations:
+        if currently_at.x - i.x in diff_is_one and currently_at.y - i.y in diff_is_one:
+            visitable.append(i)
+
+    return visitable
+
+
+def can_move(to, _from):
+    currently_at = get_location_called(_from)
+    diff_is_one = (-1, 0, 1)
+
+    if not currently_at:
+        return False
+    if type(to) is str:
+        to = get_location_called(to)
+    if _from == to.name:
+        return False
+    if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
+        return True
+    return False
 
 
 def player_can_attack(attacker, defender):
@@ -102,11 +104,16 @@ def player_can_attack(attacker, defender):
     return True
 
 
-# TODO morale, ammo, actions
+# TODO morale, ammo
 def player_attack(attacker, defender):
+    if not remove_actions_from(attacker, 1):
+        return "You do not have enough actions!"
+
     if not player_can_attack(attacker=attacker, defender=defender):
-        return False
+        return "You cannot attack this player!"
+
     attacker, defender = get_player_info(attacker), get_player_info(defender)
+
     if attacker.troops < defender.troops:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops-5)
         attack2 = update_player_info(defender.username, 'troops', defender.troops-2)
@@ -118,22 +125,28 @@ def player_attack(attacker, defender):
         attack2 = update_player_info(defender.username, 'troops', defender.troops - 3)
 
     if attack1[0] is not attack2[0]:
-        # TODO loging errors
-        return
+        # TODO logging errors
+        return "This is a weird ass attack. Please report the current time and date and error the the admin"
     elif attack1[0] is False:
         return attack1[1]
     else:
-        return "Sucessfully attacked"
+        return "Successfully attacked"
         # TODO add attack details, whether attack send player back
 
 
-def send_player_to(position, player):
-    try:
-        with transaction.manager:
-            movement = DBSession.query(Player).filter_by(username=player).update({'location': position})
-            transaction.commit()
-    except Exception as e:
-        print(type(e).__name__ + ': ' + str(e))
+def send_player_to(location, player):
+    if not remove_actions_from(player, 2):
+        return "You do not have enough actions!"
+    player_loc = get_player_info(player).location
+    if not can_move(to=location, _from=player_loc):
+        return "You are cannot move to this location!"
+
+    movement = update_player_info(player, 'location', location)
+
+    if movement[0]:
+        return "Successfully moved from {player_loc} to {new_loc}!".format(player_loc=player_loc, new_loc=location)
+    else:
+        return "An error occurred while trying to move!"
 
 
 def get_player_info(username):
@@ -141,19 +154,19 @@ def get_player_info(username):
     return player
 
 
-def get_players_located_at(hex_name):
-    players_at = DBSession.query(Player).filter_by(location=hex_name).all()
+def get_players_located_at(location):
+    players_at = DBSession.query(Player).filter_by(location=location).all()
     return players_at
 
 
-def get_all_game_info_for(player, hex_at=''):
+def get_all_game_info_for(player, location=''):
     game_info = dict()
     game_info['hexes'] = get_hexes()
     game_info['player'] = get_player_info(player)
 
-    if hex_at:
-        game_info['current_hex'] = get_hex_called(hex_at)
-        game_info['currently_here'] = get_players_located_at(hex_at)
+    if location:
+        game_info['current_hex'] = get_location_called(location)
+        game_info['currently_here'] = get_players_located_at(location)
         game_info['movable'] = can_move(game_info['current_hex'], game_info['player'].location)
 
     return game_info
