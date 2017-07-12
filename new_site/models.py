@@ -31,7 +31,7 @@ class User(Base):
     email = Column(String(256), unique=True)
     password = Column(String(256))
     created_at = Column(DateTime)
-    verified = Column(Boolean, default=False)
+    is_verified = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
 
 
