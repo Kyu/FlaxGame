@@ -81,7 +81,10 @@ class Team(Base):
 
 class Root(object):
     __acl__ = [(Allow, Everyone, 'view'),
-               (Allow, 'group:Black', 'play')]
+               (Allow, 'group:Black', 'play'),
+               (Allow, 'group:Yellow', 'play'),
+               (Allow, 'group:Red', 'play'),
+               (Allow, 'group:Blue', 'play')]
 
     def __init__(self, request):
         pass

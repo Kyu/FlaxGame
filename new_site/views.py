@@ -31,6 +31,7 @@ def return_to_sender(request):
 
 
 @view_config(route_name='home', renderer='templates/default.pt')
+@forbidden_view_config(renderer='templates/default.pt')
 def home(request):
     if request.authenticated_userid:
         return HTTPFound(request.route_url('game'))
@@ -81,12 +82,13 @@ def login(request):
             verified = verify_login(username, password)
             if 'username' in verified:
                 headers = remember(request, verified['username'])
-                return HTTPFound(location=request.route_url('home'), headers=headers)
+                return HTTPFound(location=return_to_sender(request), headers=headers)
             else:
                 message = verified['status']
 
         request.session.flash(message)
-    return HTTPFound(location='/')
+
+    return HTTPFound(location=return_to_sender(request))
 
 
 @view_config(route_name='logout')
@@ -96,14 +98,14 @@ def logout(request):
     return HTTPFound(location=url, headers=headers)
 
 
-@view_config(route_name='game', renderer='templates/game.pt')
+@view_config(route_name='game', renderer='templates/game.pt', permission='play')
 def game(request):
     info = get_all_game_info_for(request.authenticated_userid)
     return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
             'player': info['player'], 'current_hex': ''}
 
 
-@view_config(route_name='hex_view', renderer='templates/game.pt')
+@view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
 def hex_view(request):
     hex_name = request.matchdict['name']
     info = get_all_game_info_for(request.authenticated_userid, hex_name)
@@ -113,7 +115,7 @@ def hex_view(request):
             'movable': info['movable']}
 
 
-@view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST')
+@view_config(route_name='move_to', renderer='templates/game.pt', permission='play', request_method='POST')
 def move_to(request):
     if 'position' in request.params:
         location = request.params['position']
@@ -123,7 +125,7 @@ def move_to(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='attack_player', renderer='templates/game.pt', request_method='POST')
+@view_config(route_name='attack_player', renderer='templates/game.pt', permission='play', request_method='POST')
 def attack_player(request):
     if 'player_called' in request.params:
         attacker, defender = request.authenticated_userid, request.params['player_called']
@@ -133,7 +135,7 @@ def attack_player(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='team_info', renderer='templates/team.pt')
+@view_config(route_name='team_info', renderer='templates/team.pt', permission='play')
 def team_info(request):
     team_name = request.matchdict['team']
     info = get_team_info(team_name)
@@ -142,7 +144,7 @@ def team_info(request):
     return HTTPFound(location=request.route_url('home'))
 
 
-@view_config(route_name='profile', renderer='templates/profile.pt')
+@view_config(route_name='profile', renderer='templates/profile.pt', permission='play')
 def profile_page(request):
     player = get_player_info(request.authenticated_userid)
     if player:

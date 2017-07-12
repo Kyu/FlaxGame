@@ -89,5 +89,4 @@ def groupfinder(userid, request):
         pass
     except Exception as e:
         print(type(e).__name__ + ': ' + str(e))
-    
     return result
