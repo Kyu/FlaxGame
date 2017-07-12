@@ -1,4 +1,5 @@
 import transaction
+import logging
 
 from sqlalchemy import and_
 from sqlalchemy.orm.exc import NoResultFound
@@ -10,8 +11,9 @@ from .models import (
     Team
 )
 
+log = logging.getLogger(__name__)
 
-# TODO: change hex variables to `location`
+
 def get_hexes():
     hexes = DBSession.query(Hex)
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))
@@ -21,24 +23,28 @@ def get_hexes():
 def get_location_called(name):
     try:
         the_hex = DBSession.query(Hex).filter_by(name=name).one()
-    except NoResultFound:
+    except NoResultFound as e:
+        msg = "{err} on get_location_called(name={name})".format(err=str(type(e).__name__ + ': ' + str(e)), name=name)
+        log.warning(msg)
         the_hex = None
     return the_hex
 
 
-def get_team_info(team, all=None):
+def get_team_info(team, get_all=None):
     try:
         team_info = DBSession.query(Team).filter_by(name=team).one()
-    except NoResultFound:
+    except NoResultFound as e:
+        msg = "{err} on get_team_info(team={team}, all={all})".format(
+            err=str(type(e).__name__ + ': ' + str(e)), team=team, all=get_all)
+        log.warning(msg)
         return {}
 
     team = dict()
     team['name'] = team_info.name
     team['capital'] = team_info.capital
-    # TODO use https://stackoverflow.com/a/32527383/3875151 to calc active users on turn
     active_users = DBSession.query(Player).filter(and_(Player.team == team_info.name, Player.is_active)).all()
     team['active_members'] = active_users
-    if all:
+    if get_all:
         team['members'] = DBSession.query(Player).filter(team=team_info.name).all()
 
     return team
@@ -54,7 +60,9 @@ def update_player_info(player, update, new):
             DBSession.query(Player).filter_by(username=username).update({update: new})
         return True, 'success'
     except Exception as e:
-        # TODO when you get to logging
+        msg = "{err} on update_player_info(player={username}, update='{update}', new={new})".format(
+            err=str(type(e).__name__ + ': ' + str(e)), username=username, update=update, new=new)
+        log.warning(msg)
         return False, type(e).__name__ + ': ' + str(e)
 
 
@@ -63,8 +71,15 @@ def remove_actions_from(player, actions):
     if not player.actions >= actions:
         return False
     else:
-        update_player_info(player=player, update='actions', new=player.actions-actions)
-        return True
+        return update_player_info(player=player, update='actions', new=player.actions-actions)[0]
+
+
+def remove_ammo_from(player, amount):
+    player = get_player_info(player)
+    if player.ammo < amount:
+        return False
+
+    return update_player_info(player=player, update='ammo', new=player.ammo-amount)[0]
 
 
 def can_move_to(player, locations):
@@ -99,39 +114,49 @@ def player_can_attack(attacker, defender):
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
     if attacker.team == defender.team or attacker.location != defender.location:
-        return False
+        return "You are not in the same location as this player!"
+    if not remove_actions_from(attacker.username, 1):
+        return "You do not have enough actions!"
+    if not remove_ammo_from(attacker, 100):  # TODO start working on formulas
+        return "You do not have enough ammo"
+    if attacker.morale < 10:
+        return "Your squad lacks heart! Raise your morale!"
 
     return True
 
 
-# TODO morale, ammo
 def player_attack(attacker, defender):
-    if not remove_actions_from(attacker, 1):
-        return "You do not have enough actions!"
-
-    if not player_can_attack(attacker=attacker, defender=defender):
-        return "You cannot attack this player!"
+    can_attack = player_can_attack(attacker=attacker, defender=defender)
+    if can_attack is not True:
+        return can_attack
 
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
     if attacker.troops < defender.troops:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops-5)
         attack2 = update_player_info(defender.username, 'troops', defender.troops-2)
+        status = "won"
     elif attacker.troops > defender.troops:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 2)
         attack2 = update_player_info(defender.username, 'troops', defender.troops - 5)
+        status = "lost"
     else:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 3)
         attack2 = update_player_info(defender.username, 'troops', defender.troops - 3)
+        status = "draw"
 
     if attack1[0] is not attack2[0]:
-        # TODO logging errors
+        log.warning("Weird ass error player_attack(attacker={attacker}, defender={defender})".format(
+            attacker=attacker.username, defender=defender.username))
         return "This is a weird ass attack. Please report the current time and date and error the the admin"
     elif attack1[0] is False:
-        return attack1[1]
-    else:
-        return "Successfully attacked"
-        # TODO add attack details, whether attack send player back
+        return "A problem occured, investigating"
+    elif status == "won":
+        return "You won! {defender} lost 5 troops while you only lost 2".format(defender=defender.username)
+    elif status == "lost":
+        return "You lost! {defender} only lost 2 troops while you lost 5".format(defender=defender.username)
+    elif status == "draw":
+        return "Your teams both fought bravely and you lost 3 troops each"
 
 
 def send_player_to(location, player):
@@ -150,12 +175,24 @@ def send_player_to(location, player):
 
 
 def get_player_info(username):
-    player = DBSession.query(Player).filter_by(username=username).one()
+    try:
+        player = DBSession.query(Player).filter_by(username=username).one()
+    except NoResultFound as e:
+        msg = "{err} on get_player_info(username={username})".format(err=str(type(e).__name__ + ': ' + str(e)),
+                                                                     username=username)
+        log.warning(msg)
+        return
     return player
 
 
 def get_players_located_at(location):
-    players_at = DBSession.query(Player).filter_by(location=location).all()
+    try:
+        players_at = DBSession.query(Player).filter_by(location=location).all()
+    except NoResultFound as e:
+        msg = "{err} on get_players_located_at(location={location})".format(err=str(type(e).__name__ + ': ' + str(e)),
+                                                                            location=location)
+        log.warning(msg)
+        return
     return players_at
 
 
