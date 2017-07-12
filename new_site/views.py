@@ -166,6 +166,13 @@ class GameViews:
             return {'team': team_info, 'player': get_player_info(self.logged_in)}
         return HTTPFound(location=self.request.route_url('home'))
 
+    @view_config(route_name='profile', renderer='templates/profile.pt')
+    def profile_page(self):
+        player = get_player_info(self.logged_in)
+        if player:
+            return {'player': player}
+        return HTTPFound(location=return_to_sender(self.request))
+
 
 
 
