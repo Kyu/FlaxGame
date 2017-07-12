@@ -56,7 +56,7 @@
                     <h2>Currently here:</h2>
                     <ul class="sidebar-nav">
                         <!-- TODO interact with hex (take ammo, recruit?) also TODO dont let players know who is in location unless team member  -->
-                        <li tal:repeat="here_info [i for i in currently_here if i.username != view.logged_in]">
+                        <li tal:repeat="here_info [i for i in currently_here if i.username != request.authenticated_userid]">
                             <p>${here_info.username} who is a ${here_info.squad_type} for team <a href="/team/${here_info.team}">${here_info.team}</a> with ${here_info.troops} troops</p>
                             <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
                                 <button name="player_called" value="${here_info.username}">Attack!</button>

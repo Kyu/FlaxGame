@@ -67,7 +67,9 @@ def update_player_info(player, update, new):
 
 
 def remove_actions_from(player, actions):
-    player = get_player_info(player)
+    if type(player) is not Player:
+        player = get_player_info(player)
+
     if not player.actions >= actions:
         return False
     else:
@@ -75,7 +77,9 @@ def remove_actions_from(player, actions):
 
 
 def remove_ammo_from(player, amount):
-    player = get_player_info(player)
+    if type(player) is not Player:
+        player = get_player_info(player)
+
     if player.ammo < amount:
         return False
 
@@ -117,7 +121,7 @@ def player_can_attack(attacker, defender):
         return "You are not in the same location as this player!"
     if not remove_actions_from(attacker.username, 1):
         return "You do not have enough actions!"
-    if not remove_ammo_from(attacker, 100):  # TODO start working on formulas
+    if not remove_ammo_from(attacker.username, 100):  # TODO start working on formulas
         return "You do not have enough ammo"
     if attacker.morale < 10:
         return "Your squad lacks heart! Raise your morale!"
@@ -135,11 +139,11 @@ def player_attack(attacker, defender):
     if attacker.troops < defender.troops:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops-5)
         attack2 = update_player_info(defender.username, 'troops', defender.troops-2)
-        status = "won"
+        status = "lost"
     elif attacker.troops > defender.troops:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 2)
         attack2 = update_player_info(defender.username, 'troops', defender.troops - 5)
-        status = "lost"
+        status = "won"
     else:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 3)
         attack2 = update_player_info(defender.username, 'troops', defender.troops - 3)
