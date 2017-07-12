@@ -27,7 +27,7 @@ from .game import (
 
 
 def return_to_sender(request):
-    if request.referer == request.url:
+    if request.referer == request.url or not request.referrer:
         return '/'
     return request.referer
 
@@ -52,7 +52,7 @@ class MainViews(object):
 
     # /login shit
     @view_config(route_name='hello', renderer='templates/mytemplate.pt')
-    def my_view(request):
+    def my_view(self):
         return {'project': 'new_site'}
 
     @view_config(request_method='POST', route_name='register')

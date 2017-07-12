@@ -40,11 +40,12 @@ def main(global_config, **settings):
 
     config.add_route('hex_view', '/game/{name}')
     config.add_route('team_info', '/team/{team}')
-    # TODO profile pages
     config.add_route('profile', '/profile')
+    config.add_route('settings', '/settings')  # TODO settings and levelling up
 
     config.add_route('attack_player', '/attack')
     config.add_route('move_to', 'goto')
+    config.add_route('level_up', '/levelup')
 
     config.add_route('hello', '/default_page')
 
