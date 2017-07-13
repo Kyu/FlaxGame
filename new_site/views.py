@@ -25,9 +25,12 @@ from .game import (
 
 
 def return_to_sender(request):
-    if request.referer == request.url or not request.referrer:
+    try:
+        if request.referer == request.url or not request.referrer:
+            return '/'
+        return request.referer
+    except Exception as e:
         return '/'
-    return request.referer
 
 
 @view_config(route_name='home', renderer='templates/default.pt')
@@ -77,7 +80,7 @@ def login(request):
             verified = verify_login(username, password)
             if 'username' in verified:
                 headers = remember(request, verified['username'])
-                return HTTPFound(location=return_to_sender(request), headers=headers)
+                return HTTPFound(location=return_to_sender(request), comment='Logged in successfully', headers=headers)
             else:
                 message = verified['status']
 
@@ -90,7 +93,7 @@ def login(request):
 def logout(request):
     headers = forget(request)
     url = request.route_url('home')
-    return HTTPFound(location=url, headers=headers)
+    return HTTPFound(location=url, comment="Logged out successfully", headers=headers)
 
 
 @view_config(route_name='game', renderer='templates/game.pt', permission='play')
