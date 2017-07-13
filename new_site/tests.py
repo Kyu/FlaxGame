@@ -88,6 +88,7 @@ class GameViews(unittest.TestCase):
         home = self.testapp.get('/game')
         return home
 
+    # TODO create test user then remove user after attacking done
     def test_attacking(self):
         random_user = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
         nonexistent_attack = self.attack_player(random_user)
@@ -99,8 +100,19 @@ class GameViews(unittest.TestCase):
         good_attack = self.attack_player('testdummy')
         self.assertIn('You cannot attack your teammate', good_attack.text)
 
-        # TODO attack person who respawns in same location over and over
-    # TODO attacking, team info, profile page
+    def test_team_info(self):
+        bad_team = self.testapp.get('/team/winners')
+        self.assertIn('Team not found', bad_team.text)
+
+        other_team = self.testapp.get('/team/Blue')
+        self.assertIn('Members:', other_team.text)
+
+        my_team = self.testapp.get('/team/Red')
+        self.assertIn('Name:', my_team.text)
+
+    def test_profile_pate(self):
+        info = self.testapp.get('/profile')
+        self.assertIn('Player: test', info.text)
 
     def test_logout(self):
         logout = self.testapp.post('/logout')

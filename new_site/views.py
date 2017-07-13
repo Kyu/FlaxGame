@@ -139,7 +139,8 @@ def team_info(request):
     info = get_team_info(team_name)
     if info:
         return {'team': info, 'player': get_player_info(request.authenticated_userid)}
-    return HTTPFound(location=request.route_url('home'))
+    return HTTPFound(location=request.route_url('home'),
+                     comment="Team not found: {team_name}".format(team_name=team_name))
 
 
 @view_config(route_name='profile', renderer='templates/profile.pt', permission='play')
