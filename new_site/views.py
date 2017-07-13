@@ -40,11 +40,6 @@ def home(request):
     return resp
 
 
-@view_config(route_name='hello', renderer='templates/mytemplate.pt')
-def my_view(request):
-    return {'project': 'new_site'}
-
-
 @view_config(route_name='register', request_method='POST')
 def register(request):
     if request.authenticated_userid:
