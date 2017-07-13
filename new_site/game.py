@@ -104,28 +104,35 @@ def can_move(to, _from):
     diff_is_one = (-1, 0, 1)
 
     if not currently_at:
-        return False
+        msg = "Unexpected error on move_to(to={to}, _from={_from})".format(to=to, _from=_from)
+        log.warning(msg)
+        return False, ''
     if type(to) is str:
         to = get_location_called(to)
+        if not to:
+            return to, 'This location does not exist'
     if _from == to.name:
-        return False
+        return False, 'The location you are trying to move to is the same location you are currently in'
     if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
-        return True
-    return False
+        return True, ''
+    return False, 'This location is not next to your current location'
 
 
 def player_can_attack(attacker, defender):
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
-    if attacker.team == defender.team or attacker.location != defender.location:
+    if not attacker or not defender:
+        return "Player does not exist!"
+    if attacker.team == defender.team:
+        return "You cannot attack your teammate!"
+    if attacker.location != defender.location:
         return "You are not in the same location as this player!"
-    if not remove_actions_from(attacker.username, 1):
-        return "You do not have enough actions!"
-    if not remove_ammo_from(attacker.username, 100):  # TODO start working on formulas
-        return "You do not have enough ammo"
     if attacker.morale < 10:
         return "Your squad lacks heart! Raise your morale!"
-
+    if not attacker.actions:
+        return "You do not have enough actions!"
+    if not attacker.ammo >= attacker.troops:  # TODO start working on formulas
+        return "You do not have enough ammo"
     return True
 
 
@@ -135,6 +142,9 @@ def player_attack(attacker, defender):
         return can_attack
 
     attacker, defender = get_player_info(attacker), get_player_info(defender)
+
+    remove_actions_from(attacker.username, 1)
+    remove_ammo_from(attacker.username, attacker.troops)
 
     if attacker.troops < defender.troops:
         attack1 = update_player_info(attacker.username, 'troops', attacker.troops-5)
@@ -164,11 +174,18 @@ def player_attack(attacker, defender):
 
 
 def send_player_to(location, player):
-    if not remove_actions_from(player, 2):
+    player_info = get_player_info(player)
+    player_loc = player_info.location
+
+    movable = can_move(to=location, _from=player_loc)
+
+    if not movable[0]:
+        return "You are cannot move to this location! {}".format(movable[1])
+
+    if not player_info.actions >=2:
         return "You do not have enough actions!"
-    player_loc = get_player_info(player).location
-    if not can_move(to=location, _from=player_loc):
-        return "You are cannot move to this location!"
+
+    remove_actions_from(player, 2)
 
     movement = update_player_info(player, 'location', location)
 
@@ -208,6 +225,6 @@ def get_all_game_info_for(player, location=''):
     if location:
         game_info['current_hex'] = get_location_called(location)
         game_info['currently_here'] = get_players_located_at(location)
-        game_info['movable'] = can_move(game_info['current_hex'], game_info['player'].location)
+        game_info['movable'] = can_move(game_info['current_hex'], game_info['player'].location)[0]
 
     return game_info

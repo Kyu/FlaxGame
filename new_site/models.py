@@ -48,7 +48,7 @@ class Player(Base):
     last_active = Column(DateTime)
     is_new = Column(Boolean, default=True)
 
-    actions = Column(Integer)
+    actions = Column(Integer, default=5)
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
 
