@@ -2,20 +2,31 @@ import unittest
 import random
 import string
 
-
-import transaction
 from pyramid import testing
 
 
 def _initTestingDB():
+    import transaction
     from sqlalchemy import create_engine
     from .models import (
         DBSession,
+        Player,
+        User,
         Base
         )
+    from .security import hash_password
+
     engine = create_engine('mysql+pymysql://new_game:#BattleFront1@localhost/users')
-    Base.metadata.create_all(engine)
     DBSession.configure(bind=engine)
+    Base.metadata.create_all(engine)
+
+    with transaction.manager:
+        new_test = User(username='test', email='test', password=hash_password('test'))
+        test = Player(uid=random.randint(4000, 90000), username='test', squad_type='Captain', team='Red', location='2.2')
+        testdummy = Player(uid=random.randint(4000, 90000), username='testdummy', squad_type='Captain', team='Yellow', location='2.2')
+        testin99 = Player(uid=random.randint(4000, 90000), username='testin99', squad_type='Captain', team='Blue', location='9.9')
+        DBSession.add_all([new_test, test, testdummy, testin99])
+        transaction.commit()
     return DBSession
 
 
@@ -37,6 +48,9 @@ class HomeViews(unittest.TestCase):
         request = testing.DummyRequest()
         response = login(request)
         self.assertEqual(response.status_code, 302)
+
+    def test_setup(self):
+        self.session = _initTestingDB()
 
 
 class GameViews(unittest.TestCase):
@@ -88,7 +102,6 @@ class GameViews(unittest.TestCase):
         home = self.testapp.get('/game')
         return home
 
-    # TODO create test user then remove user after attacking done
     def test_attacking(self):
         random_user = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
         nonexistent_attack = self.attack_player(random_user)
@@ -98,7 +111,7 @@ class GameViews(unittest.TestCase):
         self.assertIn("You are not in the same location as this player!", too_far_attack.text)
 
         good_attack = self.attack_player('testdummy')
-        self.assertIn('You cannot attack your teammate', good_attack.text)
+        self.assertIn('lost', good_attack.text)
 
     def test_team_info(self):
         bad_team = self.testapp.get('/team/winners')
@@ -117,3 +130,18 @@ class GameViews(unittest.TestCase):
     def test_logout(self):
         logout = self.testapp.post('/logout')
         self.assertIn('Logged out successfully', logout.text)
+
+
+class RemoveTestUsers(unittest.TestCase):
+    def test_removal(self):
+        import transaction
+        from sqlalchemy import or_
+        from .models import User, Player, DBSession
+        test_p = DBSession.query(User).filter_by(username='test').one()
+        test_players = DBSession.query(Player).filter(or_(Player.username == 'test', Player.username == 'testdummy',
+                                                          Player.username == 'testin99')).all()
+        with transaction.manager:
+            DBSession.delete(test_p)
+            for i in test_players:
+                DBSession.delete(i)
+            transaction.commit()
