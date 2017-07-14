@@ -49,22 +49,40 @@ class HomeViews(unittest.TestCase):
         response = login(request)
         self.assertEqual(response.status_code, 302)
 
-    def test_setup(self):
-        self.session = _initTestingDB()
-
 
 class GameViews(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.session = _initTestingDB()
+
     def setUp(self):
         from pyramid.paster import get_app
         app = get_app('../development.ini')
         from webtest import TestApp
         self.testapp = TestApp(app)
         login = self.testapp.post('/login', params={'username': 'test', 'password': 'test', 'login': ''}, status=302)
-        self.assertIn('Logged in successfully', login.text)
+        self.assertIn("Logged in successfully", login.text)
 
-    def tearDown(self):
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.remove_test_users()
         from .models import DBSession
         DBSession.remove()
+
+    @staticmethod
+    def remove_test_users():
+        import transaction
+        from sqlalchemy import or_
+        from .models import User, Player, DBSession
+        test_p = DBSession.query(User).filter_by(username='test').one()
+        test_players = DBSession.query(Player).filter(or_(Player.username == 'test', Player.username == 'testdummy',
+                                                          Player.username == 'testin99')).all()
+        with transaction.manager:
+            DBSession.delete(test_p)
+            for i in test_players:
+                DBSession.delete(i)
+            transaction.commit()
 
     def test_game_page(self):
         game_page = self.testapp.get('/game', status=200)
@@ -111,7 +129,7 @@ class GameViews(unittest.TestCase):
         self.assertIn("You are not in the same location as this player!", too_far_attack.text)
 
         good_attack = self.attack_player('testdummy')
-        self.assertIn('lost', good_attack.text)
+        self.assertIn('lost', good_attack.text)  # This is too vague
 
     def test_team_info(self):
         bad_team = self.testapp.get('/team/winners')
@@ -130,18 +148,3 @@ class GameViews(unittest.TestCase):
     def test_logout(self):
         logout = self.testapp.post('/logout')
         self.assertIn('Logged out successfully', logout.text)
-
-
-class RemoveTestUsers(unittest.TestCase):
-    def test_removal(self):
-        import transaction
-        from sqlalchemy import or_
-        from .models import User, Player, DBSession
-        test_p = DBSession.query(User).filter_by(username='test').one()
-        test_players = DBSession.query(Player).filter(or_(Player.username == 'test', Player.username == 'testdummy',
-                                                          Player.username == 'testin99')).all()
-        with transaction.manager:
-            DBSession.delete(test_p)
-            for i in test_players:
-                DBSession.delete(i)
-            transaction.commit()
