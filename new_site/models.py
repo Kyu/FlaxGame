@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Boolean,
 )
+from sqlalchemy.sql import func
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -30,25 +31,25 @@ class User(Base):
     username = Column(String(20), unique=True)
     email = Column(String(256), unique=True)
     password = Column(String(256))
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
     is_verified = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
 
 
 class Player(Base):
     __tablename__ = 'players'
-    uid = Column(Integer, primary_key=True, autoincrement=False)
-    username = Column(String(20))
+    uid = Column(Integer, primary_key=True)
+    username = Column(String(20), unique=True)
     squad_type = Column(String(20))
     team = Column(String(20))
-    troops = Column(Integer)
+    troops = Column(Integer, default=50)
     location = Column(String(20))
 
     is_active = Column(Boolean, default=True)
-    last_active = Column(DateTime)
+    last_active = Column(DateTime, server_default=func.now(), onupdate=func.now())
     is_new = Column(Boolean, default=True)
 
-    actions = Column(Integer, default=5)
+    actions = Column(Integer, default=10)
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
 

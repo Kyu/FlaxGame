@@ -40,13 +40,12 @@ def create_user(username, email, password):
             team = list(teams.keys())[randrange(0, 4)]
             location = teams[team]
             with transaction.manager:
-                new_user = User(username=username, email=email, password=hash_password(password),
-                                created_at=datetime.utcnow())
+                new_user = User(username=username, email=email, password=hash_password(password))
                 DBSession.add(new_user)
                 transaction.commit()
                 # Location, team should be random
                 player_model = Player(uid=new_user.uid, username=new_user.username, team=team, squad_type="Captain",
-                                      troops=50, location=location, last_active=datetime.utcnow())
+                                      location=location)
                 DBSession.add(player_model)
 
                 return "Account created Sucessfully"
