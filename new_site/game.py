@@ -1,3 +1,6 @@
+from math import sqrt, log10
+from random import randrange
+
 import transaction
 import logging
 
@@ -143,49 +146,91 @@ def player_attack(attacker, defender):
 
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
-    remove_actions_from(attacker.username, 1)
-    remove_ammo_from(attacker.username, attacker.troops)
+    #  Returns negative if morale < 1, error if 0
+    #  TODO include ammo count in forumla
 
-    if attacker.troops < defender.troops:
-        attack1 = update_player_info(attacker.username, 'troops', attacker.troops-5)
-        attack2 = update_player_info(defender.username, 'troops', defender.troops-2)
-        status = "lost"
-    elif attacker.troops > defender.troops:
-        attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 2)
-        attack2 = update_player_info(defender.username, 'troops', defender.troops - 5)
-        status = "won"
+    attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale) + (randrange(11, 20)/10))
+    defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale) + (randrange(11, 20)/10))
+
+    if attacker_strength > defender_strength:
+        attacker_loss = round(defender_strength)
+        defender_loss = round(attacker_strength)
+        if attacker_loss == defender_loss:
+            status = dict(result='win', draw=True)
+        else:
+            status = dict(result='win', draw=False)
     else:
-        attack1 = update_player_info(attacker.username, 'troops', attacker.troops - 3)
-        attack2 = update_player_info(defender.username, 'troops', defender.troops - 3)
-        status = "draw"
+        attacker_loss = round(defender_strength)
+        defender_loss = round(attacker_strength)
+        if attacker_loss == defender_loss:
+            status = dict(result='loss', draw=True)
+        else:
+            status = dict(result='loss', draw=False)
 
-    if attack1[0] is not attack2[0]:
+    remove_actions_from(attacker.username, 1)
+    remove_ammo_from(attacker.username, attacker.troops/attacker.logistics)
+
+    remove_ammo_from(defender.username, defender.troops/defender.logistics)
+
+    fight1 = update_player_info(attacker.username, 'troops', attacker.troops - attacker_loss)
+    fight2 = update_player_info(defender.username, 'troops', defender.troops - defender_loss)
+
+    if status['result'] == 'win':
+        update_player_info(defender.username, 'morale', defender.morale - 10)
+    else:
+        update_player_info(attacker.username, 'morale', attacker.morale - 10)
+
+    if fight1[0] is not fight2[0]:
         log.warning("Weird ass error player_attack(attacker={attacker}, defender={defender})".format(
             attacker=attacker.username, defender=defender.username))
         return "This is a weird ass attack. Please report the current time and date and error the the admin"
-    elif attack1[0] is False:
-        return "A problem occured, investigating"
-    elif status == "won":
-        return "You won! {defender} lost 5 troops while you only lost 2".format(defender=defender.username)
-    elif status == "lost":
-        return "You lost! {defender} only lost 2 troops while you lost 5".format(defender=defender.username)
-    elif status == "draw":
-        return "Your teams both fought bravely and you lost 3 troops each"
+    elif fight1[0] is False:
+        return "A problem occurred, investigating"
+
+    if status['result'] == 'win':
+        msg = "You won! {defender} lost {d_loss} troops while you only lost {a_loss}. ".format(
+                defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
+        update_player_info(attacker.username, 'experience', attacker.experience + defender_loss)
+        if status['draw']:
+            msg = msg + ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
+                         "the hearts of the enemy and they lose morale.")
+    else:
+        msg = "You lost! {defender} only lost {d_loss} troops while you lost {a_loss}. ".format(
+            defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
+        update_player_info(defender.username, 'experience', defender.experience + attacker_loss)
+        if status['draw']:
+            msg += "Even though losses are the same, your squad become discouraged at the lack of win and lose morale."
+
+    attacker, defender = get_player_info(attacker.username), get_player_info(defender.username)
+
+    if attacker.troops < 10 or attacker.morale < 10:
+        msg += " You hurry back to the capital to regenerate."
+        update_player_info(attacker.username, 'troops', 10)
+        update_player_info(attacker.username, 'morale', 10)
+        send_player_to(get_team_info(attacker.team)['capital'], attacker.username, force=True)
+
+    if defender.troops < 10 or defender.morale < 10:
+        msg += " The enemy rushes back to their capital to regenerate."
+        update_player_info(defender.username, 'troops', 10)
+        update_player_info(defender.username, 'morale', 10)
+        send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
+
+    return msg
 
 
-def send_player_to(location, player):
+def send_player_to(location, player, force=False):
     player_info = get_player_info(player)
     player_loc = player_info.location
 
     movable = can_move(to=location, _from=player_loc)
+    if not force:
+        if not movable[0]:
+            return "You are cannot move to this location! {}".format(movable[1])
 
-    if not movable[0]:
-        return "You are cannot move to this location! {}".format(movable[1])
+        if not player_info.actions >=2:
+            return "You do not have enough actions!"
 
-    if not player_info.actions >=2:
-        return "You do not have enough actions!"
-
-    remove_actions_from(player, 2)
+        remove_actions_from(player, round(3/player_info.pathfinder))
 
     movement = update_player_info(player, 'location', location)
 
