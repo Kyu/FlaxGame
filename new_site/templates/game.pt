@@ -50,12 +50,38 @@
             <div tal:condition="current_hex" class="hex">
                 <h3>Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
 
+                <ul tal:condition="current_hex.name != player.location">
+                    <h4>Population: ${current_hex.population}</h4>
+                    <h4>Availible ammo: ${current_hex.ammo}</h4>
+                    <h4>Industry: ${current_hex.industry}</h4>
+                    <h4>Industry: ${current_hex.infrastructure}</h4>
+                </ul>
+
+                <ul tal:condition="current_hex.name == player.location">
+                    <h4>Population: ${current_hex.population}</h4>
+                    <form action="${request.route_url('recruit')}" method="post">
+                        <button name="recruit">Recruit!</button>
+                    </form>
+                    <h4>Availible ammo: ${current_hex.ammo}</h4>
+                    <form action="${request.route_url('get_ammo')}" method="post">
+                        <button name="take_ammo">Take Ammo!</button>
+                    </form>
+                    <h4>Industry: ${current_hex.industry}</h4>
+                    <form action="${request.route_url('upgrade_industry')}" method="post">
+                        <button name="industry">Upgrade!</button>
+                    </form>
+                    <h4>Industry: ${current_hex.infrastructure}</h4>
+                    <form action="${request.route_url('upgrade_infrastructure')}" method="post">
+                        <button name="infrastructure">Upgrade!!</button>
+                    </form>
+                </ul>
+
                 <h3 tal:condition="current_hex.name == player.location">You are here!</h3>
 
                 <div id="also-here" tal:condition="currently_here and [i for i in currently_here if i.username is not player.username]">
                     <h2>Currently here:</h2>
                     <ul class="sidebar-nav">
-                        <!-- TODO interact with hex (take ammo, recruit?) also TODO dont let players know who is in location unless team member  -->
+                        <!-- TODO don't let players know who is in location unless team member  -->
                         <li tal:repeat="here_info [i for i in currently_here if i.username != request.authenticated_userid]">
                             <p>${here_info.username} who is a ${here_info.squad_type} for team <a href="/team/${here_info.team}">${here_info.team}</a> with ${here_info.troops} troops</p>
                             <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
@@ -63,6 +89,7 @@
                              </form>
                         </li>
                     </ul>
+
                 </div>
                 <form tal:condition="movable" action="${request.route_url('move_to')}" method="post">
                 <button name="position" value="${current_hex.name}">Move here!</button>

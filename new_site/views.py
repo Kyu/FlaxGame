@@ -23,7 +23,11 @@ from .game import (
     player_attack,
     get_team_info,
     level_up_player,
-    xp_for_level_up
+    xp_for_level_up,
+    give_player_ammo,
+    increase_player_troops,
+    upgrade_hex_for,
+    upgrade_infrastructure_for
 )
 
 
@@ -109,7 +113,9 @@ def game(request):
 @view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
 def hex_view(request):
     hex_name = request.matchdict['name']
-    info = get_all_game_info_for(request.authenticated_userid, hex_name)
+    info = get_all_game_info_for(request.authenticated_userid, location=hex_name)
+    if not info:
+        return HTTPFound(location=request.route_url('home'))
 
     return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
             'current_hex': info['current_hex'], 'currently_here': info['currently_here'], 'player': info['player'],
@@ -135,6 +141,37 @@ def attack_player(request):
 
     return HTTPFound(location=return_to_sender(request))
 
+
+@view_config(route_name='get_ammo', request_method='POST', permission='play')
+def increase_ammo(request):
+    increase = give_player_ammo(request.authenticated_userid)
+    request.session.flash(increase)
+
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='recruit', request_method='POST', permission='play')
+def recruit(request):
+    increase = increase_player_troops(request.authenticated_userid)
+    request.session.flash(increase)
+
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='upgrade_industry', request_method='POST', permission='play')
+def increase_hex_industry(request):
+    increase = upgrade_hex_for(request.authenticated_userid)
+    request.session.flash(increase)
+
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='upgrade_infrastructure', request_method='POST', permission='play')
+def increase_hex_infrastructure(request):
+    increase = upgrade_infrastructure_for(request.authenticated_userid)
+    request.session.flash(increase)
+
+    return HTTPFound(location=return_to_sender(request))
 
 @view_config(route_name='team_info', renderer='templates/team.pt', permission='play')
 def team_info(request):

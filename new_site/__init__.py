@@ -38,6 +38,11 @@ def main(global_config, **settings):
     config.add_route('game', '/game')
 
     config.add_route('hex_view', '/game/{name}')
+    config.add_route('get_ammo', '/game/action/ammo')
+    config.add_route('recruit', '/game/action/recruit')
+    config.add_route('upgrade_industry', '/game/action/upgrade')
+    config.add_route('upgrade_infrastructure', '/game/action/infrastructure')
+
     config.add_route('team_info', '/team/{team}')
     config.add_route('profile', '/profile')
     config.add_route('levelup', '/settings/levelup')

@@ -53,6 +53,7 @@ class Player(Base):
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
 
+    # TODO development stat for upgrading?
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
     attack = Column(Integer, default=1)  # For better defense
@@ -73,6 +74,10 @@ class Hex(Base):
     bluecontrol = Column(Integer)
     blackcontrol = Column(Integer)
     yellowcontrol = Column(Integer)
+    ammo = Column(Integer, default=100)
+    population = Column(Integer, default=10)
+    industry = Column(Integer, default=10)
+    infrastructure = Column(Integer, default=5)
 
 
 class Team(Base):
@@ -81,6 +86,7 @@ class Team(Base):
     capital = Column(String(20))
 
 
+# TODO `Deny` perms for banned people?
 class Root(object):
     __acl__ = [(Allow, Everyone, 'view'),
                (Allow, 'group:Black', 'play'),

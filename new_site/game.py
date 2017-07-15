@@ -34,6 +34,18 @@ def get_location_called(name):
     return the_hex
 
 
+def update_location_info(name, update, new):
+    try:
+        with transaction.manager:
+            DBSession.query(Hex).filter_by(name=name).update({update: new})
+        return True, 'success'
+    except Exception as e:
+        msg = "{err} on update_location_info(name={name}, update='{update}', new={new})".format(
+            err=str(type(e).__name__ + ': ' + str(e)), name=name, update=update, new=new)
+        log.warning(msg)
+        return False, type(e).__name__ + ': ' + str(e)
+
+
 def get_team_info(team, get_all=None):
     try:
         team_info = DBSession.query(Team).filter_by(name=team).one()
@@ -241,6 +253,70 @@ def send_player_to(location, player, force=False):
         return "An error occurred while trying to move!"
 
 
+def give_player_ammo(player, amount=0):
+    if type(player) is str:
+        player = get_player_info(player)
+
+    if not amount:
+        increase = 100
+        location = get_location_called(player.location)
+        if not player.actions >= 1:
+            return "Not enough actions!"
+        if location.ammo < increase:
+            return "Not enough ammo in location"
+        update_location_info(player.location, 'ammo', location.ammo - increase)
+    else:
+        increase = amount
+
+    update_player_info(player, 'ammo', player.ammo + increase)
+
+    return "Ammo increased!"
+
+
+def increase_player_troops(player, amount=0):
+    if type(player) is str:
+        player = get_player_info(player)
+    if not amount:
+        increase = 10 * player.charisma
+        location = get_location_called(player.location)
+        if not player.actions >= 1:
+            return "Not enough actions!"
+        if location.population < increase:
+            return "Not enough people in location"
+
+        update_location_info(player.location, 'population', location.population - increase)
+    else:
+        increase = amount
+
+    update_player_info(player, 'troops', player.troops + increase)
+
+    return "Troops increased by {}".format(str(increase))
+
+
+def upgrade_hex_for(player):
+    if type(player) is str:
+        player = get_player_info(player)
+
+    if not player.actions >= 5:
+        return "Not enough actions!"
+    location = get_location_called(player.location)
+    update_location_info(player.location, 'industry', location.industry + 1)
+
+    return "Upgraded location!"
+
+
+def upgrade_infrastructure_for(player):
+    if type(player) is str:
+        player = get_player_info(player)
+
+    if not player.actions >= 5:
+        return "Not enough actions!"
+    location = get_location_called(player.location)
+    update_location_info(player.location, 'infrastructure', location.infrastructure + 1)
+
+    return "Upgraded infrastructure!"
+
+
 def get_player_info(username):
     try:
         player = DBSession.query(Player).filter_by(username=username).one()
@@ -306,7 +382,10 @@ def get_all_game_info_for(player, location=''):
     game_info['player'] = get_player_info(player)
 
     if location:
-        game_info['current_hex'] = get_location_called(location)
+        loc = get_location_called(location)
+        if not loc:
+            return False
+        game_info['current_hex'] = loc
         game_info['currently_here'] = get_players_located_at(location)
         game_info['movable'] = can_move(game_info['current_hex'], game_info['player'].location)[0]
 
