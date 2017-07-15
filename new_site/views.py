@@ -208,9 +208,8 @@ def change_setting_view(request):
     elif 'new_value' not in request.params:
         request.session.flash("Enter a new value!")
     elif 'setting' in request.params:
-        password = request.params['password']
-        alter = change_setting(username=user, password=password, setting=request.params['setting'], new=request.params['new_value'])
+        alter = change_setting(username=user, password=request.params['password'], setting=request.params['setting'], new=request.params['new_value'])
         request.session.flash(alter)
-        return HTTPFound(location=return_to_sender(request), comment='{} changed successfully'.format(request.path_info))
+        return HTTPFound(location=return_to_sender(request), comment='{} changed successfully'.format(request.params['setting']))
 
     return HTTPFound(location=return_to_sender(request))

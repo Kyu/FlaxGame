@@ -146,7 +146,7 @@ class GameViews(unittest.TestCase):
         self.assertIn('Player: test', info.text)
 
     def test_setting_change(self):
-        change = self.testapp.post('/modify/email', params={'password': 'test', 'new_value': 'test@test.test', 'setting': ''})
+        change = self.testapp.post('/settings/modify', params={'password': 'test', 'new_value': 'test@test.test', 'setting': 'email'})
         self.assertIn('email changed successfully', change.text)
 
     def test_logout(self):
