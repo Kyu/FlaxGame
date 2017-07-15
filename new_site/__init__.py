@@ -40,8 +40,8 @@ def main(global_config, **settings):
     config.add_route('hex_view', '/game/{name}')
     config.add_route('team_info', '/team/{team}')
     config.add_route('profile', '/profile')
-    config.add_route('levelup', '/settings/levelup/{name}')  # TODO settings
-    config.add_route('change_setting', '/modify/{setting}')
+    config.add_route('levelup', '/settings/levelup')
+    config.add_route('change_setting', '/settings/modify')
 
     config.add_route('attack_player', '/attack')
     config.add_route('move_to', 'goto')
