@@ -12,7 +12,8 @@ from pyramid.view import (
 
 from .security import (
     create_user,
-    verify_login
+    verify_login,
+    change_setting
 )
 
 from .game import (
@@ -20,7 +21,9 @@ from .game import (
     get_player_info,
     send_player_to,
     player_attack,
-    get_team_info
+    get_team_info,
+    level_up_player,
+    xp_for_level_up
 )
 
 
@@ -89,7 +92,7 @@ def login(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='logout')
+@view_config(route_name='logout')  # TODO Change this method to post
 def logout(request):
     headers = forget(request)
     url = request.route_url('home')
@@ -113,7 +116,7 @@ def hex_view(request):
             'movable': info['movable']}
 
 
-@view_config(route_name='move_to', renderer='templates/game.pt', permission='play', request_method='POST')
+@view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST', permission='play')
 def move_to(request):
     if 'position' in request.params:
         location = request.params['position']
@@ -123,7 +126,7 @@ def move_to(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='attack_player', renderer='templates/game.pt', permission='play', request_method='POST')
+@view_config(route_name='attack_player', renderer='templates/game.pt', request_method='POST', permission='play')
 def attack_player(request):
     if 'player_called' in request.params:
         attacker, defender = request.authenticated_userid, request.params['player_called']
@@ -146,6 +149,31 @@ def team_info(request):
 @view_config(route_name='profile', renderer='templates/profile.pt', permission='play')
 def profile_page(request):
     player = get_player_info(request.authenticated_userid)
-    if player:
-        return {'player': player}
+
+    return {'player': player, 'xp_need': xp_for_level_up(player)}
+
+
+@view_config(route_name='level_up', request_method='POST', permission='play')
+def level_up(request):
+    player = get_player_info(request.authenticated_userid)
+    if 'attribute' in request.params:
+        lvl_up = level_up_player(player, request.params['attribute'])
+        request.session.flash(lvl_up)
+
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='change_setting', request_method='POST', permission='play')
+def change_setting_view(request):
+    user= request.authenticated_userid
+    if 'password' not in request.params:
+        request.session.flash("Enter a password!")
+    elif 'new_value' not in request.params:
+        request.session.flash("Enter a new value!")
+    elif 'setting' in request.params:
+        password = request.params['password']
+        alter = change_setting(username=user, password=password, setting=request.params['setting'], new=request.params['new_value'])
+        request.session.flash(alter)
+        return HTTPFound(location=return_to_sender(request), comment='{} changed successfully'.format(request.path_info))
+
     return HTTPFound(location=return_to_sender(request))

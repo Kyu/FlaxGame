@@ -53,7 +53,7 @@ class Player(Base):
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
 
-    level = Column(Integer, default=0)
+    level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
     attack = Column(Integer, default=1)  # For better defense
     defense = Column(Integer, default=1)  # For better attack

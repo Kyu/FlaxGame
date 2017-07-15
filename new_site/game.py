@@ -15,6 +15,7 @@ from .models import (
 )
 
 log = logging.getLogger(__name__)
+# TODO organize these better
 
 
 def get_hexes():
@@ -134,7 +135,7 @@ def player_can_attack(attacker, defender):
         return "Your squad lacks heart! Raise your morale!"
     if not attacker.actions:
         return "You do not have enough actions!"
-    if not attacker.ammo >= attacker.troops:  # TODO start working on formulas
+    if not attacker.ammo >= attacker.troops:
         return "You do not have enough ammo"
     return True
 
@@ -260,6 +261,43 @@ def get_players_located_at(location):
         log.warning(msg)
         return
     return players_at
+
+
+def xp_for_level_up(player):
+    if type(player) is str:
+        player = get_player_info(player)
+
+    if player.level >= 10:
+        num = float('3.' + str(player.level))
+    else:
+        num = float('2.' + str(player.level))
+
+    xp_needed = (player.level ** num * 100 / player.level)
+
+    return xp_needed
+
+
+def level_up_player(player, attribute):
+    attributes = ['attack', 'defense', 'charisma', 'rallying', 'pathfinder', 'logistics']
+    if attribute not in attributes:
+        return "Invalid attribute"
+
+    if type(player) is str:
+        player = get_player_info(player)
+
+    current_lvl = getattr(player, attribute)
+    if current_lvl >= 10:
+        return "You've already maxed this out!"
+
+    xp_gone = xp_for_level_up(player)
+    if not player.experience >= xp_gone:
+        return "Not enough xp"
+
+    update_player_info(player, attribute, current_lvl+1)
+    update_player_info(player, 'level', player.level + 1)
+    update_player_info(player, 'experience', player.experience-xp_gone)
+
+    return "Leveled up {name}!".format(name=attribute)
 
 
 def get_all_game_info_for(player, location=''):

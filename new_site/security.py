@@ -1,6 +1,6 @@
 import transaction
-from datetime import datetime
 from random import randrange
+import logging
 
 import bcrypt
 
@@ -16,6 +16,7 @@ from .models import (
     DBSession,
 )
 
+log = logging.getLogger(__name__)
 teams = {'Black': '2.9', 'Red':'2.2', 'Blue': '9.9', 'Yellow': '9.2'}
 
 
@@ -77,6 +78,26 @@ def verify_login(username, password):
             print(type(e).__name__ + ': ' + str(e))
         usr['status'] = "Login Failed"
     return usr
+
+
+def change_setting(username, password, setting, new):
+    if not verify_login(username, password):
+        return "Invalid credentials!"
+
+    valid_settings = ['email', 'password']
+
+    if setting not in valid_settings:
+        return "Invalid setting!"
+
+    try:
+        with transaction.manager:
+            DBSession.query(User).filter_by(username=username).update({setting: new})
+        return "{} changed sucessfully!".format(setting)
+    except Exception as e:
+        msg = "{err} on change_setting(username={username}, password=****, setting='{setting}', new={new})".format(
+            err=str(type(e).__name__ + ': ' + str(e)), username=username, setting=setting, new=new)
+        log.warning(msg)
+        return "An error occurred"
 
 
 def groupfinder(userid, request):

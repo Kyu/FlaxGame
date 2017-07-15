@@ -145,6 +145,10 @@ class GameViews(unittest.TestCase):
         info = self.testapp.get('/profile')
         self.assertIn('Player: test', info.text)
 
+    def test_setting_change(self):
+        change = self.testapp.post('/modify/email', params={'password': 'test', 'new_value': 'test@test.test', 'setting': ''})
+        self.assertIn('email changed successfully', change.text)
+
     def test_logout(self):
         logout = self.testapp.post('/logout')
         self.assertIn('Logged out successfully', logout.text)
