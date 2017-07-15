@@ -37,5 +37,13 @@
         </tr>
     </ul>
 
+    <form action="${request.route_url('change_setting')}" method="post">
+        <input type="password" id="password" placeholder="Enter the new password"
+           name="new_value"/><br/>
+        <input type="password" id="password" placeholder="Enter old password"
+           name="password"/><br/>
+        <button type="submit" value="password" name="setting">Save Changes</button>
+    </form>
+
 </body>
 </html>

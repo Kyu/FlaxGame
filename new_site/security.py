@@ -88,7 +88,8 @@ def change_setting(username, password, setting, new):
 
     if setting not in valid_settings:
         return "Invalid setting!"
-
+    if setting == 'password':
+        new = hash_password(new)
     try:
         with transaction.manager:
             DBSession.query(User).filter_by(username=username).update({setting: new})
