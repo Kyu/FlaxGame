@@ -20,8 +20,6 @@
 </head>
 
 <body>
-    <!-- TODO chat -->
-
     <div id="wrapper">
 
         <div id="flash" tal:condition="request.session.peek_flash('info')">
@@ -47,31 +45,32 @@
                 </ul>
             </div>
 
+            <div>
+                <h3>Radio: </h3>
+                <div id="flash" tal:condition="request.session.peek_flash('radio')">
+                <span tal:omit-tag=""
+                    tal:repeat="message request.session.pop_flash('radio')">
+                    ${message}<br>
+                </span>
+                </div>
+                <div tal:condition="radio" class="radio">
 
-            <h3>Radio: </h3>
-            <div id="flash" tal:condition="request.session.peek_flash('radio')">
-            <span tal:omit-tag=""
-                tal:repeat="message request.session.pop_flash('radio')">
-                ${message}<br>
-            </span>
+                    <ul tal:repeat="message [m for m in radio]">
+                        <div class="message">
+                            <p class="message-text${' server-log' if message.author == 'Server' else None}">${message.author}: ${message.message}</p>
+                            <p class="message-timestamp">${message.timestamp}</p>
+                        </div>
+                    </ul>
+
+                    <ul tal:repeat="announcement [i for i in radio if i.team == 'all' and i.active]" class="announcement">
+                        <li>${announcement.author}: ${announcement.message}</li>
+                    </ul>
+                </div>
+                <form action="${request.route_url('send_message')}" method="post">
+                    <input type="text" name="message" placeholder="send your message here" maxlength="140"><br>
+                    <button>Send message!</button>
+                </form>
             </div>
-            <div tal:condition="radio" class="radio">
-
-                <ul tal:repeat="message [m for m in radio if m.team == player.team and m.active]">
-                    <div class="message">
-                        <p class="message-text">${message.author}: ${message.message}</p>
-                        <p class="message-timestamp">${message.timestamp}</p>
-                    </div>
-                </ul>
-
-                <ul tal:repeat="announcement [i for i in radio if i.team == 'all' and i.active]" class="announcement">
-                    <li>${announcement.author}: ${announcement.message}</li>
-                </ul>
-            </div>
-            <form action="${request.route_url('send_message')}" method="post">
-                <input type="text" name="message" placeholder="send your message here" maxlength="140"><br>
-                <button>Send message!</button>
-            </form>
         </div>
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">

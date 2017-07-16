@@ -90,7 +90,7 @@ class Radio(Base):
     __tablename__ = 'radio'
     id = Column(Integer, primary_key=True, autoincrement=True)
     author = Column(String(20))
-    message = Column(String(140))
+    message = Column(String(500))
     team = Column(String(20))
     timestamp = Column(DateTime, server_default=func.current_timestamp())
     active = Column(Boolean, default=1)

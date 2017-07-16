@@ -191,6 +191,7 @@ def player_attack(attacker, defender):
     fight1 = update_player_info(attacker.username, 'troops', attacker.troops - attacker_loss)
     fight2 = update_player_info(defender.username, 'troops', defender.troops - defender_loss)
 
+
     if status['result'] == 'win':
         update_player_info(defender.username, 'morale', defender.morale - 10)
     else:
@@ -206,31 +207,42 @@ def player_attack(attacker, defender):
     if status['result'] == 'win':
         msg = "You won! {defender} lost {d_loss} troops while you only lost {a_loss}. ".format(
                 defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
+        d_msg = "You were attacked by {attacker} and lost {d_loss} troops while they only lost {a_loss} troops.".format(
+            attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
         update_player_info(attacker.username, 'experience', attacker.experience + defender_loss)
         if status['draw']:
-            msg = msg + ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
-                         "the hearts of the enemy and they lose morale.")
+            msg += ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
+                    "the hearts of the enemy and they lose morale.")
+            d_msg += "Even though the losses were the same, your squad become discouraged at the lack of win and lose morale."
+
     else:
         msg = "You lost! {defender} only lost {d_loss} troops while you lost {a_loss}. ".format(
             defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
+        d_msg = "You were attacked by {attacker} and only lost {d_loss} troops while they lost {a_loss) troops.".format(
+            attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
         update_player_info(defender.username, 'experience', defender.experience + attacker_loss)
         if status['draw']:
             msg += "Even though losses are the same, your squad become discouraged at the lack of win and lose morale."
+            d_msg += ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
+                      "the hearts of the enemy and they lose morale.")
 
     attacker, defender = get_player_info(attacker.username), get_player_info(defender.username)
 
     if attacker.troops < 10 or attacker.morale < 10:
         msg += " You hurry back to the capital to regenerate."
+        d_msg += "Their losses are heavy and they rush back to the capital to regenerate"
         update_player_info(attacker.username, 'troops', 10)
         update_player_info(attacker.username, 'morale', 10)
         send_player_to(get_team_info(attacker.team)['capital'], attacker.username, force=True)
 
     if defender.troops < 10 or defender.morale < 10:
         msg += " The enemy rushes back to their capital to regenerate."
+        d_msg += "Your losses are great so and you hurry back to the capital to regenerate"
         update_player_info(defender.username, 'troops', 10)
         update_player_info(defender.username, 'morale', 10)
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
 
+    send_message(_from='', message=d_msg, to=defender.username)
     return msg
 
 
@@ -379,24 +391,34 @@ def level_up_player(player, attribute):
 
 def get_radio_for(player):
     player = get_player_info(player)
-    results = DBSession.query(Radio).filter(or_(Radio.team == player.team, Radio.team == 'all')).limit(50).all()
+    news_tag = "{name}_{id}".format(name=player.username, id=player.uid)
+    results = DBSession.query(Radio).filter(or_(Radio.team == player.team, Radio.team == 'all', Radio.team == news_tag)).filter(Radio.active).limit(50).all()
     if not results:
         return []
 
     return results
 
 
-def send_message(_from, message, broadcast=False):
-    player = get_player_info(_from)
+def send_message(_from, message, to='', broadcast_by=''):
     if not message:
         return "https://www.youtube.com/watch?v=u9Dg-g7t2l4"
-    if len(message) > 140:
+    if len(message) > 140 and not to and not broadcast_by:
         return "Your budget is not high enough to send this many words"
 
-    team = player.team if not broadcast else 'all'
+    if broadcast_by:
+        team = 'all'
+        author = broadcast_by
+    elif to:
+        player = get_player_info(to)
+        team = "{name}_{id}".format(name=player.username, id=player.uid)
+        author = 'Server'
+    else:
+        player = get_player_info(_from)
+        team = player.team
+        author = player.username
 
     with transaction.manager:
-        new_msg = Radio(author=player.username, message=message, team=team)
+        new_msg = Radio(author=author, message=message, team=team)
         DBSession.add(new_msg)
         transaction.commit()
 
