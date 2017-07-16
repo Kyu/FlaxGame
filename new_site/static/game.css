@@ -20,6 +20,10 @@ div#sidebar-left {
     font-weight: bold;
 }
 
+div#flash {
+    color: lawngreen;
+}
+
 div#sidebar-right {
     overflow: auto;
     overflow-x: hidden;

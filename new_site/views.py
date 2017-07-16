@@ -129,7 +129,7 @@ def move_to(request):
     if 'position' in request.params:
         location = request.params['position']
         movement = send_player_to(location, request.authenticated_userid)
-        request.session.flash(movement)
+        request.session.flash(movement, 'action')
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -139,7 +139,7 @@ def attack_player(request):
     if 'player_called' in request.params:
         attacker, defender = request.authenticated_userid, request.params['player_called']
         attack = player_attack(attacker=attacker, defender=defender)
-        request.session.flash(attack)
+        request.session.flash(attack, 'action')
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -147,7 +147,7 @@ def attack_player(request):
 @view_config(route_name='get_ammo', request_method='POST', permission='play')
 def increase_ammo(request):
     increase = give_player_ammo(request.authenticated_userid)
-    request.session.flash(increase)
+    request.session.flash(increase, 'action')
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -155,7 +155,7 @@ def increase_ammo(request):
 @view_config(route_name='recruit', request_method='POST', permission='play')
 def recruit(request):
     increase = increase_player_troops(request.authenticated_userid)
-    request.session.flash(increase)
+    request.session.flash(increase, 'action')
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -163,7 +163,7 @@ def recruit(request):
 @view_config(route_name='upgrade_industry', request_method='POST', permission='play')
 def increase_hex_industry(request):
     increase = upgrade_hex_for(request.authenticated_userid)
-    request.session.flash(increase)
+    request.session.flash(increase, 'action')
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -171,7 +171,7 @@ def increase_hex_industry(request):
 @view_config(route_name='upgrade_infrastructure', request_method='POST', permission='play')
 def increase_hex_infrastructure(request):
     increase = upgrade_infrastructure_for(request.authenticated_userid)
-    request.session.flash(increase)
+    request.session.flash(increase, 'action')
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -190,7 +190,7 @@ def team_info(request):
 def broadcast_message(request):
     if 'message' in request.params:
         msg = send_message(_from=request.authenticated_userid, message=request.params['message'])
-        request.session.flash(msg)
+        request.session.flash(msg, 'radio')
 
     return HTTPFound(location=return_to_sender(request))
 

@@ -24,9 +24,9 @@
 
     <div id="wrapper">
 
-        <div id="flash" tal:condition="request.session.peek_flash()">
+        <div id="flash" tal:condition="request.session.peek_flash('info')">
             <span tal:omit-tag=""
-                tal:repeat="message request.session.pop_flash()">
+                tal:repeat="message request.session.pop_flash('info')">
                 ${message}<br>
             </span>
         </div>
@@ -49,6 +49,12 @@
 
 
             <h3>Radio: </h3>
+            <div id="flash" tal:condition="request.session.peek_flash('radio')">
+            <span tal:omit-tag=""
+                tal:repeat="message request.session.pop_flash('radio')">
+                ${message}<br>
+            </span>
+            </div>
             <div tal:condition="radio" class="radio">
 
                 <ul tal:repeat="message [m for m in radio if m.team == player.team and m.active]">
@@ -69,6 +75,12 @@
         </div>
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">
+            <div id="flash" tal:condition="request.session.peek_flash('action')">
+            <span tal:omit-tag=""
+                tal:repeat="message request.session.pop_flash('action')">
+                ${message}<br>
+            </span>
+        </div>
             <div class="hex">
                 <h3>Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
 
