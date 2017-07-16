@@ -214,7 +214,7 @@ def level_up(request):
 
 @view_config(route_name='change_setting', request_method='POST', permission='play')
 def change_setting_view(request):
-    user= request.authenticated_userid
+    user = request.authenticated_userid
     if 'password' not in request.params:
         request.session.flash("Enter a password!")
     elif 'new_value' not in request.params:

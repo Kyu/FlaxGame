@@ -12,8 +12,6 @@
 </head>
 
 <body>
-    <h2>Settings, levelling and shit go here</h2>
-
     <p>Current Experience: ${player.experience}</p>
     <p>Experience needed for next level up: ${xp_need}</p>
 
