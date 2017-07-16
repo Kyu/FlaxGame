@@ -4,6 +4,18 @@ import string
 
 from pyramid import testing
 
+'''Keep getting warning, investigate:
+
+new_site/tests.py::GameViews::test_team_info
+  c:\users\gp\desktop\dev\firstsite\env\lib\site-packages\sqlalchemy\orm\scoping.py:106: SAWarning: At least one scoped session is already present.  configure() can not affect sessions that have already been created.
+    warn('At least one scoped session is already present. '
+
+-- Docs: http://doc.pytest.org/en/latest/warnings.html
+=================== 10 passed, **8** warnings in 26.07 seconds ====================
+..........
+Process finished with exit code 0
+'''
+
 
 def _initTestingDB():
     import transaction
@@ -107,11 +119,21 @@ class GameViews(unittest.TestCase):
         too_far_movement = self.move_to('9.9')
         self.assertIn('This location is not next to your current location', too_far_movement.text)
 
+        from .models import Player
+        old_location = self.session.query(Player).filter_by(username='test').one().location
+
         good_movement = self.move_to('3.2')
         self.assertIn("Successfully moved from 2.2 to 3.2", good_movement.text)
+        new_location = self.session.query(Player).filter_by(username='test').one().location
+
+        self.assertEqual(new_location, '3.2')
+        self.assertNotEqual(new_location, old_location)
 
         move_back = self.move_to('2.2')
         self.assertIn("Successfully moved from 3.2 to 2.2", move_back.text)
+
+        back = self.session.query(Player).filter_by(username='test').one().location
+        self.assertEqual(back, '2.2')
 
     def attack_player(self, player):
         self.testapp.post('/attack', params={'player_called': player})
@@ -119,6 +141,7 @@ class GameViews(unittest.TestCase):
         return home
 
     def test_attacking(self):
+        from .models import Player
         random_user = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
         nonexistent_attack = self.attack_player(random_user)
         self.assertIn("Player does not exist", nonexistent_attack.text)
@@ -126,8 +149,12 @@ class GameViews(unittest.TestCase):
         too_far_attack = self.attack_player('testin99')
         self.assertIn("You are not in the same location as this player!", too_far_attack.text)
 
+        current_troops = self.session.query(Player).filter_by(username='test').one().troops
         good_attack = self.attack_player('testdummy')
-        self.assertIn('lost', good_attack.text)  # This is too vague
+        self.assertIn('lost', good_attack.text)
+        new_troops = self.session.query(Player).filter_by(username='test').one().troops
+
+        self.assertLess(new_troops, current_troops)
 
     def test_team_info(self):
         bad_team = self.testapp.get('/team/winners')
@@ -144,8 +171,23 @@ class GameViews(unittest.TestCase):
         self.assertIn('Player: test', info.text)
 
     def test_setting_change(self):
+        from .models import User
+
+        old_email = self.session.query(User).filter_by(username='test').one().email
         change = self.testapp.post('/settings/modify', params={'password': 'test', 'new_value': 'test@test.test', 'setting': 'email'})
-        self.assertIn('email changed successfully', change.text) # check db for email change before and after
+        self.assertIn('email changed successfully', change.text)
+        new_email = self.session.query(User).filter_by(username='test').one().email
+
+        self.assertEqual(new_email, 'test@test.test')
+        self.assertNotEqual(old_email, new_email)
+
+    def delete_message(self, msg):
+        import transaction
+        from .models import Radio
+        msg = self.session.query(Radio).filter_by(message=msg).one()
+        with transaction.manager:
+            self.session.delete(msg)
+            transaction.commit()
 
     def test_send_message(self):
         random_text = ''.join(random.choice(string.ascii_lowercase) for i in range(50))

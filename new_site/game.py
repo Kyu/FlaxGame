@@ -191,7 +191,6 @@ def player_attack(attacker, defender):
     fight1 = update_player_info(attacker.username, 'troops', attacker.troops - attacker_loss)
     fight2 = update_player_info(defender.username, 'troops', defender.troops - defender_loss)
 
-
     if status['result'] == 'win':
         update_player_info(defender.username, 'morale', defender.morale - 10)
     else:
@@ -218,7 +217,7 @@ def player_attack(attacker, defender):
     else:
         msg = "You lost! {defender} only lost {d_loss} troops while you lost {a_loss}. ".format(
             defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
-        d_msg = "You were attacked by {attacker} and only lost {d_loss} troops while they lost {a_loss) troops.".format(
+        d_msg = "You were attacked by {attacker} and only lost {d_loss} troops while they lost {a_loss} troops.".format(
             attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
         update_player_info(defender.username, 'experience', defender.experience + attacker_loss)
         if status['draw']:
@@ -255,7 +254,7 @@ def send_player_to(location, player, force=False):
         if not movable[0]:
             return "You are cannot move to this location! {}".format(movable[1])
 
-        if not player_info.actions >=2:
+        if not player_info.actions >= 2:
             return "You do not have enough actions!"
 
         remove_actions_from(player, round(3/player_info.pathfinder))

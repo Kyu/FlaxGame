@@ -21,7 +21,12 @@
 
 <body>
     <div id="wrapper">
-
+        <div id="flash" tal:condition="not current_hex and request.session.peek_flash('action')">
+            <span tal:omit-tag=""
+                tal:repeat="message request.session.pop_flash('action')">
+                ${message}<br>
+            </span>
+        </div>
         <div id="flash" tal:condition="request.session.peek_flash('info')">
             <span tal:omit-tag=""
                 tal:repeat="message request.session.pop_flash('info')">
