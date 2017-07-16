@@ -27,7 +27,9 @@ from .game import (
     give_player_ammo,
     increase_player_troops,
     upgrade_hex_for,
-    upgrade_infrastructure_for
+    upgrade_infrastructure_for,
+    get_radio_for,
+    send_message
 )
 
 
@@ -107,7 +109,7 @@ def logout(request):
 def game(request):
     info = get_all_game_info_for(request.authenticated_userid)
     return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
-            'player': info['player'], 'current_hex': ''}
+            'player': info['player'], 'current_hex': '', 'radio': get_radio_for(request.authenticated_userid)}
 
 
 @view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
@@ -119,7 +121,7 @@ def hex_view(request):
 
     return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
             'current_hex': info['current_hex'], 'currently_here': info['currently_here'], 'player': info['player'],
-            'movable': info['movable']}
+            'movable': info['movable'], 'radio': get_radio_for(request.authenticated_userid)}
 
 
 @view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST', permission='play')
@@ -173,6 +175,7 @@ def increase_hex_infrastructure(request):
 
     return HTTPFound(location=return_to_sender(request))
 
+
 @view_config(route_name='team_info', renderer='templates/team.pt', permission='play')
 def team_info(request):
     team_name = request.matchdict['team']
@@ -181,6 +184,15 @@ def team_info(request):
         return {'team': info, 'player': get_player_info(request.authenticated_userid)}
     return HTTPFound(location=request.route_url('home'),
                      comment="Team not found: {team_name}".format(team_name=team_name))
+
+
+@view_config(route_name='send_message', request_method='POST', permission='play')
+def broadcast_message(request):
+    if 'message' in request.params:
+        msg = send_message(_from=request.authenticated_userid, message=request.params['message'])
+        request.session.flash(msg)
+
+    return HTTPFound(location=return_to_sender(request))
 
 
 @view_config(route_name='profile', renderer='templates/profile.pt', permission='play')

@@ -4,14 +4,19 @@ from random import randrange
 import transaction
 import logging
 
-from sqlalchemy import and_
+from sqlalchemy import (
+    and_,
+    or_
+)
+
 from sqlalchemy.orm.exc import NoResultFound
 
 from .models import (
     DBSession,
     Hex,
     Player,
-    Team
+    Team,
+    Radio
 )
 
 log = logging.getLogger(__name__)
@@ -83,8 +88,7 @@ def update_player_info(player, update, new):
 
 
 def remove_actions_from(player, actions):
-    if type(player) is not Player:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     if not player.actions >= actions:
         return False
@@ -93,8 +97,7 @@ def remove_actions_from(player, actions):
 
 
 def remove_ammo_from(player, amount):
-    if type(player) is not Player:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     if player.ammo < amount:
         return False
@@ -254,8 +257,7 @@ def send_player_to(location, player, force=False):
 
 
 def give_player_ammo(player, amount=0):
-    if type(player) is str:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     if not amount:
         increase = 100
@@ -274,8 +276,7 @@ def give_player_ammo(player, amount=0):
 
 
 def increase_player_troops(player, amount=0):
-    if type(player) is str:
-        player = get_player_info(player)
+    player = get_player_info(player)
     if not amount:
         increase = 10 * player.charisma
         location = get_location_called(player.location)
@@ -287,37 +288,39 @@ def increase_player_troops(player, amount=0):
         update_location_info(player.location, 'population', location.population - increase)
     else:
         increase = amount
-
+    remove_actions_from(player, 1)
     update_player_info(player, 'troops', player.troops + increase)
 
     return "Troops increased by {}".format(str(increase))
 
 
 def upgrade_hex_for(player):
-    if type(player) is str:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     if not player.actions >= 5:
         return "Not enough actions!"
     location = get_location_called(player.location)
     update_location_info(player.location, 'industry', location.industry + 1)
+    remove_actions_from(player, 5)
 
     return "Upgraded location!"
 
 
 def upgrade_infrastructure_for(player):
-    if type(player) is str:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     if not player.actions >= 5:
         return "Not enough actions!"
     location = get_location_called(player.location)
     update_location_info(player.location, 'infrastructure', location.infrastructure + 1)
+    remove_actions_from(player, 5)
 
     return "Upgraded infrastructure!"
 
 
 def get_player_info(username):
+    if type(username) is Player:
+        username = username.username
     try:
         player = DBSession.query(Player).filter_by(username=username).one()
     except NoResultFound as e:
@@ -340,8 +343,7 @@ def get_players_located_at(location):
 
 
 def xp_for_level_up(player):
-    if type(player) is str:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     if player.level >= 10:
         num = float('3.' + str(player.level))
@@ -358,8 +360,7 @@ def level_up_player(player, attribute):
     if attribute not in attributes:
         return "Invalid attribute"
 
-    if type(player) is str:
-        player = get_player_info(player)
+    player = get_player_info(player)
 
     current_lvl = getattr(player, attribute)
     if current_lvl >= 10:
@@ -374,6 +375,32 @@ def level_up_player(player, attribute):
     update_player_info(player, 'experience', player.experience-xp_gone)
 
     return "Leveled up {name}!".format(name=attribute)
+
+
+def get_radio_for(player):
+    player = get_player_info(player)
+    results = DBSession.query(Radio).filter(or_(Radio.team == player.team, Radio.team == 'all')).limit(50).all()
+    if not results:
+        return []
+
+    return results
+
+
+def send_message(_from, message, broadcast=False):
+    player = get_player_info(_from)
+    if not message:
+        return "https://www.youtube.com/watch?v=u9Dg-g7t2l4"
+    if len(message) > 140:
+        return "Your budget is not high enough to send this many words"
+
+    team = player.team if not broadcast else 'all'
+
+    with transaction.manager:
+        new_msg = Radio(author=player.username, message=message, team=team)
+        DBSession.add(new_msg)
+        transaction.commit()
+
+    return "Message sent successfully!"
 
 
 def get_all_game_info_for(player, location=''):

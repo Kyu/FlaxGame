@@ -51,6 +51,7 @@ def main(global_config, **settings):
     config.add_route('attack_player', '/attack')
     config.add_route('move_to', 'goto')
     config.add_route('level_up', '/levelup')
+    config.add_route('send_message', '/message')
 
     config.add_route('register', '/register')
     config.add_route('login', '/login')

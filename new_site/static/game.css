@@ -3,39 +3,77 @@
  */
 
 body {
-    padding-left:200px;
-    margin:0;
+    padding-left: 200px;
+    margin: 0;
 }
 
-div#sidebar {
-   position:fixed;
-   height:100%;
-   width:200px;
-   top:0;
-   left:0;
-   background:royalblue;
-   color:black;
-   font-weight: bold;
+div#sidebar-left {
+    overflow: auto;
+    overflow-x: hidden;
+    position:fixed;
+    height:100%;
+    width:200px;
+    top:0;
+    left:0;
+    background:royalblue;
+    color:black;
+    font-weight: bold;
 }
 
-div#sidebar a{
+div#sidebar-right {
+    overflow: auto;
+    overflow-x: hidden;
+    position:fixed;
+    height:100%;
+    width:200px;
+    top:0;
+    right:0;
+    background:royalblue;
+    color:black;
+    font-weight: bold;
+}
+.sidebar {
+    border: 10px black;
+}
+div.sidebar a{
     color: lawngreen;
 }
-div#sidebar button {
+div.sidebar button {
     background:darkseagreen;
 }
 
-div#sidebar ul {
-    list-style-type:none;
-    margin:0;
+div.sidebar ul {
+    list-style-type: none;
+    margin: 0;
     padding:0;
 }
 
 div#content {
-    width:100%;
-    height:800px;
+    width: 100%;
+    height: 800px;
 }
 
+.hex {
+    float: left !important;
+}
+
+/* TODO scrollbar is ugly */
+.radio {
+    border: 1px solid green;
+    overflow: auto;
+}
+p.message-text {
+    margin-bottom: 0;
+    word-wrap: break-word;
+}
+
+p.message-timestamp {
+    font-size: 60%;
+}
+
+.announcement {
+    color: red;
+}
 /*
 .top {
     position: absolute;

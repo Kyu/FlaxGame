@@ -31,7 +31,7 @@
             </span>
         </div>
 
-        <div id="sidebar">
+        <div id="sidebar-left" class="sidebar">
             <a href="${request.route_url('logout')}">Logout</a>
 
             <div>
@@ -47,7 +47,29 @@
                 </ul>
             </div>
 
-            <div tal:condition="current_hex" class="hex">
+
+            <h3>Radio: </h3>
+            <div tal:condition="radio" class="radio">
+
+                <ul tal:repeat="message [m for m in radio if m.team == player.team and m.active]">
+                    <div class="message">
+                        <p class="message-text">${message.author}: ${message.message}</p>
+                        <p class="message-timestamp">${message.timestamp}</p>
+                    </div>
+                </ul>
+
+                <ul tal:repeat="announcement [i for i in radio if i.team == 'all' and i.active]" class="announcement">
+                    <li>${announcement.author}: ${announcement.message}</li>
+                </ul>
+            </div>
+            <form action="${request.route_url('send_message')}" method="post">
+                <input type="text" name="message" placeholder="send your message here" maxlength="140"><br>
+                <button>Send message!</button>
+            </form>
+        </div>
+
+        <div tal:condition="current_hex" id="sidebar-right" class="sidebar">
+            <div class="hex">
                 <h3>Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
 
                 <ul tal:condition="current_hex.name != player.location">
@@ -91,17 +113,19 @@
                     </ul>
 
                 </div>
+
                 <form tal:condition="movable" action="${request.route_url('move_to')}" method="post">
                 <button name="position" value="${current_hex.name}">Move here!</button>
                 </form>
             </div>
+
         </div>
 
         <div id="content" class="container">
-            <table class="table table-responsive">
+            <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
-                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="hexes">
-                        <p class="${hex_row.controlled_by}controlled"><a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a></p>
+                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="hex col-md-1">
+                        <a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
                     </td>
                 </tr>
             </table>

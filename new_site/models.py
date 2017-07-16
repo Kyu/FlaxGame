@@ -46,7 +46,7 @@ class Player(Base):
     location = Column(String(20))
 
     is_active = Column(Boolean, default=True)
-    last_active = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    last_active = Column(DateTime, server_default=func.now(), onupdate=func.current_timestamp())
     is_new = Column(Boolean, default=True)
 
     actions = Column(Integer, default=10)
@@ -84,6 +84,16 @@ class Team(Base):
     __tablename__ = 'teams'
     name = Column(String(20), primary_key=True)
     capital = Column(String(20))
+
+
+class Radio(Base):
+    __tablename__ = 'radio'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    author = Column(String(20))
+    message = Column(String(140))
+    team = Column(String(20))
+    timestamp = Column(DateTime, server_default=func.current_timestamp())
+    active = Column(Boolean, default=1)
 
 
 # TODO `Deny` perms for banned people?

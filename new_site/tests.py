@@ -63,12 +63,10 @@ class GameViews(unittest.TestCase):
         login = self.testapp.post('/login', params={'username': 'test', 'password': 'test', 'login': ''}, status=302)
         self.assertIn("Logged in successfully", login.text)
 
-
     @classmethod
     def tearDownClass(cls):
         cls.remove_test_users()
-        from .models import DBSession
-        DBSession.remove()
+        cls.session.remove()
 
     @staticmethod
     def remove_test_users():
@@ -147,7 +145,13 @@ class GameViews(unittest.TestCase):
 
     def test_setting_change(self):
         change = self.testapp.post('/settings/modify', params={'password': 'test', 'new_value': 'test@test.test', 'setting': 'email'})
-        self.assertIn('email changed successfully', change.text)
+        self.assertIn('email changed successfully', change.text) # check db for email change before and after
+
+    def test_send_message(self):
+        random_text = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
+        self.testapp.post('/message', params={'message': random_text})
+        home = self.testapp.get('/game')
+        self.assertIn(random_text, home.text)
 
     def test_logout(self):
         logout = self.testapp.post('/logout')
