@@ -155,6 +155,5 @@ schedule.every(5).minutes.do(turn)
 
 print('\n')
 while True:
-    print("Turns starting.. \n\n")
     schedule.run_pending()
     time.sleep(5)
