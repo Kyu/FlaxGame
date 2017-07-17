@@ -70,7 +70,7 @@ class Hex(Base):
     name = Column(String(20), primary_key=True)
     x = Column(Integer)
     y = Column(Integer)
-    control = Column(String(20))
+    control = Column(String(20), default='None')
     red = Column(Integer)
     blue = Column(Integer)
     black = Column(Integer)
