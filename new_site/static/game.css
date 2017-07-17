@@ -83,6 +83,26 @@ p.message-timestamp {
 .server-log {
     color: white;
 }
+
+.redcontrol {
+    color: red;
+    font-weight: bold;
+}
+
+.blackcontrol {
+    color: black;
+    font-weight: bold;
+}
+
+.yellowcontrol {
+    color: #dede10;
+    font-weight: bold;
+}
+
+.bluecontrol {
+    color: blue;
+    font-weight: bold;
+}
 /*
 .top {
     position: absolute;
