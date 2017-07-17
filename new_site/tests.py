@@ -4,17 +4,18 @@ import string
 
 from pyramid import testing
 
-'''Keep getting warning, investigate:
+"""
+Keep getting warning, investigate:
 
 new_site/tests.py::GameViews::test_team_info
-  c:\users\gp\desktop\dev\firstsite\env\lib\site-packages\sqlalchemy\orm\scoping.py:106: SAWarning: At least one scoped session is already present.  configure() can not affect sessions that have already been created.
+  c:\ users\gp\desktop\dev\ firstsite\env\lib\site-packages\sqlalchemy\orm\scoping.py:106: SAWarning: At least one scoped session is already present.  configure() can not affect sessions that have already been created.
     warn('At least one scoped session is already present. '
 
 -- Docs: http://doc.pytest.org/en/latest/warnings.html
 =================== 10 passed, **8** warnings in 26.07 seconds ====================
 ..........
 Process finished with exit code 0
-'''
+"""
 
 
 def _initTestingDB():
