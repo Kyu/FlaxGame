@@ -19,7 +19,8 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'bcrypt',
-    'pymysql'
+    'pymysql',
+    'schedule'
 ]
 
 tests_require = [
