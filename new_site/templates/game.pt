@@ -76,6 +76,7 @@
                     <button>Send message!</button>
                 </form>
             </div>
+            <h3><a href="${request.static_url('new_site:static/guide.html')}">Unsure of how to play? Click here!</a></h3>
         </div>
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">
@@ -140,8 +141,8 @@
         <div id="content" class="container">
             <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
-                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="${hex_row.control+'control' if hex_row.control != 'None' else ''}col-md-1">
-                        <a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
+                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="col-md-1">
+                        <a class="${hex_row.control.lower()+'control' if hex_row.control != 'None' else ''}" href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
                     </td>
                 </tr>
             </table>
