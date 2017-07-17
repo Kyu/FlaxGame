@@ -168,6 +168,11 @@ def player_attack(attacker, defender):
     attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale) + (randrange(11, 20)/10))
     defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale) + (randrange(11, 20)/10))
 
+    if attacker.ammo < attacker.troops:
+        attacker_strength = attacker_strength * (attacker.ammo / attacker.troops)
+    if defender.ammo < defender.troops:
+        defender_strength = defender_strength * (defender.ammo / defender.troops)
+
     if attacker_strength > defender_strength:
         attacker_loss = round(defender_strength)
         defender_loss = round(attacker_strength)
@@ -240,6 +245,11 @@ def player_attack(attacker, defender):
         update_player_info(defender.username, 'troops', 10)
         update_player_info(defender.username, 'morale', 10)
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
+
+    if attacker.ammo < 0:
+        update_player_info(attacker.username, 'ammo', 0)
+    if defender.ammo < 0:
+        update_player_info(defender.username, 'ammo', 0)
 
     send_message(_from='', message=d_msg, to=defender.username)
     return msg
@@ -344,7 +354,7 @@ def get_player_info(username):
 
 def get_players_located_at(location):
     try:
-        players_at = DBSession.query(Player).filter_by(location=location).all()
+        players_at = DBSession.query(Player).filter(Player.is_active).filter_by(location=location).all()
     except NoResultFound as e:
         msg = "{err} on get_players_located_at(location={location})".format(err=str(type(e).__name__ + ': ' + str(e)),
                                                                             location=location)
