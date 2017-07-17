@@ -151,9 +151,10 @@ def turn():
     end = datetime.now()
     print("Turn ran successfully, took {}\n".format(end-start))
 
-schedule.every(10).minutes.do(turn)
+schedule.every(5).minutes.do(turn)
 
 print('\n')
 while True:
+    print("Turns starting.. \n\n")
     schedule.run_pending()
     time.sleep(5)
