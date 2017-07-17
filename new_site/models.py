@@ -56,6 +56,7 @@ class Player(Base):
     # TODO development stat for upgrading?
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
+    management = Column(Integer, default=1)
     attack = Column(Integer, default=1)  # For better defense
     defense = Column(Integer, default=1)  # For better attack
     charisma = Column(Integer, default=1)  # For more troops gained per recruit

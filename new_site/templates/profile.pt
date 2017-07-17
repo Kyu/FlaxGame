@@ -26,7 +26,7 @@
 
     <ul>
         <tr>
-            <td tal:repeat="attribute [i for i in ['attack', 'defense', 'charisma', 'rallying', 'pathfinder', 'logistics']]">
+            <td tal:repeat="attribute [i for i in ['management', 'attack', 'defense', 'charisma', 'rallying', 'pathfinder', 'logistics']]">
 
             <form action="/levelup" method="post">
                 <button type="submit" value="${attribute}" name="attribute">Level Up ${attribute}</button> <p>Current Level: ${getattr(player, attribute)}</p>

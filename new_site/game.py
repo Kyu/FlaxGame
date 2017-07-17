@@ -305,6 +305,8 @@ def increase_player_troops(player, amount=0):
             return "Not enough actions!"
         if location.population < increase:
             return "Not enough people in location"
+        if player.troops + increase > player.management * 100:
+            return "You cannot manage more than {} troops!".format(player.management * 100)
 
         update_location_info(player.location, 'population', location.population - increase)
     else:
@@ -377,7 +379,7 @@ def xp_for_level_up(player):
 
 
 def level_up_player(player, attribute):
-    attributes = ['attack', 'defense', 'charisma', 'rallying', 'pathfinder', 'logistics']
+    attributes = ['management', 'attack', 'defense', 'charisma', 'rallying', 'pathfinder', 'logistics']
     if attribute not in attributes:
         return "Invalid attribute"
 
