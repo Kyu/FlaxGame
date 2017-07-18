@@ -12,7 +12,8 @@ from pyramid.paster import (
 from .models import (
     DBSession,
     Hex,
-    Base
+    Base,
+    Team
 )
 
 
@@ -51,6 +52,11 @@ def main(argv=sys.argv):
     with transaction.manager:
         for i in hex_objects:
             DBSession.add(i)
+        DBSession.add(Team(name='Black', capital='2.9'))
+        DBSession.add(Team(name='Blue', capital='9.9'))
+        DBSession.add(Team(name='Yellow', capital='9.2'))
+        DBSession.add(Team(name='Red', capital='2.2'))
+
         transaction.commit()
 
     ''''
