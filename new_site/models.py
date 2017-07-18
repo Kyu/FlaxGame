@@ -7,7 +7,10 @@ from sqlalchemy import (
     DateTime,
     Boolean,
 )
-from sqlalchemy.sql import func
+from sqlalchemy.sql import (
+    func,
+    expression
+)
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -28,26 +31,26 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = 'users'
     uid = Column(Integer, primary_key=True)
-    username = Column(String(20), unique=True)
-    email = Column(String(256), unique=True)
-    password = Column(String(256))
+    username = Column(String(20), unique=True, nullable=False)
+    email = Column(String(256), unique=True, nullable=False)
+    password = Column(String(256), nullable=False)
     created_at = Column(DateTime, server_default=func.now())
-    is_verified = Column(Boolean, default=False)
-    admin = Column(Boolean, default=False)
+    is_verified = Column(Boolean, server_default=expression.true())
+    admin = Column(Boolean, server_default=expression.true())
 
 
 class Player(Base):
     __tablename__ = 'players'
     uid = Column(Integer, primary_key=True)
-    username = Column(String(20), unique=True)
-    squad_type = Column(String(20))
-    team = Column(String(20))
+    username = Column(String(20), unique=True, nullable=False)
+    squad_type = Column(String(20), nullable=False)
+    team = Column(String(20), nullable=False)
     troops = Column(Integer, default=50)
-    location = Column(String(20))
+    location = Column(String(20), nullable=False)
 
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, server_default=expression.true())
     last_active = Column(DateTime, server_default=func.now(), onupdate=func.current_timestamp())
-    is_new = Column(Boolean, default=True)
+    is_new = Column(Boolean, server_default=expression.true())
 
     actions = Column(Integer, default=10)
     ammo = Column(Integer, default=200)
@@ -68,10 +71,10 @@ class Player(Base):
 class Hex(Base):
     __tablename__ = 'hexes'
     name = Column(String(20), primary_key=True)
-    x = Column(Integer)
-    y = Column(Integer)
-    type = Column(String(20), default='plains')
-    control = Column(String(20), default='None')
+    x = Column(Integer, nullable=False)
+    y = Column(Integer, nullable=False)
+    type = Column(String(20), server_default='plains')
+    control = Column(String(20), server_default='None')
     red = Column(Integer, default=0)
     blue = Column(Integer, default=0)
     black = Column(Integer, default=0)
@@ -84,18 +87,18 @@ class Hex(Base):
 
 class Team(Base):
     __tablename__ = 'teams'
-    name = Column(String(20), primary_key=True)
-    capital = Column(String(20))
+    name = Column(String(20), nullable=False, primary_key=True)
+    capital = Column(String(20), nullable=False)
 
 
 class Radio(Base):
     __tablename__ = 'radio'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    author = Column(String(20))
-    message = Column(String(500))
-    team = Column(String(20))
+    author = Column(String(20), nullable=False)
+    message = Column(String(500), nullable=False)
+    team = Column(String(20), nullable=False)
     timestamp = Column(DateTime, server_default=func.current_timestamp())
-    active = Column(Boolean, default=1)
+    active = Column(Boolean, server_default=expression.true())
 
 
 # TODO `Deny` perms for banned people?
