@@ -118,20 +118,22 @@ def can_move_to(player, locations):
     return visitable
 
 
-def can_move(to, _from):
-    currently_at = get_location_called(_from)
+def can_move(to, player):
+    currently_at = get_location_called(player.location)
     diff_is_one = (-1, 0, 1)
 
     if not currently_at:
-        msg = "Unexpected error on move_to(to={to}, _from={_from})".format(to=to, _from=_from)
+        msg = "Unexpected error on move_to(to={to}, player={player})".format(to=to, player=player.username)
         log.warning(msg)
         return False, ''
     if type(to) is str:
         to = get_location_called(to)
         if not to:
             return to, 'This location does not exist'
-    if _from == to.name:
+    if player.location == to.name:
         return False, 'The location you are trying to move to is the same location you are currently in'
+    if (to.control != 'None' and currently_at.control != 'None') and (to.control != player.team or currently_at.control != player.team):
+        return False, 'One of the locations you are moving to/from must be friendly'
     if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
         return True, ''
     return False, 'This location is not next to your current location'
@@ -259,7 +261,7 @@ def send_player_to(location, player, force=False):
     player_info = get_player_info(player)
     player_loc = player_info.location
 
-    movable = can_move(to=location, _from=player_loc)
+    movable = can_move(to=location, player=player_info)
     if not force:
         if not movable[0]:
             return "You are cannot move to this location! {}".format(movable[1])
@@ -447,6 +449,6 @@ def get_all_game_info_for(player, location=''):
             return False
         game_info['current_hex'] = loc
         game_info['currently_here'] = get_players_located_at(location)
-        game_info['movable'] = can_move(game_info['current_hex'], game_info['player'].location)[0]
+        game_info['movable'] = can_move(game_info['current_hex'], game_info['player'])[0]
 
     return game_info
