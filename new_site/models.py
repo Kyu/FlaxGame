@@ -70,15 +70,16 @@ class Hex(Base):
     name = Column(String(20), primary_key=True)
     x = Column(Integer)
     y = Column(Integer)
+    type = Column(String(20), default='plains')
     control = Column(String(20), default='None')
     red = Column(Integer, default=0)
     blue = Column(Integer, default=0)
     black = Column(Integer, default=0)
     yellow = Column(Integer, default=0)
-    ammo = Column(Integer, default=100)
-    population = Column(Integer, default=10)
-    industry = Column(Integer, default=10)
-    infrastructure = Column(Integer, default=5)
+    ammo = Column(Integer, default=50)
+    population = Column(Integer, default=30)
+    industry = Column(Integer, default=1)
+    infrastructure = Column(Integer, default=1)
 
 
 class Team(Base):

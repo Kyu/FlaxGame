@@ -105,7 +105,7 @@
                     <h4>Industry: ${current_hex.infrastructure}</h4>
                 </ul>
 
-                <ul tal:condition="current_hex.name == player.location">
+                <ul tal:condition="current_hex.name == player.location and (current_hex.control == 'None' or current_hex.control == player.team)">
                     <h4>Population: ${current_hex.population}</h4>
                     <form action="${request.route_url('recruit')}" method="post">
                         <button name="recruit">Recruit!</button>
@@ -150,7 +150,7 @@
         <div id="content" class="container">
             <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
-                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="col-md-1">
+                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="col-md-1 ${'location-' + hex_row.type}">
                         <a class="${hex_row.control.lower()+'control' if hex_row.control != 'None' else ''}" href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
                     </td>
                 </tr>
