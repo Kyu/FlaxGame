@@ -56,7 +56,7 @@ def create_user(username, email, password):
             return "This username or email already exists"
         except Exception as e:
             return "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
-    
+
     return "?????"
 
 
@@ -108,6 +108,8 @@ def groupfinder(userid, request):
         result.append("group:{}".format(team))
     except NoResultFound:
         pass
+        return
     except Exception as e:
         print(type(e).__name__ + ': ' + str(e))
+        return
     return result

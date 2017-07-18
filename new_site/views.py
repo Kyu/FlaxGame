@@ -48,7 +48,7 @@ def home(request):
     if request.authenticated_userid:
         return HTTPFound(request.route_url('game'))
 
-    resp = {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid}
+    resp = {'page_title': 'GAMENAMEHERE - DESCRIPTION'}
     return resp
 
 
