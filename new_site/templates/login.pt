@@ -13,28 +13,15 @@
       ga('send', 'pageview');
 
     </script>
-</head><!--
-<h1 class='login'>Login, fool</h1>
+</head>
 
-<span tal:replace="message"/>
-
-<form action="${request.route_url('login')}" method="post">
-    <label for="login">Username:</label>
-    <input type="text" id="login"
-           name="login"/><br/>
-    <label for="password">Password:</label>
-    <input type="password" id="password"
-           name="password"/><br/>
-    <input type="submit" name="form.submitted"
-           value="Log In"/>
-</form>
--->
 <body class='login'>
 <h1 class='login'>Login</h1>
 <div>
-<div id="flash" tal:condition="request.session.peek_flash()">
+
+<div id="flash" tal:condition="request.session.peek_flash('login')">
   <span tal:omit-tag="" 
-        tal:repeat="message request.session.pop_flash()">
+        tal:repeat="message request.session.pop_flash('login')">
       ${message}<br>
   </span>
 </div>
@@ -47,6 +34,12 @@
 </form>
 
 <h1>Register</h1>
+    <div id="flash" tal:condition="request.session.peek_flash('register')">
+  <span tal:omit-tag=""
+        tal:repeat="message request.session.pop_flash('register')">
+      ${message}<br>
+  </span>
+</div>
 <form action="${request.route_url('register')}" method="post">
     <input type="text" id="username" placeholder="username"
            name="username"/><br/>

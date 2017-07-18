@@ -59,18 +59,18 @@ def register(request):
 
     if 'register' in request.params:
         if 'username' not in request.params:
-            request.session.flash("No username defined")
+            message = request.session.flash("No username defined")
         elif 'password' not in request.params:
-            request.session.flash("Enter a password")
+            message = request.session.flash("Enter a password")
         elif 'email' not in request.params:
-            request.session.flash("Enter an email address")
+            message = request.session.flash("Enter an email address")
         else:
             username = request.params['username']
             password = request.params['password']
             email = request.params['email']
             if email and password and username:
-                created = create_user(username, email, password)
-                request.session.flash(created)
+                message = create_user(username, email, password)
+        request.session.flash(message, 'register')
 
     return HTTPFound(location=request.route_url('home'))
 
@@ -93,7 +93,7 @@ def login(request):
             else:
                 message = verified['status']
 
-        request.session.flash(message)
+        request.session.flash(message, 'login')
 
     return HTTPFound(location=return_to_sender(request))
 
