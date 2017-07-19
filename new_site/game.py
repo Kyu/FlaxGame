@@ -121,7 +121,7 @@ def can_move_to(player, locations):
 def can_move(to, player):
     currently_at = get_location_called(player.location)
     diff_is_one = (-1, 0, 1)
-
+    status = ''
     if not currently_at:
         msg = "Unexpected error on move_to(to={to}, player={player})".format(to=to, player=player.username)
         log.warning(msg)
@@ -134,8 +134,10 @@ def can_move(to, player):
         return False, 'The location you are trying to move to is the same location you are currently in'
     if (to.control != 'None' and currently_at.control != 'None') and (to.control != player.team or currently_at.control != player.team):
         return False, 'One of the locations you are moving to/from must be friendly'
+    if to.control != 'None' or to.control != player.team:
+        status = 'Enemy'
     if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
-        return True, ''
+        return True, status
     return False, 'This location is not next to your current location'
 
 
@@ -153,7 +155,7 @@ def player_can_attack(attacker, defender):
     if not attacker.actions:
         return "You do not have enough actions!"
     if not attacker.ammo >= attacker.troops:
-        return "You do not have enough ammo"
+        return "You do not have enough ammo" # TODO yea delet this
     return True
 
 
@@ -265,8 +267,10 @@ def send_player_to(location, player, force=False):
     if not force:
         if not movable[0]:
             return "You are cannot move to this location! {}".format(movable[1])
-
-        if not player_info.actions >= 2:
+        actions_needed = 2
+        if movable[1] == 'Enemy':
+            actions_needed = 5
+        if not player_info.actions >= actions_needed:
             return "You do not have enough actions!"
 
         remove_actions_from(player, round(3/player_info.pathfinder))
