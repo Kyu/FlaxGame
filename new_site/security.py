@@ -104,8 +104,12 @@ def change_setting(username, password, setting, new):
 def groupfinder(userid, request):
     result = []
     try:
-        team = DBSession.query(Player).filter_by(username=userid).one().team
-        result.append("group:{}".format(team))
+        player = DBSession.query(Player).filter_by(username=userid).one()
+        result.append("group:{}".format(player.team))
+        user = DBSession.query(User).filter_by(uid=player.uid).one()
+        if user.admin:
+            print(user.admin, type(user.admin))
+            result.append("group:Admin")
     except NoResultFound:
         pass
         return

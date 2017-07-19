@@ -1,0 +1,19 @@
+<html lang="en">
+<head>
+    <title>NewSite: ${name}</title>
+</head>
+
+<body>
+
+<div>
+<a href="${request.application_url}/logout">Logout</a>
+</div>
+
+
+<h1>Logged in as ${name}</h1>
+
+
+
+
+</body>
+</html>

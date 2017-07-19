@@ -34,9 +34,9 @@ class User(Base):
     username = Column(String(20), unique=True, nullable=False)
     email = Column(String(256), unique=True, nullable=False)
     password = Column(String(256), nullable=False)
-    created_at = Column(DateTime, server_default=func.now())
-    is_verified = Column(Boolean, server_default=expression.true())
-    admin = Column(Boolean, server_default=expression.true())
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    is_verified = Column(Boolean, nullable=False, server_default=expression.false())
+    admin = Column(Boolean, nullable=False, server_default=expression.false())
 
 
 class Player(Base):
@@ -107,7 +107,8 @@ class Root(object):
                (Allow, 'group:Black', 'play'),
                (Allow, 'group:Yellow', 'play'),
                (Allow, 'group:Red', 'play'),
-               (Allow, 'group:Blue', 'play')]
+               (Allow, 'group:Blue', 'play'),
+               (Allow, 'group:Admin', 'admin')]
 
     def __init__(self, request):
         pass

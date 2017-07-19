@@ -48,7 +48,7 @@ def home(request):
     if request.authenticated_userid:
         return HTTPFound(request.route_url('game'))
 
-    resp = {'page_title': 'GAMENAMEHERE - DESCRIPTION'}
+    resp = {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid}
     return resp
 
 
@@ -225,3 +225,9 @@ def change_setting_view(request):
         return HTTPFound(location=return_to_sender(request), comment='{} changed successfully'.format(request.params['setting']))
 
     return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='admin', renderer='templates/admin.pt', permission='admin')
+def admin_view(request):
+    resp = {'name': request.authenticated_userid}
+    return resp
