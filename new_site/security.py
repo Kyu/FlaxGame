@@ -108,7 +108,6 @@ def groupfinder(userid, request):
         result.append("group:{}".format(player.team))
         user = DBSession.query(User).filter_by(uid=player.uid).one()
         if user.admin:
-            print(user.admin, type(user.admin))
             result.append("group:Admin")
     except NoResultFound:
         pass
@@ -116,4 +115,5 @@ def groupfinder(userid, request):
     except Exception as e:
         print(type(e).__name__ + ': ' + str(e))
         return
+
     return result
