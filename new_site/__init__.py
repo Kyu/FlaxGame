@@ -36,6 +36,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     config.add_route('game', '/game')
+    config.add_route('test_view', '/test')
 
     config.add_route('hex_view', '/game/{name}')
     config.add_route('get_ammo', '/game/action/ammo')

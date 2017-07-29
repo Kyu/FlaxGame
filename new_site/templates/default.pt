@@ -1,8 +1,6 @@
-<div tal:condition="not request.authenticated_userid" metal:use-macro="load: login.pt"></div>
-<!--
-css from: https://bootsnipp.com/snippets/eoAlK 
-
-Make your own Login Form:
-https://www.w3schools.com/howto/howto_css_login_form.asp
--->
 <div tal:condition="request.authenticated_userid" metal:use-macro="load: game.pt"></div>
+
+<div tal:condition="not request.authenticated_userid" metal:use-macro="load: login.pt"></div>
+
+<div tal:condition="request.unauthenticated_userid">Error, please clear your coookies</div>
+

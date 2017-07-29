@@ -1,5 +1,7 @@
 from pyramid.httpexceptions import HTTPFound
 
+from pyramid.response import Response
+
 from pyramid.security import (
     remember, 
     forget
@@ -52,6 +54,10 @@ def home(request):
     return resp
 
 
+@view_config(route_name='test_view', renderer='templates/test.pt', permission='play')
+def test_view(request):
+    return {'page_title': 'Test View'}
+
 @view_config(route_name='register', request_method='POST')
 def register(request):
     if request.authenticated_userid:
@@ -102,7 +108,7 @@ def login(request):
 def logout(request):
     headers = forget(request)
     url = request.route_url('home')
-    return HTTPFound(location=url, comment="Logged out successfully", headers=headers)
+    return Response(json_body={'logged_out': True}, headers=headers)
 
 
 @view_config(route_name='game', renderer='templates/game.pt', permission='play')
