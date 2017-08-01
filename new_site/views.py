@@ -45,18 +45,22 @@ def return_to_sender(request):
 
 
 @view_config(route_name='home', renderer='templates/default.pt')
-@forbidden_view_config(renderer='templates/default.pt')
+@forbidden_view_config(renderer='templates/banned.pt')
 def home(request):
     if request.authenticated_userid:
-        return HTTPFound(request.route_url('game'))
+        if not get_player_info(request.authenticated_userid).banned:
+            return HTTPFound(request.route_url('game'))
+        else:
+            return {'name': request.authenticated_userid, 'banned': True}  # Time=x
 
     resp = {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid}
     return resp
 
 
-@view_config(route_name='test_view', renderer='templates/test.pt', permission='play')
+@view_config(route_name='test_view', renderer='templates/test.pt', permission='admin')
 def test_view(request):
     return {'page_title': 'Test View'}
+
 
 @view_config(route_name='register', request_method='POST')
 def register(request):
@@ -107,7 +111,7 @@ def login(request):
 @view_config(route_name='logout')  # TODO Change this method to post
 def logout(request):
     headers = forget(request)
-    url = request.route_url('home')
+    # url = request.route_url('home')
     return Response(json_body={'logged_out': True}, headers=headers)
 
 
@@ -115,7 +119,7 @@ def logout(request):
 def game(request):
     info = get_all_game_info_for(request.authenticated_userid)
     return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
-            'player': info['player'], 'current_hex': '', 'radio': get_radio_for(request.authenticated_userid)}
+            'player': info['player'], 'current_hex': '', 'radio': get_radio_for(request.authenticated_userid), 'banned': False}
 
 
 @view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
