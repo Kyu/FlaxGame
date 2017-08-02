@@ -51,12 +51,13 @@ div.sidebar ul {
 }
 
 div#content {
-    width: 100%;
+    width: 85%;
     height: 800px;
+    margin-left: 0 !important;
 }
 
 .hex {
-    float: left !important;
+
 }
 
 .radio {
