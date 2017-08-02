@@ -1,22 +1,13 @@
 from pyramid.httpexceptions import HTTPFound
-
 from pyramid.response import Response
-
 from pyramid.security import (
-    remember, 
+    remember,
     forget
 )
-
 from pyramid.view import (
     view_config,
     forbidden_view_config,
     notfound_view_config
-)
-
-from .security import (
-    create_user,
-    verify_login,
-    change_setting
 )
 
 from .game import (
@@ -33,6 +24,15 @@ from .game import (
     upgrade_infrastructure_for,
     get_radio_for,
     send_message
+)
+from .security import (
+    create_user,
+    verify_login,
+    change_setting
+)
+from .admin import (
+    ban_player,
+    unban_player
 )
 
 
@@ -251,3 +251,39 @@ def change_setting_view(request):
 def admin_view(request):
     resp = {'name': request.authenticated_userid}
     return resp
+
+
+@view_config(route_name='ban_player', request_method='POST', permission='admin')
+def ban_player_view(request):
+    banner = request.authenticated_userid
+    reason = request.params['reason']
+    username = request.params['username']
+
+    ban = ban_player(username, reason, banner)
+    request.session.flash(ban, 'ban_info')
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='unban_player', request_method='POST', permission='admin')
+def unban_player_view(request):
+    unb = unban_player(request.params['username'])
+    request.session.flash(unb, 'unban_info')
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='player_info', permission='admin')
+def player_info_view(request):
+    args = ['uid', 'username', 'squad_type', 'team', 'troops', 'location', 'last_active', 'actions', 'ammo', 'level',
+            'banned', 'banned_by', 'time_banned', 'reason_banned']
+    zeroes = 'actions, ammo', 'banned'
+    player = get_player_info(request.params['username'])
+    if not player:
+        pinfo = "Invalid player: {}".format(request.params['username'])
+        request.session.flash(pinfo, 'player_info')
+    else:
+        prep = ["{0}: {1}".format(arg, getattr(player, arg)) for arg in args if (getattr(player, arg) or (not getattr(player, arg) and arg in zeroes))]
+        pinfo = prep
+        for i in prep:
+            request.session.flash(i, 'player_info')
+
+    return HTTPFound(location=return_to_sender(request))

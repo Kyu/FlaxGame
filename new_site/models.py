@@ -57,6 +57,7 @@ class Player(Base):
     is_new = Column(Boolean, server_default=expression.true())
 
     banned = Column(Boolean, server_default=expression.false())
+    banned_by = Column(String(20))
     time_banned = Column(DateTime)
     reason_banned = Column(String(1000))
 

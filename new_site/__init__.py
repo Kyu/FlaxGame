@@ -59,5 +59,8 @@ def main(global_config, **settings):
     config.add_route('logout', '/logout')
 
     config.add_route('admin', '/admin')
+    config.add_route('ban_player', '/ban')
+    config.add_route('unban_player', '/unban')
+    config.add_route('player_info', '/pinfo')
     config.scan()
     return config.make_wsgi_app()

@@ -1,19 +1,60 @@
 <html lang="en">
 <head>
-    <title>NewSite: ${name}</title>
+    <title>Admin: ${name}</title>
 </head>
 
 <body>
 
-<div>
-<a href="${request.application_url}/logout">Logout</a>
+<!-- admin sessions should last 4 hours -->
+<div id="playerinfo">
+    <h2>View player Info</h2>
+    <form action="${request.route_url('player_info')}" method="post">
+        <input type="text"placeholder="Player username"
+           name="username"/><br/>
+        <button name="Ban">View Player info</button>
+    </form>
+    <div id="flash" tal:condition="request.session.peek_flash('player_info')">
+        <ul>
+            <li tal:repeat="info request.session.pop_flash('player_info')">
+                <p>${info}</p>
+            </li>
+        </ul>
+    </div>
 </div>
 
+<div id="ban">
+    <h2>Ban Player</h2>
+    <div id="flash" tal:condition="request.session.peek_flash('ban_info')">
+        <span tal:omit-tag=""
+            tal:repeat="info request.session.pop_flash('ban_info')">
+            ${info}<br>
+        </span>
+    </div>
+    <form action="${request.route_url('ban_player')}" method="post">
+        <input type="text"placeholder="Player username"
+           name="username"/><br/>
+        <input type="text" id="reason" placeholder="Reason for ban"
+           name="reason"/><br/>
+        <input type="text" placeholder="Length of ban (leave empty if permanent)"
+           name="length"/><br/>
+        <button name="Ban">Ban!</button>
+    </form>
+</div>
 
-<h1>Logged in as ${name}</h1>
-
-
-
+<div id="unban">
+    <h2>UnBan Player</h2>
+    <div id="flash" tal:condition="request.session.peek_flash('unban_info')">
+        <span tal:omit-tag=""
+            tal:repeat="info request.session.pop_flash('unban_info')">
+            ${info}<br>
+        </span>
+    </div>
+    <form action="${request.route_url('unban_player')}" method="post">
+        <input type="text"placeholder="Player username"
+           name="username"/><br/>
+        <button name="Ban">UnBan!</button>
+    </form>
+</div>
 
 </body>
 </html>
