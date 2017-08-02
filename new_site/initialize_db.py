@@ -35,7 +35,6 @@ def usage(argv):
 
 
 def main(argv=sys.argv):
-    # TODO: Figure this shit out
     if len(argv) != 2:
         usage(argv)
     config_uri = argv[1]

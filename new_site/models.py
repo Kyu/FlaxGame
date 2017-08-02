@@ -109,7 +109,6 @@ class Radio(Base):
     active = Column(Boolean, server_default=expression.true())
 
 
-# TODO `Deny` perms for banned people?
 class Root(object):
     __acl__ = [(Deny, 'group:Banned', 'play'),
                (Allow, Everyone, 'view'),

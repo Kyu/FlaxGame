@@ -101,7 +101,6 @@ def change_setting(username, password, setting, new):
         return "An error occurred"
 
 
-# TODO Find out why this func is called 4 times
 def groupfinder(userid, request):
     result = []
     try:
