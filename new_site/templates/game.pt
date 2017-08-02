@@ -41,7 +41,7 @@
         <div id="flash" tal:condition="request.session.peek_flash('info')">
             <span tal:omit-tag=""
                 tal:repeat="message request.session.pop_flash('info')">
-                ${message}<br>
+                <p>${message}</p><br>
             </span>
         </div>
 

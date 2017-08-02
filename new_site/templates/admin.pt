@@ -35,8 +35,8 @@
            name="username"/><br/>
         <input type="text" id="reason" placeholder="Reason for ban"
            name="reason"/><br/>
-        <input type="text" placeholder="Length of ban (leave empty if permanent)"
-           name="length"/><br/>
+        <input type="datetime-local"
+           name="until"/>Length of ban (keep blank for permanent)<br/>
         <button name="Ban">Ban!</button>
     </form>
 </div>

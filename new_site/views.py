@@ -258,8 +258,9 @@ def ban_player_view(request):
     banner = request.authenticated_userid
     reason = request.params['reason']
     username = request.params['username']
+    time = request.params['until']
 
-    ban = ban_player(username, reason, banner)
+    ban = ban_player(username, reason, banner, until=time)
     request.session.flash(ban, 'ban_info')
     return HTTPFound(location=return_to_sender(request))
 

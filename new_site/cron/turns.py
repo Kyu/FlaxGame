@@ -184,7 +184,9 @@ def deactivate_inactive_players():
 def unban_banned():
     now = datetime.now()
     with transaction.manager:
-        DBSession.query(Player).filter(Player.banned).filter(Player.time_banned).filter(now > Player.time_banned).update({Player.banned: False})
+        DBSession.query(Player).filter(Player.banned).filter(Player.time_banned)\
+            .filter(now > Player.time_banned).update\
+            ({Player.banned: False, Player.time_banned: None, Player.reason_banned: None, Player.banned_by: None})
         DBSession.commit()
 
 
