@@ -52,6 +52,9 @@ def create_session(argv=sys.argv):
     options = config['app:main']
     engine = engine_from_config(options, 'sqlalchemy.')
 
+    global turn_time
+    turn_time = int(options['turn_time'])
+
     # Loading Classes from tables.
     metadata = MetaData(engine)
 
@@ -77,20 +80,7 @@ def determine_hex_controllers():
 
     with transaction.manager:
         for l in DBSession.query(Hex).all():
-            hex_stats[l.name] = {'Blue': 0, 'Yellow': 0, 'Black': 0, 'Red': 0, 'None': 0.1}
-            blue = DBSession.query(Player).filter(Player.is_active).filter(Player.location == l.name).filter(
-                Player.team == 'Blue')
-            red = DBSession.query(Player).filter(Player.is_active).filter(Player.location == l.name).filter(
-                Player.team == 'Red')
-            yellow = DBSession.query(Player).filter(Player.is_active).filter(Player.location == l.name).filter(
-                Player.team == 'Yellow')
-            black = DBSession.query(Player).filter(Player.is_active).filter(Player.location == l.name).filter(
-                Player.team == 'Black')
-
-            hex_stats[l.name]['Blue'] = sum([b.troops for b in blue.all()])
-            hex_stats[l.name]['Yellow'] = sum([y.troops for y in yellow.all()])
-            hex_stats[l.name]['Red'] = sum([r.troops for r in red.all()])
-            hex_stats[l.name]['Black'] = sum([bl.troops for bl in black.all()])
+            hex_stats[l.name] = {'Blue': l.blue, 'Yellow': l.yellow, 'Black': l.black, 'Red': l.red, 'None': 0.1}
 
             control = \
                 [key for m in [max(hex_stats[l.name].values())] for key, val in hex_stats[l.name].items() if val == m]
@@ -142,6 +132,8 @@ def calc_hex_controls():
         yellow = DBSession.query(Player).filter(Player.is_active).filter(Player.location == l.name).filter(Player.team == 'Yellow')
         black = DBSession.query(Player).filter(Player.is_active).filter(Player.location == l.name).filter(Player.team == 'Black')
 
+        # Takes 3 seconds in all to compute
+        # Reason: `x.all()`
         hex_stats[l.name]['Blue'] = sum([b.troops for b in blue.all()])
         hex_stats[l.name]['Yellow'] = sum([y.troops for y in yellow.all()])
         hex_stats[l.name]['Red'] = sum([r.troops for r in red.all()])
@@ -157,7 +149,6 @@ def calc_hex_controls():
 
 
 def update_hex_control():
-    # TODO Resets ctrl back to none if no one present
     hexes = calc_hex_controls()
 
     with transaction.manager:
@@ -206,18 +197,20 @@ def increase_morale():
 def turn():
     start = datetime.now()
     print("Turn starting at {}".format(start))
+
     update_hex_control()
     update_hex_resources()
     deactivate_inactive_players()
     increase_actions()
     increase_morale()
+
     end = datetime.now()
     print("Turn ran successfully, took {}\n".format(end-start))
 
 
-schedule.every(10).minutes.do(turn)
+schedule.every(turn_time).seconds.do(turn)
 
 print('\nStarting..')
 while True:
     schedule.run_pending()
-    time.sleep(120)
+    time.sleep(turn_time/5)
