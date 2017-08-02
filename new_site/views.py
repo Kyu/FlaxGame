@@ -9,7 +9,8 @@ from pyramid.security import (
 
 from pyramid.view import (
     view_config,
-    forbidden_view_config
+    forbidden_view_config,
+    notfound_view_config
 )
 
 from .security import (
@@ -45,16 +46,25 @@ def return_to_sender(request):
 
 
 @view_config(route_name='home', renderer='templates/default.pt')
-@forbidden_view_config(renderer='templates/banned.pt')
 def home(request):
     if request.authenticated_userid:
-        if not get_player_info(request.authenticated_userid).banned:
-            return HTTPFound(request.route_url('game'))
-        else:
-            return {'name': request.authenticated_userid, 'banned': True}  # Time=x
+        return HTTPFound(request.route_url('game'))
 
     resp = {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid}
     return resp
+
+
+@forbidden_view_config(renderer='templates/403.pt')
+def view_forbidden(request):
+    if request.authenticated_userid:
+        player = get_player_info(request.authenticated_userid)
+        return {'player': player, 'banned': player.banned}
+    return {'player': {}}
+
+
+@notfound_view_config(renderer='templates/404.pt')
+def not_found(request):
+    return {}
 
 
 @view_config(route_name='test_view', renderer='templates/test.pt', permission='admin')

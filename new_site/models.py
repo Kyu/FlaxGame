@@ -1,4 +1,8 @@
-from pyramid.security import Allow, Everyone
+from pyramid.security import (
+    Allow,
+    Deny,
+    Everyone
+)
 
 from sqlalchemy import (
     Column,
@@ -52,6 +56,10 @@ class Player(Base):
     last_active = Column(DateTime, server_default=func.now(), onupdate=func.current_timestamp())
     is_new = Column(Boolean, server_default=expression.true())
 
+    banned = Column(Boolean, server_default=expression.false())
+    time_banned = Column(DateTime)
+    reason_banned = Column(String(1000))
+
     actions = Column(Integer, default=10)
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
@@ -103,12 +111,13 @@ class Radio(Base):
 
 # TODO `Deny` perms for banned people?
 class Root(object):
-    __acl__ = [(Allow, Everyone, 'view'),
+    __acl__ = [(Deny, 'group:Banned', 'play'),
+               (Allow, Everyone, 'view'),
                (Allow, 'group:Black', 'play'),
                (Allow, 'group:Yellow', 'play'),
                (Allow, 'group:Red', 'play'),
                (Allow, 'group:Blue', 'play'),
-               (Allow, 'group:Admin', 'admin')]
+               (Allow, 'group:Admin', 'admin'), ]
 
     def __init__(self, request):
         pass

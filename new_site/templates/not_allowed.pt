@@ -1,0 +1,13 @@
+<html lang="en" metal:define-macro="not_allowed">
+<head>
+    <title>You are not allowed to do this</title>
+</head>
+
+<body>
+<div>
+    <p>Yike. It seems that you're not allowed to view this page. If you think this is an error, contact an admin</p>
+    <p>Click <a href="${request.referrer}#">here to go back,</a> or click <a href="${request.route_url('home')}">here to go home</a></p>
+</div>
+</body>
+
+</html>

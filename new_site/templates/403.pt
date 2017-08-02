@@ -1,0 +1,3 @@
+<div tal:condition="player and player.banned" metal:use-macro="load: banned.pt"></div>
+
+<div tal:condition="not player or (player and not player.banned)" metal:use-macro="load: not_allowed.pt"></div>

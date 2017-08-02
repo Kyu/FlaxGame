@@ -101,10 +101,13 @@ def change_setting(username, password, setting, new):
         return "An error occurred"
 
 
+# TODO Find out why this func is called 4 times
 def groupfinder(userid, request):
     result = []
     try:
         player = DBSession.query(Player).filter_by(username=userid).one()
+        if player.banned:
+            result.append("group:Banned")
         result.append("group:{}".format(player.team))
         user = DBSession.query(User).filter_by(uid=player.uid).one()
         if user.admin:

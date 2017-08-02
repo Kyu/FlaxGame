@@ -1,0 +1,14 @@
+<html lang="en">
+<head>
+    <title>Four oh Four</title>
+</head>
+
+<body>
+<div>
+    <p>Wee woo Wee woo</p>
+    <p>You seem to have tried to visit a page that does not exist : ${request.path}</p>
+    <p>(As in, 404 page not found)</p>
+    <p>You can go back home by clicking <a href="${request.route_url('home')}">here.</a></p>
+</div>
+</body>
+</html>

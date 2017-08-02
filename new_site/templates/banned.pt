@@ -1,0 +1,27 @@
+<html lang="en" metal:define-macro="banned">
+<head>
+    <title>Banned</title>
+</head>
+
+<body>
+<?python
+        from datetime import datetime
+        perm = player.time_banned is None
+        if perm:
+            time = "Ban is permanent"
+        else:
+            diff = player.time_banned - datetime.now()
+            ts = datetime.utcfromtimestamp(diff.total_seconds())
+            time = "{days} Days, {times}".format(days=diff.days,
+                    times=ts.strftime("%H hours, %M minutes, %S seconds"))
+?>
+
+<div>
+    <h1>Hello, ${player.username}</h1>
+    <h2>You are Banned</h2>
+    <h3>Duration: ${time}</h3>
+    <h4>Reason: ${player.reason_banned}</h4>
+</div>
+
+</body>
+</html>
