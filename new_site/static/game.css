@@ -59,13 +59,21 @@ div#content {
     float: left !important;
 }
 
-/* TODO scrollbar is ugly */
 .radio {
     border: 1px solid green;
     overflow: auto;
     overflow-y: scroll;
     overflow-x: hidden;
     max-height: 500px;
+}
+
+/* TODO scrollbar is confusing */
+.radio::-webkit-scrollbar {
+    -webkit-box-shadow: black;
+
+    border: 1px solid black;
+    background-color: white;
+    width: 7px;
 }
 p.message-text {
     margin-bottom: 0;
