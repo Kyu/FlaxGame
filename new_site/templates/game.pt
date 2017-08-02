@@ -92,42 +92,36 @@
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">
             <div id="flash" tal:condition="request.session.peek_flash('action')">
-            <span tal:omit-tag=""
-                tal:repeat="message request.session.pop_flash('action')">
-                ${message}<br>
-            </span>
-        </div>
+                <span tal:omit-tag=""
+                    tal:repeat="message request.session.pop_flash('action')">
+                    ${message}<br>
+                </span>
+            </div>
             <div class="hex">
-                <h3>Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
-
-                <ul tal:condition="current_hex.name != player.location">
+                <?python
+                is_here = current_hex.name == player.location
+                friendly = is_here and (current_hex.control == 'None' or current_hex.control == player.team) ?>
+                <ul>
+                    <h3>Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
+                    <h3>Terrain: ${current_hex.type}</h3>
                     <h4>Population: ${current_hex.population}</h4>
-                    <h4>Availible ammo: ${current_hex.ammo}</h4>
-                    <h4>Industry: ${current_hex.industry}</h4>
-                    <h4>Industry: ${current_hex.infrastructure}</h4>
-                </ul>
-
-                <ul tal:condition="current_hex.name == player.location and (current_hex.control == 'None' or current_hex.control == player.team)">
-                    <h4>Population: ${current_hex.population}</h4>
-                    <form action="${request.route_url('recruit')}" method="post">
+                    <form tal:condition="friendly" action="${request.route_url('recruit')}" method="post">
                         <button name="recruit">Recruit!</button>
                     </form>
                     <h4>Availible ammo: ${current_hex.ammo}</h4>
-                    <form action="${request.route_url('get_ammo')}" method="post">
+                    <form tal:condition="friendly" action="${request.route_url('get_ammo')}" method="post">
                         <button name="take_ammo">Take Ammo!</button>
                     </form>
                     <h4>Industry: ${current_hex.industry}</h4>
-                    <form action="${request.route_url('upgrade_industry')}" method="post">
+                    <form tal:condition="friendly" action="${request.route_url('upgrade_industry')}" method="post">
                         <button name="industry">Upgrade!</button>
                     </form>
                     <h4>Industry: ${current_hex.infrastructure}</h4>
-                    <form action="${request.route_url('upgrade_infrastructure')}" method="post">
+                    <form tal:condition="friendly" action="${request.route_url('upgrade_infrastructure')}" method="post">
                         <button name="infrastructure">Upgrade!!</button>
                     </form>
+                    <h3 tal:condition="is_here">You are here!</h3>
                 </ul>
-
-                <h3 tal:condition="current_hex.name == player.location">You are here!</h3>
-
                 <?python
                         blue_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Blue']), 'team': 'Blue'}
                         red_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Red']), 'team': 'Red'}
