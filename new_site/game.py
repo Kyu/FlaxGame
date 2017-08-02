@@ -121,6 +121,7 @@ def can_move_to(player, locations):
 def can_move(to, player):
     currently_at = get_location_called(player.location)
     diff_is_one = (-1, 0, 1)
+    friendly = 'None', player.team
     status = ''
     if not currently_at:
         msg = "Unexpected error on move_to(to={to}, player={player})".format(to=to, player=player.username)
@@ -132,9 +133,9 @@ def can_move(to, player):
             return to, 'This location does not exist'
     if player.location == to.name:
         return False, 'The location you are trying to move to is the same location you are currently in'
-    if (to.control != 'None' and currently_at.control != 'None') and (to.control != player.team or currently_at.control != player.team):
+    if to.control not in friendly and currently_at.control not in friendly:
         return False, 'One of the locations you are moving to/from must be friendly'
-    if to.control != 'None' or to.control != player.team:
+    if to.control != 'None' and to.control != player.team:
         status = 'Enemy'
     if currently_at.x - to.x in diff_is_one and currently_at.y - to.y in diff_is_one:
         return True, status
@@ -270,7 +271,7 @@ def send_player_to(location, player, force=False):
         if not player_info.actions >= actions_needed:
             return "You do not have enough actions!"
 
-        remove_actions_from(player, round(3/player_info.pathfinder))
+        remove_actions_from(player, round(actions_needed/player_info.pathfinder))
 
     movement = update_player_info(player, 'location', location)
 
