@@ -128,12 +128,21 @@
 
                 <h3 tal:condition="current_hex.name == player.location">You are here!</h3>
 
+                <?python
+                        blue_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Blue']), 'team': 'Blue'}
+                        red_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Red']), 'team': 'Red'}
+                        yellow_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Yellow']), 'team': 'Yellow'}
+                        black_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Black']), 'team': 'Black'}
+
+                ?>
                 <div id="also-here" tal:condition="currently_here and [i for i in currently_here if i.username is not player.username]">
                     <h2>Currently here:</h2>
                     <ul class="sidebar-nav">
-                        <!-- TODO don't let players know who is in location unless team member  -->
-                        <li tal:repeat="here_info [i for i in currently_here if i.username != request.authenticated_userid]">
-                            <p>${here_info.username} who is a ${here_info.squad_type} for team <a href="/team/${here_info.team}">${here_info.team}</a> with ${here_info.troops} troops</p>
+                        <li tal:repeat="totals [i for i in (blue_total, red_total, yellow_total, black_total) if i['sum'] > 0]">
+                            <p>${totals['team']} Troops: ${totals['sum']}</p>
+                        </li>
+                        <li tal:repeat="here_info [i for i in currently_here if i.username != player.username]">
+                            <p tal:condition="here_info.team == player.team or current_hex.name == player.location">${here_info.username} who is a ${here_info.squad_type} for team <a href="/team/${here_info.team}">${here_info.team}</a> with ${here_info.troops} troops</p>
                             <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
                                 <button name="player_called" value="${here_info.username}">Attack!</button>
                              </form>

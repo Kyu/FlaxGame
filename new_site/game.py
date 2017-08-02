@@ -154,8 +154,6 @@ def player_can_attack(attacker, defender):
         return "Your squad lacks heart! Raise your morale!"
     if not attacker.actions:
         return "You do not have enough actions!"
-    if not attacker.ammo >= attacker.troops:
-        return "You do not have enough ammo" # TODO yea delet this
     return True
 
 
@@ -167,7 +165,6 @@ def player_attack(attacker, defender):
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
     #  Returns negative if morale < 1, error if 0
-    #  TODO include ammo count in forumla
 
     attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale) + (randrange(11, 20)/10))
     defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale) + (randrange(11, 20)/10))
