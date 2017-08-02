@@ -1,14 +1,12 @@
+import logging
 from math import sqrt, log10
 from random import randrange
 
 import transaction
-import logging
-
 from sqlalchemy import (
     and_,
     or_
 )
-
 from sqlalchemy.orm.exc import NoResultFound
 
 from .models import (
@@ -71,18 +69,18 @@ def get_team_info(team, get_all=None):
     return team
 
 
-def update_player_info(player, update, new):
+def update_player_info(player, updates=None):
     if type(player) is Player:
         username = player.username
     else:
         username = player
     try:
         with transaction.manager:
-            DBSession.query(Player).filter_by(username=username).update({update: new})
+            DBSession.query(Player).filter_by(username=username).update(updates)
         return True, 'success'
     except Exception as e:
-        msg = "{err} on update_player_info(player={username}, update='{update}', new={new})".format(
-            err=str(type(e).__name__ + ': ' + str(e)), username=username, update=update, new=new)
+        msg = "{err} on update_player_info(player={username}, updates={updates})".format(
+            err=str(type(e).__name__ + ': ' + str(e)), username=username, updates=updates)
         log.warning(msg)
         return False, type(e).__name__ + ': ' + str(e)
 
@@ -93,7 +91,7 @@ def remove_actions_from(player, actions):
     if not player.actions >= actions:
         return False
     else:
-        return update_player_info(player=player, update='actions', new=player.actions-actions)[0]
+        return update_player_info(player=player, updates={'actions': player.actions-actions})[0]
 
 
 def remove_ammo_from(player, amount):
@@ -102,7 +100,7 @@ def remove_ammo_from(player, amount):
     if player.ammo < amount:
         return False
 
-    return update_player_info(player=player, update='ammo', new=player.ammo-amount)[0]
+    return update_player_info(player=player, updates={'ammo': player.ammo-amount})[0]
 
 
 def can_move_to(player, locations):
@@ -110,7 +108,7 @@ def can_move_to(player, locations):
     currently_at = [i for i in locations if i.name == player.location][0]
 
     # if player.type is regular foot soldier
-    diff_is_one = (-1, 0 , 1)
+    diff_is_one = (-1, 0, 1)
     for i in locations:
         if currently_at.x - i.x in diff_is_one and currently_at.y - i.y in diff_is_one:
             visitable.append(i)
@@ -195,13 +193,13 @@ def player_attack(attacker, defender):
 
     remove_ammo_from(defender.username, defender.troops/defender.logistics)
 
-    fight1 = update_player_info(attacker.username, 'troops', attacker.troops - attacker_loss)
-    fight2 = update_player_info(defender.username, 'troops', defender.troops - defender_loss)
+    fight1 = update_player_info(attacker.username, updates={'troops': attacker.troops - attacker_loss})
+    fight2 = update_player_info(defender.username, updates={'troops': defender.troops - defender_loss})
 
     if status['result'] == 'win':
-        update_player_info(defender.username, 'morale', defender.morale - 10)
+        update_player_info(defender.username, updates={'morale': defender.morale - 10})
     else:
-        update_player_info(attacker.username, 'morale', attacker.morale - 10)
+        update_player_info(attacker.username, updates={'morale': attacker.morale - 10})
 
     if fight1[0] is not fight2[0]:
         log.warning("Weird ass error player_attack(attacker={attacker}, defender={defender})".format(
@@ -215,18 +213,19 @@ def player_attack(attacker, defender):
                 defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
         d_msg = "You were attacked by {attacker} and lost {d_loss} troops while they only lost {a_loss} troops.".format(
             attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
-        update_player_info(attacker.username, 'experience', attacker.experience + defender_loss)
+        update_player_info(attacker.username, updates={'experience': attacker.experience + defender_loss})
         if status['draw']:
             msg += ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
                     "the hearts of the enemy and they lose morale.")
-            d_msg += "Even though the losses were the same, your squad become discouraged at the lack of win and lose morale."
+            d_msg += ("Even though the losses were the same, your squad become discouraged "
+                      "at the lack of win and lose morale.")
 
     else:
         msg = "You lost! {defender} only lost {d_loss} troops while you lost {a_loss}. ".format(
             defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
         d_msg = "You were attacked by {attacker} and only lost {d_loss} troops while they lost {a_loss} troops.".format(
             attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
-        update_player_info(defender.username, 'experience', defender.experience + attacker_loss)
+        update_player_info(defender.username, updates={'experience': defender.experience + attacker_loss})
         if status['draw']:
             msg += "Even though losses are the same, your squad become discouraged at the lack of win and lose morale."
             d_msg += ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
@@ -237,21 +236,21 @@ def player_attack(attacker, defender):
     if attacker.troops < 10 or attacker.morale < 10:
         msg += " You hurry back to the capital to regenerate."
         d_msg += "Their losses are heavy and they rush back to the capital to regenerate"
-        update_player_info(attacker.username, 'troops', 10)
-        update_player_info(attacker.username, 'morale', 10)
+        update_player_info(attacker.username, updates={'troops': 10})
+        update_player_info(attacker.username, updates={'morale': 10})
         send_player_to(get_team_info(attacker.team)['capital'], attacker.username, force=True)
 
     if defender.troops < 10 or defender.morale < 10:
         msg += " The enemy rushes back to their capital to regenerate."
         d_msg += "Your losses are great so and you hurry back to the capital to regenerate"
-        update_player_info(defender.username, 'troops', 10)
-        update_player_info(defender.username, 'morale', 10)
+        update_player_info(defender.username, updates={'troops': 10})
+        update_player_info(defender.username, updates={'morale': 10})
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
 
     if attacker.ammo < 0:
-        update_player_info(attacker.username, 'ammo', 0)
+        update_player_info(attacker.username, updates={'ammo': 0})
     if defender.ammo < 0:
-        update_player_info(defender.username, 'ammo', 0)
+        update_player_info(defender.username, updates={'ammo': 0})
 
     send_message(_from='', message=d_msg, to=defender.username)
     return msg
@@ -273,7 +272,7 @@ def send_player_to(location, player, force=False):
 
         remove_actions_from(player, round(actions_needed/player_info.pathfinder))
 
-    movement = update_player_info(player, 'location', location)
+    movement = update_player_info(player, updates={'location': location})
 
     if movement[0]:
         return "Successfully moved from {player_loc} to {new_loc}!".format(player_loc=player_loc, new_loc=location)
@@ -295,7 +294,7 @@ def give_player_ammo(player, amount=0):
     else:
         increase = amount
 
-    update_player_info(player, 'ammo', player.ammo + increase)
+    update_player_info(player, updates={'ammo': player.ammo + increase})
 
     return "Ammo increased!"
 
@@ -316,7 +315,7 @@ def increase_player_troops(player, amount=0):
     else:
         increase = amount
     remove_actions_from(player, 1)
-    update_player_info(player, 'troops', player.troops + increase)
+    update_player_info(player, updates={'troops': player.troops + increase})
 
     return "Troops increased by {}".format(str(increase))
 
@@ -397,9 +396,9 @@ def level_up_player(player, attribute):
     if not player.experience >= xp_gone:
         return "Not enough xp"
 
-    update_player_info(player, attribute, current_lvl+1)
-    update_player_info(player, 'level', player.level + 1)
-    update_player_info(player, 'experience', player.experience-xp_gone)
+    update_player_info(player, updates={attribute: current_lvl+1})
+    update_player_info(player, updates={'level': player.level + 1})
+    update_player_info(player, updates={'experience': player.experience-xp_gone})
 
     return "Leveled up {name}!".format(name=attribute)
 
@@ -407,7 +406,9 @@ def level_up_player(player, attribute):
 def get_radio_for(player):
     player = get_player_info(player)
     news_tag = "{name}_{id}".format(name=player.username, id=player.uid)
-    results = DBSession.query(Radio).filter(or_(Radio.team == player.team, Radio.team == 'all', Radio.team == news_tag)).filter(Radio.active).limit(50).all()
+    results = DBSession.query(Radio)\
+        .filter(or_(Radio.team == player.team, Radio.team == 'all', Radio.team == news_tag))\
+        .filter(Radio.active).limit(50).all()
     if not results:
         return []
 
