@@ -1,4 +1,4 @@
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <title>Admin: ${name}</title>
 </head>
@@ -11,7 +11,7 @@
     <form action="${request.route_url('player_info')}" method="post">
         <input type="text"placeholder="Player username"
            name="username"/><br/>
-        <button name="Ban">View Player info</button>
+        <button name="submit">View Player info</button>
     </form>
     <div id="flash" tal:condition="request.session.peek_flash('player_info')">
         <ul>
@@ -62,12 +62,12 @@
         </span>
     </div>
     <form action="${request.route_url('ban_player')}" method="post">
-        <input type="text"placeholder="Player username"
+        <input type="text" placeholder="Player username"
            name="username"/><br/>
-        <input type="text" id="reason" placeholder="Reason for ban"
-           name="reason"/><br/>
         <input type="datetime-local"
            name="until"/>Length of ban (keep blank for permanent)<br/>
+        <textarea placeholder="Reason for ban" rows="7" cols="35"
+           name="reason"></textarea>
         <button name="Ban">Ban!</button>
     </form>
 </div>

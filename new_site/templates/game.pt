@@ -83,7 +83,7 @@
                     </ul>
                 </div>
                 <form action="${request.route_url('send_message')}" method="post">
-                    <input type="text" name="message" placeholder="send your message here" maxlength="140"><br>
+                    <textarea name="message" placeholder="Type your message here" maxlength="140"></textarea>
                     <button>Send message!</button>
                 </form>
             </div>
