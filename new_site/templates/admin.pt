@@ -6,7 +6,7 @@
 <body>
 
 <!-- TODO admin sessions should last 4 hours -->
-<div id="playerinfo">
+<div class="playerinfo">
     <h2>View player Info</h2>
     <form action="${request.route_url('player_info')}" method="post">
         <input type="text"placeholder="Player username"
@@ -23,7 +23,7 @@
 </div>
 
 <!-- TODO hide announcement -->
-<div id="announcement">
+<div class="announcement">
     <h2>Send Announcement</h2>
     <div id="flash" tal:condition="request.session.peek_flash('announcement_info')">
         <span tal:omit-tag=""
@@ -35,6 +35,21 @@
         <input type="text" placeholder="Enter Announcement"
            name="message"/><br/>
         <button name="Send">Send!</button>
+    </form>
+</div>
+
+<div class="hide-announcement">
+    <h2>Hide Announcement</h2>
+    <div id="flash" tal:condition="request.session.peek_flash('announcement_info2')">
+        <span tal:omit-tag=""
+            tal:repeat="info request.session.pop_flash('announcement_info2')">
+            ${info}<br>
+        </span>
+    </div>
+    <form action="${request.route_url('hide_broadcast')}" method="post">
+        <input type="number" placeholder="Enter Announcement ID"
+           name="id"/><br/>
+        <button name="Send">Hide!</button>
     </form>
 </div>
 
@@ -57,7 +72,7 @@
     </form>
 </div>
 
-<div id="unban">
+<div class="unban">
     <h2>UnBan Player</h2>
     <div id="flash" tal:condition="request.session.peek_flash('unban_info')">
         <span tal:omit-tag=""

@@ -79,7 +79,7 @@
                     </ul>
 
                     <ul tal:repeat="announcement [i for i in radio if i.team == 'all' and i.active]" class="announcement">
-                        <li>${announcement.author}: ${announcement.message}</li>
+                        <li><span tal:condition="user.admin">${announcement.id} -- </span> ${announcement.author}: ${announcement.message}</li>
                     </ul>
                 </div>
                 <form action="${request.route_url('send_message')}" method="post">
@@ -108,7 +108,7 @@
                     <form tal:condition="friendly" action="${request.route_url('recruit')}" method="post">
                         <button name="recruit">Recruit!</button>
                     </form>
-                    <h4>Availible ammo: ${current_hex.ammo}</h4>
+                    <h4>Available ammo: ${current_hex.ammo}</h4>
                     <form tal:condition="friendly" action="${request.route_url('get_ammo')}" method="post">
                         <button name="take_ammo">Take Ammo!</button>
                     </form>

@@ -10,6 +10,12 @@ from pyramid.view import (
     notfound_view_config
 )
 
+from .admin import (
+    ban_player,
+    unban_player,
+    get_user,
+    hide_announcement
+)
 from .game import (
     get_all_game_info_for,
     get_player_info,
@@ -29,10 +35,6 @@ from .security import (
     create_user,
     verify_login,
     change_setting
-)
-from .admin import (
-    ban_player,
-    unban_player
 )
 
 
@@ -127,21 +129,23 @@ def logout(request):
 
 @view_config(route_name='game', renderer='templates/game.pt', permission='play')
 def game(request):
-    info = get_all_game_info_for(request.authenticated_userid)
-    return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
-            'player': info['player'], 'current_hex': '', 'radio': get_radio_for(request.authenticated_userid), 'banned': False}
+    username = request.authenticated_userid
+    info = get_all_game_info_for(username)
+    return {'hexes': info['hexes'], 'player': info['player'], 'user': get_user(username), 'current_hex': '',
+            'radio': get_radio_for(username)}
 
 
 @view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
 def hex_view(request):
     hex_name = request.matchdict['name']
-    info = get_all_game_info_for(request.authenticated_userid, location=hex_name)
+    username = request.authenticated_userid
+    info = get_all_game_info_for(username, location=hex_name)
     if not info:
         return HTTPFound(location=request.route_url('home'))
 
-    return {'page_title': 'GAMENAMEHERE - DESCRIPTION', 'name': request.authenticated_userid, 'hexes': info['hexes'],
-            'current_hex': info['current_hex'], 'currently_here': info['currently_here'], 'player': info['player'],
-            'movable': info['movable'], 'radio': get_radio_for(request.authenticated_userid)}
+    return {'hexes': info['hexes'], 'current_hex': info['current_hex'], 'currently_here': info['currently_here'],
+            'player': info['player'], 'user': get_user(username), 'movable': info['movable'],
+            'radio': get_radio_for(username)}
 
 
 @view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST', permission='play')
@@ -296,4 +300,12 @@ def send_announcement_view(request):
     author = request.authenticated_userid
     sent = send_message(message=msg, broadcast_by=author)
     request.session.flash(sent, 'announcement_info')
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='hide_broadcast', request_method='POST', permission='admin')
+def hide_announcement_view(request):
+    id = request.params['id']
+    hide = hide_announcement(id)
+    request.session.flash(hide, 'announcement_info2')
     return HTTPFound(location=return_to_sender(request))

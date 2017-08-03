@@ -63,5 +63,6 @@ def main(global_config, **settings):
     config.add_route('unban_player', '/unban')
     config.add_route('player_info', '/pinfo')
     config.add_route('broadcast', '/broadcast')
+    config.add_route('hide_broadcast', '/hide_broadcast')
     config.scan()
     return config.make_wsgi_app()
