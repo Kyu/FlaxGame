@@ -169,6 +169,7 @@ def player_can_attack(attacker, defender):
     return True
 
 
+# You won! meme lost 2108 troops while you only lost 2. The enemy rushes back to their capital to regenerate. wew lad
 def player_attack(attacker, defender):
     can_attack = player_can_attack(attacker=attacker, defender=defender)
     if can_attack is not True:
@@ -272,24 +273,22 @@ def player_attack(attacker, defender):
 
     attacker, defender = get_player_info(attacker.username), get_player_info(defender.username)
 
+    if attacker.ammo < 0:
+        update_player_info(attacker.username, updates={'ammo': 0})
+    if defender.ammo < 0:
+        update_player_info(defender.username, updates={'ammo': 0})
+
     if attacker.troops < a_min or attacker.morale < 10:
         msg += " You drop everything and hurry back to the capital to regenerate."
         d_msg += "Their losses are heavy and they rush back to the capital to regenerate"
-        update_player_info(attacker.username, updates={'troops': a_min})
-        update_player_info(attacker.username, updates={'morale': 10})
+        update_player_info(attacker.username, updates={'troops': a_min, 'morale': 10, 'ammo': 0})
         send_player_to(get_team_info(attacker.team)['capital'], attacker.username, force=True)
 
     if defender.troops < d_min or defender.morale < 10:
         msg += " The enemy rushes back to their capital to regenerate."
         d_msg += "Your losses are great so and you drop everything hurry back to the capital to regenerate"
-        update_player_info(defender.username, updates={'troops': d_min})
-        update_player_info(defender.username, updates={'morale': 10})
+        update_player_info(defender.username, updates={'troops': a_min, 'morale': 10, 'ammo': 0})
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
-
-    if attacker.ammo < 0:
-        update_player_info(attacker.username, updates={'ammo': 0})
-    if defender.ammo < 0:
-        update_player_info(defender.username, updates={'ammo': 0})
 
     send_message(_from='', message=d_msg, to=defender.username)
     return msg
