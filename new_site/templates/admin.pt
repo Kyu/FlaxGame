@@ -5,7 +5,7 @@
 
 <body>
 
-<!-- admin sessions should last 4 hours -->
+<!-- TODO admin sessions should last 4 hours -->
 <div id="playerinfo">
     <h2>View player Info</h2>
     <form action="${request.route_url('player_info')}" method="post">
@@ -20,6 +20,22 @@
             </li>
         </ul>
     </div>
+</div>
+
+<!-- TODO hide announcement -->
+<div id="announcement">
+    <h2>Send Announcement</h2>
+    <div id="flash" tal:condition="request.session.peek_flash('announcement_info')">
+        <span tal:omit-tag=""
+            tal:repeat="info request.session.pop_flash('announcement_info')">
+            ${info}<br>
+        </span>
+    </div>
+    <form action="${request.route_url('broadcast')}" method="post">
+        <input type="text" placeholder="Enter Announcement"
+           name="message"/><br/>
+        <button name="Send">Send!</button>
+    </form>
 </div>
 
 <div id="ban">
@@ -50,7 +66,7 @@
         </span>
     </div>
     <form action="${request.route_url('unban_player')}" method="post">
-        <input type="text"placeholder="Player username"
+        <input type="text" placeholder="Player username"
            name="username"/><br/>
         <button name="Ban">UnBan!</button>
     </form>

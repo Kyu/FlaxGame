@@ -288,3 +288,12 @@ def player_info_view(request):
             request.session.flash(i, 'player_info')
 
     return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='broadcast', request_method='POST', permission='admin')
+def send_announcement_view(request):
+    msg = request.params['message']
+    author = request.authenticated_userid
+    sent = send_message(message=msg, broadcast_by=author)
+    request.session.flash(sent, 'announcement_info')
+    return HTTPFound(location=return_to_sender(request))

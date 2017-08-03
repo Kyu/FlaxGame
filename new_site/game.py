@@ -464,11 +464,14 @@ def get_radio_for(player):
     return results
 
 
-def send_message(_from, message, to='', broadcast_by=''):
+def send_message(message, _from='', to='', broadcast_by=''):
     if not message:
         return "https://www.youtube.com/watch?v=u9Dg-g7t2l4"
     if len(message) > 140 and not to and not broadcast_by:
         return "Your budget is not high enough to send this many words"
+
+    if not _from and not to and not broadcast_by:
+        return "No author specified"
 
     if broadcast_by:
         team = 'all'
