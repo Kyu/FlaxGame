@@ -1,22 +1,23 @@
-import sys
+import configparser
 import os
-
+import sys
+import time
 from datetime import (
     datetime,
     timedelta
 )
-import configparser
-import transaction
 
 import schedule
-import time
-
+import transaction
+from models import (
+    Player,
+    Hex
+)
 from sqlalchemy import (
     engine_from_config,
     MetaData,
     Table
 )
-
 from sqlalchemy.orm import (
     mapper,
     sessionmaker
@@ -29,16 +30,6 @@ def usage(argv):
     print('usage: %s <config_uri>\n'
           '(example: "%s ..\..\development.ini")' % (cmd, cmd))
     sys.exit(1)
-
-
-class Player:
-    # Empty class that will later represent `players` table
-    pass
-
-
-class Hex:
-    # Empty class that will later represent `hexes` table
-    pass
 
 
 def create_session(argv=sys.argv):
