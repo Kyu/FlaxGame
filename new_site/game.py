@@ -1,6 +1,12 @@
 import logging
-from math import sqrt, log10
-from random import randrange
+from math import (
+    sqrt,
+    log10
+)
+from random import (
+    randrange,
+    choice
+)
 
 import transaction
 from sqlalchemy import (
@@ -107,7 +113,6 @@ def can_move_to(player, locations):
     visitable = []
     currently_at = [i for i in locations if i.name == player.location][0]
 
-    # if player.type is regular foot soldier
     diff_is_one = (-1, 0, 1)
     for i in locations:
         if currently_at.x - i.x in diff_is_one and currently_at.y - i.y in diff_is_one:
@@ -131,7 +136,7 @@ def can_move(to, player):
             return to, 'This location does not exist'
     if player.location == to.name:
         return False, 'The location you are trying to move to is the same location you are currently in'
-    if to.control not in friendly and currently_at.control not in friendly:
+    if (to.control not in friendly and currently_at.control not in friendly) and player.squad_type != 'Tank':
         return False, 'One of the locations you are moving to/from must be friendly'
     if to.control != 'None' and to.control != player.team:
         status = 'Enemy'
@@ -147,8 +152,16 @@ def player_can_attack(attacker, defender):
         return "Player does not exist!"
     if attacker.team == defender.team:
         return "You cannot attack your teammate!"
-    if attacker.location != defender.location:
+    if attacker.location != defender.location and attacker.squad_type != 'Artillery':
         return "You are not in the same location as this player!"
+    if attacker.squad_type == 'Artillery':
+        to, _from = get_location_called(attacker.location), get_location_called(defender.location)
+        diffx = abs(to.x-_from.x)
+        diffy = abs(to.y-_from.y)
+        if not (diffx > 1 or diffy > 1):
+            return "Target is too close. You could get hit!"
+        if not (diffx < 6 or diffy < 6):
+            return "Target is too far away!"
     if attacker.morale < 10:
         return "Your squad lacks heart! Raise your morale!"
     if not attacker.actions:
@@ -168,30 +181,56 @@ def player_attack(attacker, defender):
     attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale) + (randrange(11, 20)/10))
     defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale) + (randrange(11, 20)/10))
 
-    if attacker.ammo < attacker.troops:
+    a_ammo_needed = attacker.troops//attacker.logistics  # 5
+    d_ammo_needed = defender.troops//defender.logistics
+
+    a_troops = attacker.troops  # 5
+    d_troops = defender.troops
+    a_min = 10
+    d_min = 10
+
+    a_multiplier = 1
+    d_multiplier = 1
+
+    if attacker.squad_type == 'Tank':
+        a_min = 1
+        a_multiplier = 10
+        attacker_strength *= choice((6, 7, 8, 9))
+        defender_strength /= choice((6, 7, 8, 9))
+        a_ammo_needed *= 100  # 500
+        a_troops *= 100  # 500
+    if defender.squad_type == 'Tank':
+        d_min = 1
+        d_multiplier = 10
+        defender_strength *= choice((6, 7, 8, 9))
+        attacker_strength /= choice((6, 7, 8, 9))
+        d_ammo_needed *= 100
+        d_troops *= 100
+
+    if a_ammo_needed > attacker.ammo:
         attacker_strength = attacker_strength * (attacker.ammo / attacker.troops)
-    if defender.ammo < defender.troops:
+    if d_ammo_needed > defender.ammo:
         defender_strength = defender_strength * (defender.ammo / defender.troops)
 
-    if attacker_strength > defender_strength:
+    if attacker_strength*a_multiplier > defender_strength*d_multiplier:
         attacker_loss = round(defender_strength)
         defender_loss = round(attacker_strength)
-        if attacker_loss == defender_loss:
+        if attacker_loss*a_multiplier == defender_loss*d_multiplier:
             status = dict(result='win', draw=True)
         else:
             status = dict(result='win', draw=False)
     else:
         attacker_loss = round(defender_strength)
         defender_loss = round(attacker_strength)
-        if attacker_loss == defender_loss:
+        if attacker_loss*a_multiplier == defender_loss*d_multiplier:
             status = dict(result='loss', draw=True)
         else:
             status = dict(result='loss', draw=False)
 
     remove_actions_from(attacker.username, 1)
-    remove_ammo_from(attacker.username, attacker.troops/attacker.logistics)
+    remove_ammo_from(attacker.username, a_ammo_needed)
 
-    remove_ammo_from(defender.username, defender.troops/defender.logistics)
+    remove_ammo_from(defender.username, d_ammo_needed)
 
     fight1 = update_player_info(attacker.username, updates={'troops': attacker.troops - attacker_loss})
     fight2 = update_player_info(defender.username, updates={'troops': defender.troops - defender_loss})
@@ -233,17 +272,17 @@ def player_attack(attacker, defender):
 
     attacker, defender = get_player_info(attacker.username), get_player_info(defender.username)
 
-    if attacker.troops < 10 or attacker.morale < 10:
-        msg += " You hurry back to the capital to regenerate."
+    if attacker.troops < a_min or attacker.morale < 10:
+        msg += " You drop everything and hurry back to the capital to regenerate."
         d_msg += "Their losses are heavy and they rush back to the capital to regenerate"
-        update_player_info(attacker.username, updates={'troops': 10})
+        update_player_info(attacker.username, updates={'troops': a_min})
         update_player_info(attacker.username, updates={'morale': 10})
         send_player_to(get_team_info(attacker.team)['capital'], attacker.username, force=True)
 
-    if defender.troops < 10 or defender.morale < 10:
+    if defender.troops < d_min or defender.morale < 10:
         msg += " The enemy rushes back to their capital to regenerate."
-        d_msg += "Your losses are great so and you hurry back to the capital to regenerate"
-        update_player_info(defender.username, updates={'troops': 10})
+        d_msg += "Your losses are great so and you drop everything hurry back to the capital to regenerate"
+        update_player_info(defender.username, updates={'troops': d_min})
         update_player_info(defender.username, updates={'morale': 10})
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
 
@@ -267,10 +306,14 @@ def send_player_to(location, player, force=False):
         actions_needed = 2
         if movable[1] == 'Enemy':
             actions_needed = 5
+        if player_info.type == 'Tank':
+            actions_needed *= 2
+
+        actions_needed //= player_info.pathfinder
         if not player_info.actions >= actions_needed:
             return "You do not have enough actions!"
 
-        remove_actions_from(player, round(actions_needed/player_info.pathfinder))
+        remove_actions_from(player, round(actions_needed))
 
     movement = update_player_info(player, updates={'location': location})
 
@@ -303,13 +346,17 @@ def increase_player_troops(player, amount=0):
     player = get_player_info(player)
     if not amount:
         increase = 10 * player.charisma
+        multiplier = 100
+        if player.squad_type == 'Tank':
+            increase //= 10
+            multiplier //= 10
         location = get_location_called(player.location)
         if not player.actions >= 1:
             return "Not enough actions!"
         if location.population < increase:
             return "Not enough people in location"
-        if player.troops + increase > player.management * 100:
-            return "You cannot manage more than {} troops!".format(player.management * 100)
+        if player.troops + increase > player.management * multiplier:
+            return "You cannot manage more than {} troops!".format(player.management * multiplier)
 
         update_location_info(player.location, 'population', location.population - increase)
     else:
@@ -395,6 +442,9 @@ def level_up_player(player, attribute):
     xp_gone = xp_for_level_up(player)
     if not player.experience >= xp_gone:
         return "Not enough xp"
+
+    if attribute == 'pathfinder' and player.squad_type == 'Tank':
+        return "Tanks can't upgrade this stat"
 
     update_player_info(player, updates={attribute: current_lvl+1})
     update_player_info(player, updates={'level': player.level + 1})

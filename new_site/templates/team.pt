@@ -31,6 +31,7 @@
                     <h3>Name: ${team_member.username}</h3>
                     <p>Location: <a href="${request.route_url('game')}/${team_member.location}">${team_member.location}</a></p>
                     <p>Troops: ${team_member.troops}</p>
+                    <p>Squad: ${team_member.squad_type}</p>
                 </td>
             </tr>
         </ul>
@@ -40,6 +41,7 @@
             <tr>
                 <td tal:repeat="team_member [i for i in team['active_members']]" class="hexes">
                     <h3>${team_member.username}</h3>
+                    <p>Squad: ${team_member.squad_type}</p>
                 </td>
             </tr>
         </ul>

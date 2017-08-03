@@ -1,14 +1,14 @@
-import transaction
-from random import randrange, choice
 import logging
+from random import (
+    randrange,
+    choice
+)
 
 import bcrypt
-
+import transaction
 from sqlalchemy import or_
-
-from sqlalchemy.orm.exc import NoResultFound
-
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import NoResultFound
 
 from .models import (
     Player,
@@ -18,7 +18,8 @@ from .models import (
 
 log = logging.getLogger(__name__)
 teams = {'Black': '2.9', 'Red': '2.2', 'Blue': '9.9', 'Yellow': '9.2'}
-squads = 'Infantry',
+squad_types = 'Infantry', 'Tank',  # 'Artillery'
+
 
 def hash_password(pw):
     return bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
@@ -40,14 +41,17 @@ def create_user(username, email, password):
         try:
             team = list(teams.keys())[randrange(0, 4)]
             location = teams[team]
-            squad = choice(squads)
+            squad = choice(squad_types)
+            troops = 50
+            if squad == 'Tank':
+                troops //= 10
             with transaction.manager:
                 new_user = User(username=username, email=email, password=hash_password(password))
                 DBSession.add(new_user)
                 transaction.commit()
                 # Location, team should be random
                 player_model = Player(uid=new_user.uid, username=new_user.username, team=team, squad_type=squad,
-                                      location=location)
+                                      location=location, troops=troops)
                 DBSession.add(player_model)
 
                 return "Account created Sucessfully"

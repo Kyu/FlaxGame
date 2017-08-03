@@ -54,8 +54,8 @@
                     <li><h4>Actions: ${player.actions}</h4></li>
                     <li><h4>Ammo: ${player.ammo}</h4></li>
                     <li><h4>Morale: ${player.morale}</h4></li>
-                    <li><h4></h4></li>
-                    <li><h4>Team: ${player.team}</h4></li>
+                    <li><h4>Squad: ${player.squad_type}</h4></li>
+                    <li><h4>Team: <a href="/team/${player.team}">${player.team}</a></h4></li>
                     <li><h4>Troops: ${player.troops}</h4></li>
                     <li><h4>Located at: <a href="${request.route_url('game')}/${player.location}">${player.location}</a></h4></li>
                 </ul>
