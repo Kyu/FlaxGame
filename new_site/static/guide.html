@@ -10,35 +10,59 @@
 
 <p>You're probably wondering what this is about.</p>
 
-<h3>Before I explain, here is some terminology.</h3>
+<h2>Goal of the game</h2>
 
-<p>Hex, Location: Each of those points on the map (1.1, 1.2, 1.3 etc)</p>
+<p>The goal of this game is to capture the entire map for your team.</p>
 
-<p>Team: Named after a color. This is used to identify who controls where.</p>
+<h2>Teams</h2>
+<p>When you register, you are randomly assigned a team. This team is named after a color.</p>
 
-<p>Turn: Every 10(currently at 5 for testing) minutes, a turn happens. In this turn, you get 1 action(max 10),
-your morale improves by 1( max 100), and for each hex, the ammo and population grows.</p>
+<p>Your team has a capital, and you are sent back there after you lose too many battles (i.e, you have <10 troops(varies))</p>
 
-<p>You'll need ammo to fight, and you can recruit 10 people from each hex, once the population is high enough. (This costs 1 action)</p>
+<h2>Locations</h2>
+<p>The map is defined by locations in decimal like form(1.1, 2.2, 10.10 etc), and you move from location to location and capture each one</p>
 
-<h4>Fights go like this:</h4>
+<p>To capture a location, you need to sit on it. Every turn, the amount of troops each team has on each hex is calculated</p>
+
+<p>The amount of points each team has is increased by number of team troops - number of enemy troops in the location</p>
+
+<p>Most locations have 1000 capturable points(Capitals have 3000)</p>
+
+<p>You don't need to have all 1000 points to capture the location, all you need is 1. To make it harder for enemies to recap, staying for all 1000 is recommended</p>
+
+<h3>Location Stats</h3>
+
+<p>To fight, you'll need troops and ammo.</p>
+
+<p>You can recruit and gather ammo from each location, though some locations increase population and ammo faster than others.</p>
+
+<p>To increase the increase in population per turn, upgrade the 'Infrastructure' stat of a location</p>
+
+<p>To increase the increase in ammo per turn, upgrade the 'Industry' stat of a location</p>
+
+<p>This costs 5 actions</p>
+
+<h2>Fights</h2>
+
+<p>To reduce the amount of troops an enemy player has(and amount of capturable points), you can attack them.</p>
+<p>Fights go like this:</p>
 
 <p>You attack a player, and based on your troop sizes and morale, a winner emerges. No fights are without loss. Attacking costs 1 action,
 defending costs none</p>
 
+<h2>Movement</h2>
 
-<h2>How do I win?</h2>
+<p>Some locations are friendly some are not. Friendly locations are those either uncaptured or captured by your team</p>
 
-<p>You and your team members try to take control of the entire board, one location at a time.</p>
+<p>Movement costs 2 actions between friendlies, 5 actions from Friendly -> Enemy or Enemy -> Friendly, and is impossible from Enemy -> Enemy</p>
 
-<p>You can move from location to location by clicking on a neighboring location and clicking "Move here" (This costs 3 actions)</p>
 
-<p>(You can only move to or from friendly locations to friendly locations)</p>
+<h2>Terminology</h2>
+<ol> <!-- TODO do that sub list thingy -->
+    <li>Turn: Every 10 minutes, a turn occurs. Actions and morale are increase, and location stats are increased. The hex capturing system kicks in.</li>
+    <li>Action: Actions allow you to do well, actions. Moving, attacking, upgrading, and collecting ammo or troops each cost different amounts of actions. The max amount of actions you can have is 10</li>
 
-<h4>How do I take control of an hex?</h4>
-
-<p>Hexes have a set amount of points that can be captured, max 1000. At the end of every turn, the team with the most members in a hex gain positive points in that hex, while the others lose points if they had any.</p>
-
+</ol>
 
 <p>More questions? Know css better than me? Find me on discord: Yu#5882</p>
 

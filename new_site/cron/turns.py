@@ -103,18 +103,26 @@ def fix_hex_stats():
         for l in DBSession.query(Hex).all():
             if l.yellow < 0:
                 l.yellow = 0
+            elif l.yellow > 3000 and l.type == 'Capital':
+                l.yellow = 3000
             elif l.yellow > 1000:
                 l.yellow = 1000
             if l.blue < 0:
                 l.blue = 0
+            elif l.blue > 3000 and l.type == 'Capital':
+                l.blue = 3000
             elif l.blue > 1000:
                 l.blue = 1000
             if l.red < 0:
                 l.red = 0
+            elif l.red > 3000 and l.type == 'Capital':
+                l.red = 3000
             elif l.red > 1000:
                 l.red = 1000
             if l.black < 0:
                 l.black = 0
+            elif l.black > 3000 and l.type == 'Capital':
+                l.black = 3000
             elif l.black > 1000:
                 l.black = 1000
         DBSession.commit()
@@ -221,6 +229,10 @@ def turn():
 schedule.every(turn_time).seconds.do(turn)
 schedule.every(turn_time/10).seconds.do(unban_banned)
 
+'''One team is found to control all of the hexes. Turns will stop for 24 hours.
+If this team still controls `All` the hexes after 24 hours, they will be declared the winners'''
+
+# True = some var that is false if ^
 print('\nStarting..')
 while True:
     schedule.run_pending()
