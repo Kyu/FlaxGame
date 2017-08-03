@@ -169,7 +169,8 @@ def player_can_attack(attacker, defender):
     return True
 
 
-# You won! meme lost 2108 troops while you only lost 2. The enemy rushes back to their capital to regenerate. wew lad
+# You won! meme lost 2108 troops while you only lost 2. The enemy rushes back to their capital to regenerate. Tank v Infantry
+# You won! meme lost 257 troops while you only lost 213. You drop everything and hurry back to the capital to regenerate. The enemy rushes back to their capital to regenerate. Tank v Tank
 def player_attack(attacker, defender):
     can_attack = player_can_attack(attacker=attacker, defender=defender)
     if can_attack is not True:
@@ -305,7 +306,7 @@ def send_player_to(location, player, force=False):
         actions_needed = 2
         if movable[1] == 'Enemy':
             actions_needed = 5
-        if player_info.type == 'Tank':
+        if player_info.squad_type == 'Tank':
             actions_needed *= 2
 
         actions_needed //= player_info.pathfinder
