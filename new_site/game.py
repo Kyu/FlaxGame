@@ -376,7 +376,7 @@ def upgrade_hex_for(player):
         return "Not enough actions!"
     location = get_location_called(player.location)
     update_location_info(player.location, 'industry', location.industry + 1)
-    remove_actions_from(player, 5)
+    remove_actions_from(player, 5//player.development)
 
     return "Upgraded location!"
 
@@ -388,7 +388,7 @@ def upgrade_infrastructure_for(player):
         return "Not enough actions!"
     location = get_location_called(player.location)
     update_location_info(player.location, 'infrastructure', location.infrastructure + 1)
-    remove_actions_from(player, 5)
+    remove_actions_from(player, 5//player.development)
 
     return "Upgraded infrastructure!"
 
@@ -441,7 +441,7 @@ def xp_for_level_up(player):
     else:
         num = float('2.' + str(player.level))
 
-    xp_needed = (player.level ** num * 100 / player.level)
+    xp_needed = (player.level ** num * 100 // player.level)
 
     return xp_needed
 

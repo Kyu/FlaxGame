@@ -62,7 +62,6 @@ class Player(Base):
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
 
-    # TODO development stat for upgrading?
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)
     management = Column(Integer, default=1)
@@ -72,6 +71,7 @@ class Player(Base):
     rallying = Column(Integer, default=1)  # For increasing morale
     pathfinder = Column(Integer, default=1)  # For the amount of action you use per movement
     logistics = Column(Integer, default=1)  # For less ammo used per attack
+    development = Column(Integer, default=1)  # For less actions used per upgrade
 
 
 class Hex(Base):
@@ -126,5 +126,3 @@ class Root(object):
 
     def __init__(self, request):
         pass
-
-# TODO: Add table for portraits next
