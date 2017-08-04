@@ -1,11 +1,8 @@
 /**
- * Created by GP on 7/29/2017.
+ * Created by P.O on 7/29/2017.
  * Filename: game.js
  */
 
-function reload() {
-    window.location = '/'
-}
 
 $(document).ready(function() {
     $("a#logout").click(function(event){
@@ -13,7 +10,7 @@ $(document).ready(function() {
           "/logout",
           {},
           function(data) {
-             reload()
+             window.location = '/'
           }
        );
        return false;
