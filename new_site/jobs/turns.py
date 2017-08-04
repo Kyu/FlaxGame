@@ -26,8 +26,8 @@ from .models import (
 
 def usage(argv):
     # If script run without arguments. Argument needs to point to config file that holds sqlalchemy options
-    print('usage: create_session(<config_uri>)\n'
-          '(example: "create_session(\'..\..\development.ini\')')
+    print('usage: start(<config_uri>)\n'
+          '(example: "start(\'..\..\development.ini\')')
     sys.exit(1)
 
 
