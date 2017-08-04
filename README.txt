@@ -12,6 +12,8 @@ Getting Started
 
     python3 -m venv env
 
+(Note for Windows Users: env/bin = env/Scripts)
+
 - Upgrade packaging tools.
 
     env/bin/pip install --upgrade pip setuptools
@@ -28,6 +30,10 @@ Getting Started
 
     env/bin/pytest
 
-- Run your project.
+- Enter the project environment
 
-    env/bin/pserve development.ini
+    source env/bin/activate
+
+- Run the project.
+
+    sh start.sh
