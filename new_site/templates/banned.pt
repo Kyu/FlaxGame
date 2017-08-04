@@ -1,6 +1,7 @@
 <html lang="en" metal:define-macro="banned">
 <head>
     <title>Banned</title>
+    <link rel="shortcut icon" href="${request.static_url('new_site:static/fav.png')}">
 </head>
 
 <body>

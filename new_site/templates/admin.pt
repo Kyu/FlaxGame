@@ -1,6 +1,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <title>Admin: ${name}</title>
+    <link rel="shortcut icon" href="${request.static_url('new_site:static/fav.png')}">
 </head>
 
 <body>
@@ -22,7 +23,6 @@
     </div>
 </div>
 
-<!-- TODO hide announcement -->
 <div class="announcement">
     <h2>Send Announcement</h2>
     <div id="flash" tal:condition="request.session.peek_flash('announcement_info')">

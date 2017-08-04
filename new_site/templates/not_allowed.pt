@@ -1,5 +1,6 @@
 <html lang="en" metal:define-macro="not_allowed">
 <head>
+    <link rel="shortcut icon" href="${request.static_url('new_site:static/fav.png')}">
     <title>You are not allowed to do this</title>
 </head>
 
