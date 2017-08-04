@@ -20,7 +20,8 @@ from .models import (
     Hex,
     Player,
     Team,
-    Radio
+    Radio,
+    Avatar
 )
 
 log = logging.getLogger(__name__)
@@ -169,6 +170,7 @@ def player_can_attack(attacker, defender):
     return True
 
 
+# TODO Fix this ASAP, add artillery
 # You won! meme lost 2108 troops while you only lost 2. The enemy rushes back to their capital to regenerate. Tank v Infantry
 # You won! meme lost 257 troops while you only lost 213. You drop everything and hurry back to the capital to regenerate. The enemy rushes back to their capital to regenerate. Tank v Tank
 def player_attack(attacker, defender):
@@ -402,6 +404,22 @@ def get_player_info(username):
         log.warning(msg)
         return
     return player
+
+
+def get_player_avatar(player, small=False):
+    avatar = DBSession.query(Avatar).filter(username=player.username).one()
+    path = avatar.path  # path = '_{username}/{username}'
+    if not path:
+        path = 'default/{team}/{num}'.format(team=player.team.lower(), num=avatar.default)
+
+    if small:
+        path += '-small'
+
+    return path
+
+
+def change_player_avatar(player, avatar):
+    pass
 
 
 def get_players_located_at(location):

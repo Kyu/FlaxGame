@@ -282,7 +282,7 @@ def unban_player_view(request):
 
 @view_config(route_name='player_info', permission='admin')
 def player_info_view(request):
-    args = ['uid', 'username', 'squad_type', 'team', 'troops', 'location', 'last_active', 'actions', 'ammo', 'level',
+    args = ['id', 'username', 'squad_type', 'team', 'troops', 'location', 'last_active', 'actions', 'ammo', 'level',
             'banned', 'banned_by', 'time_banned', 'reason_banned']
     zeroes = 'actions, ammo', 'banned'
     player = get_player_info(request.params['username'])

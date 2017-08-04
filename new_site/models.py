@@ -31,7 +31,7 @@ Base = declarative_base()
 
 class User(Base):
     __tablename__ = 'users'
-    uid = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True, nullable=False)
     email = Column(String(256), unique=True, nullable=False)
     password = Column(String(256), nullable=False)
@@ -42,7 +42,7 @@ class User(Base):
 
 class Player(Base):
     __tablename__ = 'players'
-    uid = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True, nullable=False)
     squad_type = Column(String(20), nullable=False)
     team = Column(String(20), nullable=False)
@@ -105,6 +105,13 @@ class Radio(Base):
     team = Column(String(20), nullable=False)
     timestamp = Column(DateTime, server_default=func.current_timestamp())
     active = Column(Boolean, server_default=expression.true())
+
+
+class Avatar(Base):
+    __tablename__ = 'avatars'
+    id = Column(Integer, primary_key=True)
+    path = Column(String(50))
+    default = Column(Integer, nullable=False)
 
 
 # Called when checking for permissions. Deny perms go first or are ignored.

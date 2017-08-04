@@ -13,6 +13,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from .models import (
     Player,
     User,
+    Avatar,
     DBSession,
 )
 
@@ -42,7 +43,6 @@ def create_user(username, email, password):
         return "Enter a password"
     else:
         try:
-            err = ''
             team = list(teams.keys())[randrange(0, 4)]
             location = teams[team]
             squad = choice(squad_types)
@@ -53,22 +53,24 @@ def create_user(username, email, password):
                 new_user = User(username=username, email=email, password=hash_password(password))
                 DBSession.add(new_user)
                 transaction.commit()
-                player_model = Player(uid=new_user.uid, username=new_user.username, team=team, squad_type=squad,
+                player_model = Player(id=new_user.id, username=new_user.username, team=team, squad_type=squad,
                                       location=location, troops=troops)
-                DBSession.add(player_model)
+                avatar = Avatar(id=new_user.id, default=randrange(0, 3))
+                DBSession.add_all([player_model, avatar])
 
-                return "Account created Sucessfully"
+                return "Account created Successfully"
         except transaction.interfaces.TransactionFailedError as e:
             err = type(e).__name__ + ': ' + str(e)
         except IntegrityError:
             return "This username or email already exists"
         except Exception as e:
             err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
-    if err:
-        msg = "{err} on verify_login(username={username}, email={email}, password=****)" \
-            .format(err=err, username=username, email=email)
-        log.warning(msg)
-    return "?????"
+
+    msg = "{err} on verify_login(username={username}, email={email}, password=****)" \
+        .format(err=err, username=username, email=email)
+    log.warning(msg)
+
+    return err
 
 
 def verify_login(username, password):
@@ -124,7 +126,7 @@ def groupfinder(userid, request):
         if player.banned:
             result.append("group:Banned")
         result.append("group:{}".format(player.team))
-        user = DBSession.query(User).filter_by(uid=player.uid).one()
+        user = DBSession.query(User).filter_by(id=player.id).one()
         if user.admin:
             result.append("group:Admin")
     except NoResultFound:

@@ -78,9 +78,9 @@ def main(argv=sys.argv):
             created_at=datetime.utcnow())
         DBSession.add(user_model)
         transaction.commit()
-        player_model = Player(uid=user_model.uid, username=user_model.username, squad_type="Captain",
+        player_model = Player(id=user_model.id, username=user_model.username, squad_type="Captain",
             team='Black', experience=1, level=1, troops=50, location=2.2, last_active=datetime.utcnow())
-        print(player_model.uid)
+        print(player_model.id)
         DBSession.add(player_model)
     '''
 
