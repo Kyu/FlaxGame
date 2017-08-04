@@ -473,7 +473,7 @@ def level_up_player(player, attribute):
 
 def get_radio_for(player):
     player = get_player_info(player)
-    news_tag = "{name}_{id}".format(name=player.username, id=player.uid)
+    news_tag = "{name}_{id}".format(name=player.username, id=player.id)
     results = DBSession.query(Radio)\
         .filter(or_(Radio.team == player.team, Radio.team == 'all', Radio.team == news_tag))\
         .filter(Radio.active).limit(50).all()
@@ -497,7 +497,7 @@ def send_message(message, _from='', to='', broadcast_by=''):
         author = broadcast_by
     elif to:
         player = get_player_info(to)
-        team = "{name}_{id}".format(name=player.username, id=player.uid)
+        team = "{name}_{id}".format(name=player.username, id=player.id)
         author = 'Server'
     else:
         player = get_player_info(_from)
