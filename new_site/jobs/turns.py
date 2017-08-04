@@ -1,5 +1,4 @@
 import configparser
-import os
 import sys
 import time
 from datetime import (
@@ -9,10 +8,6 @@ from datetime import (
 
 import schedule
 import transaction
-from models import (
-    Player,
-    Hex
-)
 from sqlalchemy import (
     engine_from_config,
     MetaData,
@@ -23,21 +18,25 @@ from sqlalchemy.orm import (
     sessionmaker
 )
 
+from .models import (
+    Player,
+    Hex
+)
+
 
 def usage(argv):
     # If script run without arguments. Argument needs to point to config file that holds sqlalchemy options
-    cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri>\n'
-          '(example: "%s ..\..\development.ini")' % (cmd, cmd))
+    print('usage: create_session(<config_uri>)\n'
+          '(example: "create_session(\'..\..\development.ini\')')
     sys.exit(1)
 
 
-def create_session(argv=sys.argv):
-    if len(argv) != 2:
-        usage(argv)
+def create_session(path):
+    if not path:
+        usage(path)
 
     # Getting settings from file specified.
-    config_uri = argv[1]
+    config_uri = path
     config = configparser.ConfigParser()
     config.read(config_uri)
     options = config['app:main']
@@ -60,19 +59,17 @@ def create_session(argv=sys.argv):
     session = _session()
     return session
 
-# The DBSession
-DBSession = create_session()
-
-
-# TODO D-R-Y
 
 def determine_hex_controllers():
     hex_stats = dict()
 
+    # Find who has the most points in each location, add team as controller.
     with transaction.manager:
         for l in DBSession.query(Hex).all():
             hex_stats[l.name] = {'Blue': l.blue, 'Yellow': l.yellow, 'Black': l.black, 'Red': l.red, 'None': 0.1}
 
+            # I honestly don't how this does it, but it works and that's the important part
+            # Returns the team(s) with the most points in a location
             control = \
                 [key for m in [max(hex_stats[l.name].values())] for key, val in hex_stats[l.name].items() if val == m]
 
@@ -82,6 +79,7 @@ def determine_hex_controllers():
             else:
                 hex_stats[l.name]['control'] = control[0]
 
+        # Update controller
         for loc, ctrl in hex_stats.items():
             DBSession.query(Hex).filter(Hex.name == loc).update({Hex.control: ctrl['control']})
 
@@ -89,6 +87,9 @@ def determine_hex_controllers():
 
 
 def fix_hex_stats():
+    # TODO Find a way to do this with SQL
+    # Reverse over and underflow for locations
+    # Plains, City max - 1000, Capital max - 3000
     hex_stats = dict()
     with transaction.manager:
         for l in DBSession.query(Hex).all():
@@ -148,6 +149,7 @@ def calc_hex_controls():
 
 
 def update_hex_control():
+    # Find out how many points each team has for each location, and update DB to appropriate values
     hexes = calc_hex_controls()
 
     with transaction.manager:
@@ -159,6 +161,7 @@ def update_hex_control():
 
         DBSession.commit()
 
+    # Reverse overflow, then determine who controls each location
     fix_hex_stats()
     determine_hex_controllers()
 
@@ -172,7 +175,7 @@ def update_hex_resources():
 
 # TODO this isn't effective
 def deactivate_inactive_players():
-    # Make is_active False for players who havent been on for more than 14 days
+    # Make is_active False for players who haven't been on for more than 14 days
     now = datetime.now()
     fortnight = now - timedelta(days=14)
     with transaction.manager:
@@ -181,6 +184,7 @@ def deactivate_inactive_players():
 
 
 def unban_banned():
+    # Unban players whos bans have expired
     now = datetime.now()
     with transaction.manager:
         DBSession.query(Player).filter(Player.banned).filter(Player.time_banned)\
@@ -217,14 +221,17 @@ def turn():
     print("Turn ran successfully, took {}\n".format(end-start))
 
 
-schedule.every(turn_time).seconds.do(turn)
-schedule.every(turn_time/10).seconds.do(unban_banned)
+def start(path=''):
+    global DBSession
+    DBSession = create_session(path)
+    schedule.every(turn_time).seconds.do(turn)
+    schedule.every(turn_time/10).seconds.do(unban_banned)
 
-'''One team is found to control all of the hexes. Turns will stop for 24 hours.
-If this team still controls `All` the hexes after 24 hours, they will be declared the winners'''
+    '''One team is found to control all of the hexes. Turns will stop for 24 hours.
+    If this team still controls `All` the hexes after 24 hours, they will be declared the winners'''
 
-# True = some var that is false if ^
-print('\nStarting..')
-while True:
-    schedule.run_pending()
-    time.sleep(turn_time/5)
+    # True = some var that is false if ^
+    print('\nStarting..')
+    while True:
+        schedule.run_pending()
+        time.sleep(turn_time/5)

@@ -3,7 +3,6 @@ from pyramid.security import (
     Deny,
     Everyone
 )
-
 from sqlalchemy import (
     Column,
     Integer,
@@ -11,25 +10,23 @@ from sqlalchemy import (
     DateTime,
     Boolean,
 )
-from sqlalchemy.sql import (
-    func,
-    expression
-)
-
 from sqlalchemy.ext.declarative import declarative_base
-
 from sqlalchemy.orm import (
     scoped_session,
     sessionmaker
 )
-
+from sqlalchemy.sql import (
+    func,
+    expression
+)
 from zope.sqlalchemy import ZopeTransactionExtension
-
 
 DBSession = scoped_session(
     sessionmaker(extension=ZopeTransactionExtension(), expire_on_commit=False))
 
 Base = declarative_base()
+
+# Classes to represent each table
 
 
 class User(Base):
@@ -110,6 +107,7 @@ class Radio(Base):
     active = Column(Boolean, server_default=expression.true())
 
 
+# Called when checking for permissions. Deny perms go first or are ignored.
 class Root(object):
     __acl__ = [(Deny, 'group:Banned', 'play'),
                (Allow, Everyone, 'view'),
@@ -122,11 +120,4 @@ class Root(object):
     def __init__(self, request):
         pass
 
-
-"""
-class Team(Base):
-    __tablename__ = 'team'
-    name = Column(String(20))
-    colour = Column(String(20))
-"""
-'''add table for portraits next'''
+# TODO: Add table for portraits next

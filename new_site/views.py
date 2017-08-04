@@ -43,7 +43,7 @@ def return_to_sender(request):
         if request.referer == request.url or not request.referrer:
             return '/'
         return request.referer
-    except Exception as e:
+    except AttributeError:
         return '/'
 
 
@@ -92,6 +92,8 @@ def register(request):
             email = request.params['email']
             if email and password and username:
                 message = create_user(username, email, password)
+            else:
+                message = "All fields must be filled!"
         request.session.flash(message, 'register')
 
     return HTTPFound(location=request.route_url('home'))
@@ -244,9 +246,11 @@ def change_setting_view(request):
     elif 'new_value' not in request.params:
         request.session.flash("Enter a new value!")
     elif 'setting' in request.params:
-        alter = change_setting(username=user, password=request.params['password'], setting=request.params['setting'], new=request.params['new_value'])
+        alter = change_setting(username=user, password=request.params['password'], setting=request.params['setting'],
+                               new=request.params['new_value'])
         request.session.flash(alter)
-        return HTTPFound(location=return_to_sender(request), comment='{} changed successfully'.format(request.params['setting']))
+        return HTTPFound(location=return_to_sender(request),
+                         comment='{} changed successfully'.format(request.params['setting']))
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -287,7 +291,6 @@ def player_info_view(request):
         request.session.flash(pinfo, 'player_info')
     else:
         prep = ["{0}: {1}".format(arg, getattr(player, arg)) for arg in args if (getattr(player, arg) or (not getattr(player, arg) and arg in zeroes))]
-        pinfo = prep
         for i in prep:
             request.session.flash(i, 'player_info')
 
@@ -305,7 +308,7 @@ def send_announcement_view(request):
 
 @view_config(route_name='hide_broadcast', request_method='POST', permission='admin')
 def hide_announcement_view(request):
-    id = request.params['id']
-    hide = hide_announcement(id)
+    _id = request.params['id']
+    hide = hide_announcement(_id)
     request.session.flash(hide, 'announcement_info2')
     return HTTPFound(location=return_to_sender(request))

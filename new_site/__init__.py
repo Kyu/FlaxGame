@@ -2,11 +2,9 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.session import SignedCookieSessionFactory
-
 from sqlalchemy import engine_from_config
 
 from .models import DBSession, Base
-
 from .security import groupfinder
 
 
@@ -33,36 +31,41 @@ def main(global_config, **settings):
     config.set_authorization_policy(authz_policy)
 
     # Views
+    # Home/Main views
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_route('home', '/')
     config.add_route('game', '/game')
     config.add_route('test_view', '/test')
 
+    # Game/Action views
     config.add_route('hex_view', '/game/{name}')
     config.add_route('get_ammo', '/game/action/ammo')
     config.add_route('recruit', '/game/action/recruit')
     config.add_route('upgrade_industry', '/game/action/upgrade')
     config.add_route('upgrade_infrastructure', '/game/action/infrastructure')
-
-    config.add_route('team_info', '/team/{team}')
-    config.add_route('profile', '/profile')
-    config.add_route('levelup', '/settings/levelup')
-    config.add_route('change_setting', '/settings/modify')
-
     config.add_route('attack_player', '/attack')
     config.add_route('move_to', 'goto')
     config.add_route('level_up', '/levelup')
     config.add_route('send_message', '/message')
 
+    # Personal/Information views
+    config.add_route('team_info', '/team/{team}')
+    config.add_route('profile', '/profile')
+    config.add_route('levelup', '/settings/levelup')
+    config.add_route('change_setting', '/settings/modify')
+
+    # Authentication views
     config.add_route('register', '/register')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
 
+    # Admin views
     config.add_route('admin', '/admin')
     config.add_route('ban_player', '/ban')
     config.add_route('unban_player', '/unban')
     config.add_route('player_info', '/pinfo')
     config.add_route('broadcast', '/broadcast')
     config.add_route('hide_broadcast', '/hide_broadcast')
+
     config.scan()
     return config.make_wsgi_app()

@@ -22,15 +22,18 @@ squad_types = 'Infantry', 'Tank',  # 'Artillery'
 
 
 def hash_password(pw):
+    # Returns hashed password as string
     return bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
-    # THIS IS A STRING :: return pwhash.decode('utf8')
 
 
 def check_password(pw, hashed_pw):
+    # Return True if hashed `pw` matches `hashed_password`
     return bcrypt.checkpw(pw.encode('utf8'), hashed_pw.encode('utf8'))
 
 
 def create_user(username, email, password):
+    # Creates a new User and a Player to match
+    # team, squad_type are random
     if not username:
         return "Enter a username"
     elif not email:
@@ -39,6 +42,7 @@ def create_user(username, email, password):
         return "Enter a password"
     else:
         try:
+            err = ''
             team = list(teams.keys())[randrange(0, 4)]
             location = teams[team]
             squad = choice(squad_types)
@@ -49,23 +53,26 @@ def create_user(username, email, password):
                 new_user = User(username=username, email=email, password=hash_password(password))
                 DBSession.add(new_user)
                 transaction.commit()
-                # Location, team should be random
                 player_model = Player(uid=new_user.uid, username=new_user.username, team=team, squad_type=squad,
                                       location=location, troops=troops)
                 DBSession.add(player_model)
 
                 return "Account created Sucessfully"
         except transaction.interfaces.TransactionFailedError as e:
-            return "Error: {}".format(type(e).__name__ + ': ' + str(e))
+            err = type(e).__name__ + ': ' + str(e)
         except IntegrityError:
             return "This username or email already exists"
         except Exception as e:
-            return "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
-
+            err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
+    if err:
+        msg = "{err} on verify_login(username={username}, email={email}, password=****)" \
+            .format(err=err, username=username, email=email)
+        log.warning(msg)
     return "?????"
 
 
 def verify_login(username, password):
+    # Verifies a login (username is interchangeable with email)
     usr = {}
     if not username:
         usr['status'] = "Enter a username"
@@ -80,12 +87,15 @@ def verify_login(username, password):
         except NoResultFound:
             pass
         except Exception as e:
-            print(type(e).__name__ + ': ' + str(e))
+            msg = "{err} on verify_login(username={username}, password=****)"\
+                .format(err=type(e).__name__ + ': ' + str(e), username=username)
+            log.warning(msg)
         usr['status'] = "Login Failed"
     return usr
 
 
 def change_setting(username, password, setting, new):
+    # Change settings, user has to verify pw each time
     if not verify_login(username, password):
         return "Invalid credentials!"
 
@@ -98,7 +108,7 @@ def change_setting(username, password, setting, new):
     try:
         with transaction.manager:
             DBSession.query(User).filter_by(username=username).update({setting: new})
-        return "{} changed sucessfully!".format(setting)
+        return "{} changed successfully!".format(setting)
     except Exception as e:
         msg = "{err} on change_setting(username={username}, password=****, setting='{setting}', new={new})".format(
             err=str(type(e).__name__ + ': ' + str(e)), username=username, setting=setting, new=new)
@@ -107,6 +117,7 @@ def change_setting(username, password, setting, new):
 
 
 def groupfinder(userid, request):
+    # Returns the groups relevant to a player, pyramid then refers to .models.Root for permissions
     result = []
     try:
         player = DBSession.query(Player).filter_by(username=userid).one()
@@ -117,10 +128,11 @@ def groupfinder(userid, request):
         if user.admin:
             result.append("group:Admin")
     except NoResultFound:
-        pass
         return
     except Exception as e:
-        print(type(e).__name__ + ': ' + str(e))
+        msg = "{err} on change_setting(userid={userid}, request={request})".format(
+            err=str(type(e).__name__ + ': ' + str(e)), userid=userid, request=request)
+        log.warning(msg)
         return
 
     return result

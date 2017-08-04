@@ -1,8 +1,8 @@
 import configparser
 import os
 import sys
-import transaction
 
+import transaction
 from sqlalchemy import (
     engine_from_config,
     MetaData,
@@ -13,7 +13,8 @@ from sqlalchemy.orm import (
     sessionmaker
 )
 
-from models import *
+from .models import *
+
 
 def usage(argv):
     # If script run without arguments. Argument needs to point to config file that holds sqlalchemy options
@@ -53,11 +54,12 @@ mapper(Teams, teams)
 users = Table('users', metadata, autoload=True)
 mapper(Users, users)
 
-# Create and return session
+# Create session
 _session = sessionmaker(bind=engine)
 DBSession = _session()
 
 with transaction.manager:
+    # Drops tables
     hexes.drop()
     players.drop()
     radio.drop()
