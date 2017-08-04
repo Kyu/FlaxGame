@@ -137,10 +137,15 @@
                             <p>${totals['team']} Troops: ${totals['sum']}</p>
                         </li>
                         <li tal:repeat="here_info [i for i in currently_here if i.username != player.username]">
-                            <p tal:condition="here_info.team == player.team or current_hex.name == player.location">${here_info.username} who leads a ${here_info.squad_type} squad for team <a href="/team/${here_info.team}">${here_info.team}</a> with ${here_info.troops} troops</p>
-                            <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
-                                <button name="player_called" value="${here_info.username}">Attack!</button>
-                             </form>
+                            <ul tal:condition="here_info.team == player.team or current_hex.name == player.location">
+                                ${here_info.username}
+                                    <li>Squad type: ${here_info.squad_type}</li>
+                                    <li>Team: <a href="/team/${here_info.team}">${here_info.team}</a></li>
+                                    <li>Troops: ${here_info.troops}</li>
+                                    <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
+                                        <button name="player_called" value="${here_info.username}">Attack!</button>
+                                    </form>
+                            </ul>
                         </li>
                     </ul>
 
