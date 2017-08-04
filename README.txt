@@ -20,6 +20,10 @@ Getting Started
 
     env/bin/pip install -e ".[testing]"
 
+- Initialize DataBase
+
+    env/bin/initialize_new_site_db development.ini
+
 - Run your project's tests.
 
     env/bin/pytest
