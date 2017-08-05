@@ -1,3 +1,7 @@
+from random import (
+    randrange,
+    choice
+)
 from pyramid.security import (
     Allow,
     Deny,
@@ -26,9 +30,13 @@ DBSession = scoped_session(
 
 Base = declarative_base()
 
+TEAMS = {'Black': '2.9', 'Red': '2.2', 'Blue': '9.9', 'Yellow': '9.2'}
+SQUAD_TYPES = 'Infantry', 'Tank',  # 'Artillery'
+CAPITALS = ['2.9', '9.9', '2.2', '9.2']
+CITIES = ['6.6', '5.5', '6.9', '5.2']
+
+
 # Classes to represent each table
-
-
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
@@ -126,3 +134,33 @@ class Root(object):
 
     def __init__(self, request):
         pass
+
+
+# Generate hexes from 1.1 - 10.10
+def gen_hexes():
+    hexes = dict()
+    hex_objects = list()
+    for x in range(1, 11):
+        for y in range(1, 11):
+            value = "{0}.{1}".format(x, y)
+            if value not in hexes:
+                hexes[value] = [x, y]
+
+    for k, v in hexes.items():
+        if k in CAPITALS:
+            hex_objects.append(Hex(name=k, x=v[0], y=v[1], type='capital', industry=10, infrastructure=10))
+        elif k in CITIES:
+            hex_objects.append(Hex(name=k, x=v[0], y=v[1], type='city', industry=5, infrastructure=10))
+        else:
+            hex_objects.append(Hex(name=k, x=v[0], y=v[1]))
+    return hex_objects
+
+
+def gen_player():
+    team = list(TEAMS.keys())[randrange(0, 4)]
+    location = TEAMS[team]
+    squad = choice(SQUAD_TYPES)
+    troops = 50
+    if squad == 'Tank':
+        troops //= 10
+    return {'team': team, 'location': location, 'squad': squad, 'troops': troops}

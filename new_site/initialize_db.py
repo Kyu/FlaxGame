@@ -12,19 +12,9 @@ from .models import (
     DBSession,
     Hex,
     Base,
-    Team
+    Team,
+    gen_hexes,
 )
-
-
-# Generate hexes from 1.1 - 10.10
-def gen_hexes():
-    hexes = dict()
-    for x in range(1, 11):
-        for y in range(1, 11):
-            value = "{0}.{1}".format(x, y)
-            if value not in hexes:
-                hexes[value] = [x, y]
-    return hexes
 
 
 # If invalid arguments used
@@ -48,22 +38,8 @@ def main(argv=sys.argv):
     Base.metadata.create_all(engine)
 
     hexes = gen_hexes()
-    hex_objects = []
-    capitals = ['2.9', '9.9', '2.2', '9.2']
-    cities = ['6.6', '5.5', '6.9', '5.2']
-
-    # Add generated hexes hexes, teams to DB
-    for k, v in hexes.items():
-        if k in capitals:
-            hex_objects.append(Hex(name=k, x=v[0], y=v[1], type='capital', industry=10, infrastructure=10))
-        elif k in cities:
-            hex_objects.append(Hex(name=k, x=v[0], y=v[1], type='city', industry=5, infrastructure=10))
-        else:
-            hex_objects.append(Hex(name=k, x=v[0], y=v[1]))
-
     with transaction.manager:
-        for i in hex_objects:
-            DBSession.add(i)
+        DBSession.add_all(hexes)
         DBSession.add(Team(name='Black', capital='2.9'))
         DBSession.add(Team(name='Blue', capital='9.9'))
         DBSession.add(Team(name='Yellow', capital='9.2'))

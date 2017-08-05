@@ -1,8 +1,5 @@
 import logging
-from random import (
-    randrange,
-    choice
-)
+from random import randrange
 
 import bcrypt
 import transaction
@@ -15,11 +12,10 @@ from .models import (
     User,
     Avatar,
     DBSession,
+    gen_player
 )
 
 log = logging.getLogger(__name__)
-teams = {'Black': '2.9', 'Red': '2.2', 'Blue': '9.9', 'Yellow': '9.2'}
-squad_types = 'Infantry', 'Tank',  # 'Artillery'
 
 
 def hash_password(pw):
@@ -43,18 +39,13 @@ def create_user(username, email, password):
         return "Enter a password"
     else:
         try:
-            team = list(teams.keys())[randrange(0, 4)]
-            location = teams[team]
-            squad = choice(squad_types)
-            troops = 50
-            if squad == 'Tank':
-                troops //= 10
+            stats = gen_player()
             with transaction.manager:
                 new_user = User(username=username, email=email, password=hash_password(password))
                 DBSession.add(new_user)
                 transaction.commit()
-                player_model = Player(id=new_user.id, username=new_user.username, team=team, squad_type=squad,
-                                      location=location, troops=troops)
+                player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
+                                      squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])
                 avatar = Avatar(id=new_user.id, default=randrange(0, 3))
                 DBSession.add_all([player_model, avatar])
 

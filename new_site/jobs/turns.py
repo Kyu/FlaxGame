@@ -1,5 +1,4 @@
 import configparser
-import sys
 import time
 from datetime import (
     datetime,
@@ -8,56 +7,12 @@ from datetime import (
 
 import schedule
 import transaction
-from sqlalchemy import (
-    engine_from_config,
-    MetaData,
-    Table
-)
-from sqlalchemy.orm import (
-    mapper,
-    sessionmaker
-)
 
 from .models import (
     Player,
-    Hex
+    Hex,
+    create_session
 )
-
-
-def usage(argv):
-    # If script run without arguments. Argument needs to point to config file that holds sqlalchemy options
-    print('usage: start(<config_uri>)\n'
-          '(example: "start(\'..\..\development.ini\')')
-    sys.exit(1)
-
-
-def create_session(path):
-    if not path:
-        usage(path)
-
-    # Getting settings from file specified.
-    config_uri = path
-    config = configparser.ConfigParser()
-    config.read(config_uri)
-    options = config['app:main']
-    engine = engine_from_config(options, 'sqlalchemy.')
-
-    global turn_time
-    turn_time = int(options['turn_time'])
-
-    # Loading Classes from tables.
-    metadata = MetaData(engine)
-
-    hexes = Table('hexes', metadata, autoload=True)
-    mapper(Hex, hexes)
-
-    players = Table('players', metadata, autoload=True)
-    mapper(Player, players)
-
-    # Create and return session
-    _session = sessionmaker(bind=engine)
-    session = _session()
-    return session
 
 
 def determine_hex_controllers():
@@ -207,9 +162,19 @@ def increase_morale():
         DBSession.commit()
 
 
+def get_options(path):
+    config_uri = path
+    config = configparser.ConfigParser()
+    config.read(config_uri)
+    options = config['app:main']
+
+    turn_time = int(options['turn_time'])
+    return turn_time
+
+
 def turn():
-    start = datetime.now()
-    print("Turn starting at {}".format(start))
+    begin = datetime.now()
+    print("Turn starting at {}".format(begin))
 
     update_hex_control()
     update_hex_resources()
@@ -218,12 +183,15 @@ def turn():
     increase_morale()
 
     end = datetime.now()
-    print("Turn ran successfully, took {}\n".format(end-start))
+    print("Turn ran successfully, took {}\n".format(end-begin))
 
 
 def start(path=''):
     global DBSession
     DBSession = create_session(path)
+
+    turn_time = get_options(path)
+
     schedule.every(turn_time).seconds.do(turn)
     schedule.every(turn_time/10).seconds.do(unban_banned)
 

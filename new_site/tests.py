@@ -7,7 +7,7 @@ from pyramid import testing
 """
 Keep getting warning, investigate:
 
-new_site/tests.py::GameViews::test_team_info
+new_site/test.py::GameViews::test_team_info
   c:\ users\gp\desktop\dev\ firstsite\env\lib\site-packages\sqlalchemy\orm\scoping.py:106: SAWarning: At least one scoped session is already present.  configure() can not affect sessions that have already been created.
     warn('At least one scoped session is already present. '
 
@@ -43,6 +43,20 @@ def _initTestingDB():
     return DBSession
 
 
+def remove_test_users():
+    import transaction
+    from sqlalchemy import or_
+    from .models import User, Player, DBSession
+    test_p = DBSession.query(User).filter_by(username='test').one()
+    test_players = DBSession.query(Player).filter(or_(Player.username == 'test', Player.username == 'testdummy',
+                                                      Player.username == 'testin99')).all()
+    with transaction.manager:
+        DBSession.delete(test_p)
+        for i in test_players:
+            DBSession.delete(i)
+        transaction.commit()
+
+
 class HomeViews(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
@@ -62,6 +76,7 @@ class HomeViews(unittest.TestCase):
         response = login(request)
         self.assertEqual(response.status_code, 302)
 
+
 # TODO ALL TESTS FAILING
 class GameViews(unittest.TestCase):
     @classmethod
@@ -78,22 +93,8 @@ class GameViews(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.remove_test_users()
+        remove_test_users()
         cls.session.remove()
-
-    @staticmethod
-    def remove_test_users():
-        import transaction
-        from sqlalchemy import or_
-        from .models import User, Player, DBSession
-        test_p = DBSession.query(User).filter_by(username='test').one()
-        test_players = DBSession.query(Player).filter(or_(Player.username == 'test', Player.username == 'testdummy',
-                                                          Player.username == 'testin99')).all()
-        with transaction.manager:
-            DBSession.delete(test_p)
-            for i in test_players:
-                DBSession.delete(i)
-            transaction.commit()
 
     def test_game_page(self):
         game_page = self.testapp.get('/game', status=200)
