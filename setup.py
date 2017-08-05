@@ -20,7 +20,8 @@ requires = [
     'waitress',
     'bcrypt',
     'pymysql',
-    'schedule'
+    'schedule',
+    'transaction',
 ]
 
 tests_require = [
