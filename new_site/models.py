@@ -115,13 +115,6 @@ class Radio(Base):
     active = Column(Boolean, server_default=expression.true())
 
 
-class Avatar(Base):
-    __tablename__ = 'avatars'
-    id = Column(Integer, primary_key=True)
-    path = Column(String(50))
-    default = Column(Integer, nullable=False)
-
-
 # Called when checking for permissions. Deny perms go first or are ignored.
 class Root(object):
     __acl__ = [(Deny, 'group:Banned', 'play'),

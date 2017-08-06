@@ -34,8 +34,7 @@ def create(path):
     radio = Table('radio', metadata, autoload=True)
     teams = Table('teams', metadata, autoload=True)
     users = Table('users', metadata, autoload=True)
-    avatars = Table('avatars', metadata, autoload=True)
-    return {'hexes': hexes, 'players': players, 'radio': radio, 'teams': teams, 'users': users, 'avatars': avatars}
+    return {'hexes': hexes, 'players': players, 'radio': radio, 'teams': teams, 'users': users}
 
 
 def hard(path=''):

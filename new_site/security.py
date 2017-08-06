@@ -10,7 +10,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from .models import (
     Player,
     User,
-    Avatar,
     DBSession,
     gen_player
 )
@@ -46,8 +45,7 @@ def create_user(username, email, password):
                 transaction.commit()
                 player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
                                       squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])
-                avatar = Avatar(id=new_user.id, default=randrange(0, 3))
-                DBSession.add_all([player_model, avatar])
+                DBSession.add_all([player_model])
 
                 return "Account created Successfully"
         except transaction.interfaces.TransactionFailedError as e:
