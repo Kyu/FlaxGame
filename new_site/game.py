@@ -170,9 +170,14 @@ def player_can_attack(attacker, defender):
     return True
 
 
-# TODO Fix this ASAP, add artillery
-# You won! meme lost 2108 troops while you only lost 2. The enemy rushes back to their capital to regenerate. Tank v Infantry
-# You won! meme lost 257 troops while you only lost 213. You drop everything and hurry back to the capital to regenerate. The enemy rushes back to their capital to regenerate. Tank v Tank
+def artillery_attack(attacker, defender):
+    # Artillery  can self destruct if <1/5 capacity remaning, also takes 2 turns to move
+    # Turn 1: Pack up - 1 action
+    # Turn 2: Move - 2 actions
+    pass
+
+
+# Fixed, one instance of unreproducible wild attack
 def player_attack(attacker, defender):
     can_attack = player_can_attack(attacker=attacker, defender=defender)
     if can_attack is not True:
@@ -182,8 +187,8 @@ def player_attack(attacker, defender):
 
     #  Returns negative if morale < 1, error if 0
 
-    attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale) + (randrange(11, 20)/10))
-    defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale) + (randrange(11, 20)/10))
+    attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale+0.1) + (randrange(11, 20)/10))
+    defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale+0.1) + (randrange(11, 20)/10))
 
     a_ammo_needed = attacker.troops//attacker.logistics  # 5
     d_ammo_needed = defender.troops//defender.logistics
@@ -199,15 +204,15 @@ def player_attack(attacker, defender):
     if attacker.squad_type == 'Tank':
         a_min = 1
         a_multiplier = 10
-        attacker_strength *= choice((6, 7, 8, 9))
-        defender_strength /= choice((6, 7, 8, 9))
+        attacker_strength *= choice((3, 4, 5))
+        defender_strength /= 10
         a_ammo_needed *= 100  # 500
         a_troops *= 100  # 500
     if defender.squad_type == 'Tank':
         d_min = 1
         d_multiplier = 10
-        defender_strength *= choice((6, 7, 8, 9))
-        attacker_strength /= choice((6, 7, 8, 9))
+        defender_strength *= choice((3, 4, 5))
+        attacker_strength /= 10
         d_ammo_needed *= 100
         d_troops *= 100
 
@@ -295,7 +300,6 @@ def player_attack(attacker, defender):
 
     send_message(_from='', message=d_msg, to=defender.username)
     return msg
-
 
 def send_player_to(location, player, force=False):
     player_info = get_player_info(player)
