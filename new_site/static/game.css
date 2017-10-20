@@ -7,6 +7,33 @@ body {
     margin: 0;
 }
 
+td {
+    display: block;
+    float: left;
+    border: 1px solid black;
+    width: 32%;
+    padding-bottom: 32%;
+}
+
+td div {
+    position: absolute;
+}
+
+table {
+    display: block;
+    width: 100%;
+}
+
+tr {
+    display: block;
+    width: 100%;
+}
+
+tbody {
+    display: block;
+    width: 100%;
+}
+
 div#sidebar-left {
     position:fixed;
     height:100%;
@@ -68,7 +95,7 @@ div#content {
     max-height: 500px;
 }
 
-/* TODO scrollbar is confusing */
+/* TODO make scrollbar look like an actual scrollbar */
 .radio::-webkit-scrollbar {
     -webkit-box-shadow: black;
 
@@ -93,25 +120,52 @@ p.message-timestamp {
     color: white;
 }
 
-.redcontrol {
-    color: red;
+.location {
+    background-color: grey;
     font-weight: bold;
 }
 
-.blackcontrol {
-    color: black;
+.location a{
+    color: white;
+}
+
+a {
+    color: white;
+}
+
+.location-red {
+    background-color: red;
     font-weight: bold;
 }
 
-.yellowcontrol {
-    color: #dede10;
+.location-black {
+    background-color: black;
     font-weight: bold;
 }
 
-.bluecontrol {
-    color: blue;
+.location-yellow {
+    background-color: #dede10;
     font-weight: bold;
 }
+
+.location-blue {
+    background-color: blue;
+    font-weight: bold;
+}
+
+
+
+button#logout {
+    background-color: grey;
+    color: white;
+}
+
+.col-md-1 {
+    width: 90;
+    height: 90;
+}
+
+
 /*
 .top {
     position: absolute;

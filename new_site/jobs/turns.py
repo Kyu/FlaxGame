@@ -42,7 +42,6 @@ def determine_hex_controllers():
 
 
 def fix_hex_stats():
-    # TODO Find a way to do this with SQL
     # Reverse over and underflow for locations
     # Plains, City max - 1000, Capital max - 3000
     hex_stats = dict()
@@ -128,7 +127,7 @@ def update_hex_resources():
             DBSession.commit()
 
 
-# TODO this isn't effective
+# TODO this isn't effective, ask around how to certain columns in `ON UPDATE`
 def deactivate_inactive_players():
     # Make is_active False for players who haven't been on for more than 14 days
     now = datetime.now()

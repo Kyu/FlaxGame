@@ -6,7 +6,6 @@
 
 <body>
 
-<!-- TODO admin sessions should last 4 hours -->
 <div class="playerinfo">
     <h2>View player Info</h2>
     <form action="${request.route_url('player_info')}" method="post">
