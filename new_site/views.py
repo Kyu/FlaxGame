@@ -1,4 +1,7 @@
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import (
+    HTTPFound,
+    HTTPForbidden
+)
 from pyramid.response import Response
 from pyramid.security import (
     remember,
@@ -122,8 +125,10 @@ def login(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='logout', request_method='POST')
+@view_config(route_name='logout')
 def logout(request):
+    if not request.authenticated_userid:
+        return HTTPForbidden()
     headers = forget(request)
     # url = request.route_url('home')
     return Response(json_body={'logged_out': True}, headers=headers)
