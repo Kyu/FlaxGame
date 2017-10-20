@@ -24,7 +24,6 @@ from .models import (
 )
 
 log = logging.getLogger(__name__)
-# TODO organize these functions better
 
 
 def get_hexes():

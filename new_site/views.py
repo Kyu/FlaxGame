@@ -122,7 +122,7 @@ def login(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='logout')  # TODO Change this method to post
+@view_config(route_name='logout', request_method='POST')
 def logout(request):
     headers = forget(request)
     # url = request.route_url('home')
