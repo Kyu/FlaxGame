@@ -35,9 +35,9 @@ def _initTestingDB():
 
     with transaction.manager:
         new_test = User(username='test', email='test', password=hash_password('test'))
-        test = Player(uid=random.randint(4000, 90000), username='test', squad_type='Captain', team='Red', location='2.2')
-        testdummy = Player(uid=random.randint(4000, 90000), username='testdummy', squad_type='Captain', team='Yellow', location='2.2')
-        testin99 = Player(uid=random.randint(4000, 90000), username='testin99', squad_type='Captain', team='Blue', location='9.9')
+        test = Player(id=random.randint(4000, 90000), username='test', squad_type='Infantry', team='Red', location='2.2')
+        testdummy = Player(id=random.randint(4000, 90000), username='testdummy', squad_type='Infantry', team='Yellow', location='2.2')
+        testin99 = Player(id=random.randint(4000, 90000), username='testin99', squad_type='Infantry', team='Blue', location='9.9')
         DBSession.add_all([new_test, test, testdummy, testin99])
         transaction.commit()
     return DBSession
@@ -77,7 +77,7 @@ class HomeViews(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
 
 
-# TODO ALL TESTS FAILING
+# TODO Tests failing because not being allowed to log in
 class GameViews(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -199,4 +199,4 @@ class GameViews(unittest.TestCase):
     '''
     def test_logout(self):
         logout = self.testapp.post('/logout')
-        self.assertIn('Logged out successfully', logout.text)
+        self.assertIn('{"logged_out":true}', logout.text)
