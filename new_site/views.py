@@ -130,8 +130,8 @@ def logout(request):
     if not request.authenticated_userid:
         return HTTPForbidden()
     headers = forget(request)
-    # url = request.route_url('home')
-    return Response(json_body={'logged_out': True}, headers=headers)
+    return HTTPFound(location='/', headers=headers)
+    # return Response(json_body={'logged_out': True}, headers=headers)
 
 
 @view_config(route_name='game', renderer='templates/game.pt', permission='play')
