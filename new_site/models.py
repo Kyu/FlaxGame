@@ -31,7 +31,7 @@ DBSession = scoped_session(
 Base = declarative_base()
 
 TEAMS = {'Black': '2.9', 'Red': '2.2', 'Blue': '9.9', 'Yellow': '9.2'}
-SQUAD_TYPES = 'Infantry', 'Tank',  # 'Artillery'
+SQUAD_TYPES = 'Infantry', 'Tank', 'Artillery'
 CAPITALS = ['2.9', '9.9', '2.2', '9.2']
 CITIES = ['6.6', '5.5', '6.9', '5.2']
 
@@ -152,8 +152,8 @@ def gen_hexes():
 def gen_player():
     team = list(TEAMS.keys())[randrange(0, 4)]
     location = TEAMS[team]
-    squad = choice(SQUAD_TYPES)
+    squad = choice(SQUAD_TYPES)  # Make chances unequal
     troops = 50
-    if squad == 'Tank':
+    if squad in ('Tank', 'Artillery'):
         troops //= 10
     return {'team': team, 'location': location, 'squad': squad, 'troops': troops}

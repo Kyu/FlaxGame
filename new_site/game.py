@@ -157,9 +157,9 @@ def player_can_attack(attacker, defender):
         to, _from = get_location_called(attacker.location), get_location_called(defender.location)
         diffx = abs(to.x-_from.x)
         diffy = abs(to.y-_from.y)
-        if not (diffx > 1 or diffy > 1):
+        if diffx < 1 or diffy < 1:
             return "Target is too close. You could get hit!"
-        if not (diffx < 6 or diffy < 6):
+        if not diffx > 4 or diffy > 4:
             return "Target is too far away!"
     if attacker.morale < 10:
         return "Your squad lacks heart! Raise your morale!"
@@ -172,7 +172,18 @@ def artillery_attack(attacker, defender):
     # Artillery  can self destruct if <1/5 capacity remaning, also takes 2 turns to move
     # Turn 1: Pack up - 1 action
     # Turn 2: Move - 2 actions
-    pass
+    if attacker.squad_type != 'Artillery':
+        return "Not artillery, how did you get here?"
+
+    targets = get_players_located_at(defender.location)
+
+    for player in targets:  # Come up with a formula
+        if player.squad_type in ('Tank', 'Artillery'):
+            loss = 1
+        else:
+            loss = 10
+
+    # Send kill messages etc
 
 
 # Fixed, one instance of unreproducible wild attack
@@ -298,6 +309,7 @@ def player_attack(attacker, defender):
 
     send_message(_from='', message=d_msg, to=defender.username)
     return msg
+
 
 def send_player_to(location, player, force=False):
     player_info = get_player_info(player)
