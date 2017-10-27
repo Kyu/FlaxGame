@@ -37,7 +37,8 @@ from .game import (
 from .security import (
     create_user,
     verify_login,
-    change_setting
+    change_setting,
+    verify_security_code
 )
 
 
@@ -94,7 +95,7 @@ def register(request):
             password = request.params['password']
             email = request.params['email']
             if email and password and username:
-                message = create_user(username, email, password)
+                message = create_user(username, email, password, request)
             else:
                 message = "All fields must be filled!"
         request.session.flash(message, 'register')
@@ -123,6 +124,14 @@ def login(request):
         request.session.flash(message, 'login')
 
     return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='verify')
+def verify(request):
+    code = request.params['code']
+    verification_attempt = verify_security_code(code)
+    request.session.flash(verification_attempt, 'login')
+    return HTTPFound(location='/')
 
 
 @view_config(route_name='logout')

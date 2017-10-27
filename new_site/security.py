@@ -1,11 +1,13 @@
 import logging
-from random import randrange
+from random import randrange, SystemRandom
+import string
 
 import bcrypt
 import transaction
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
+from pyramid_mailer.message import Message
 
 from .models import (
     Player,
@@ -27,7 +29,27 @@ def check_password(pw, hashed_pw):
     return bcrypt.checkpw(pw.encode('utf8'), hashed_pw.encode('utf8'))
 
 
-def create_user(username, email, password):
+def gen_security_code(size=16, chars=string.ascii_letters+ string.digits):
+    return ''.join(SystemRandom().choice(chars) for _ in range(size))
+
+
+def verify_security_code(code):
+    try:
+        with transaction.manager:
+            user = DBSession.query(User).filter_by(verification=code)
+            user.one()  # If user doesn't exist, raises NoResultFound
+            user.update({'is_verified': True, 'verification': ''})
+        return "Successfully verified email!"
+    except NoResultFound:
+        return "This verification code has either expired or does not exist!"
+    except Exception as e:
+        msg = "{err} on verify_security_code(code=****)".format(
+            err=str(type(e).__name__ + ': ' + str(e)))
+        log.warning(msg)
+        return "An error occurred"
+
+
+def create_user(username, email, password, request=None):
     # Creates a new User and a Player to match
     # team, squad_type are random
     if not username:
@@ -40,8 +62,14 @@ def create_user(username, email, password):
         try:
             stats = gen_player()
             with transaction.manager:
-                new_user = User(username=username, email=email, password=hash_password(password))
+                code = gen_security_code()
+                new_user = User(username=username, email=email, password=hash_password(password), verification=code)
                 DBSession.add(new_user)
+                if request:
+                    mailer = request.registry['mailer']
+                    message = Message(subject="Welcome to Flax!", sender='theflaxgame@gmail.com', recipients=[email], body='Start playing now!\nVerify with http://localhost:6543/verify?code=' + code)
+                    mailer.send(message)
+
                 transaction.commit()
                 player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
                                       squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])

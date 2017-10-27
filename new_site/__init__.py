@@ -2,6 +2,9 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.session import SignedCookieSessionFactory
+
+from pyramid_mailer import mailer_factory_from_settings
+
 from sqlalchemy import engine_from_config
 
 from .models import DBSession, Base
@@ -21,6 +24,7 @@ def main(global_config, **settings):
     config = Configurator(settings=settings, session_factory=my_session_factory,
                           root_factory='.models.Root')
     config.include('pyramid_chameleon')
+    config.registry['mailer'] = mailer_factory_from_settings(settings)
 
     # Security policies
     authn_policy = AuthTktAuthenticationPolicy(
@@ -58,6 +62,7 @@ def main(global_config, **settings):
     config.add_route('register', '/register')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
+    config.add_route('verify', '/verify')
 
     # Admin views
     config.add_route('admin', '/admin')
