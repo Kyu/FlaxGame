@@ -1,0 +1,28 @@
+<html lang="en">
+<head>
+    <title>Password Recovery</title>
+</head>
+
+<body>
+<h1>Recover your password!</h1>
+<span tal:omit-tag=""
+        tal:repeat="message request.session.pop_flash('recovery')">
+      ${message}<br>
+  </span>
+
+<div tal:condition="code" id="newpass">
+    <form action="${request.route_url('recover_password')}" method="post">
+        New Password: <input type="password" name="password">
+        <input type="hidden" name="code" value="${code}">
+        <button type="submit" name="changepass">Submit</button>
+    </form>
+</div>
+
+<div tal:condition="not code" id="startprocess">
+    <form action="${request.route_url('recover_password')}" method="post">
+        Email: <input type="email" name="email">
+        <button type="submit" name="startprocess">Submit</button>
+    </form>
+</div>
+</body>
+</html>

@@ -6,7 +6,7 @@ import bcrypt
 import transaction
 from sqlalchemy import or_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from pyramid_mailer.message import Message
 
 from .models import (
@@ -17,6 +17,13 @@ from .models import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def send_email(request, recipient, subject, body):
+    mailer = request.registry['mailer']
+    message = Message(subject=subject, sender='theflaxgame@gmail.com', recipients=[recipient],
+                      body=body)
+    mailer.send(message)
 
 
 def hash_password(pw):
@@ -87,9 +94,10 @@ def create_user(username, email, password, request=None):
                 new_user = User(username=username, email=email, password=hash_password(password), verification=code)
                 DBSession.add(new_user)
                 if request:
-                    mailer = request.registry['mailer']
-                    message = Message(subject="Welcome to Flax!", sender='theflaxgame@gmail.com', recipients=[email], body='Start playing now!\nVerify with http://localhost:6543/verify?code=' + code)
-                    mailer.send(message)
+                    subject = "Welcome to Flax!"
+                    recipient = email
+                    body = 'Start playing now!\nVerify with http://localhost:6543/verify?code=' + code
+                    send_email(request, recipient, subject, body)
 
                 transaction.commit()
                 player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
@@ -132,6 +140,54 @@ def verify_login(username, password):
             log.warning(msg)
         usr['status'] = "Login Failed"
     return usr
+
+
+def change_password(username, new, old, force=False):
+    if not force:
+        verified = verify_login(username, old)
+    else:
+        verified = True
+
+    if not verified:
+        return "Could not verify old credentials"
+
+    DBSession.query(User).filter_by(username=username).update({'password': hash_password(new)})
+
+
+def start_recovery(request, email):
+    try:
+        user = DBSession.query(User).filter_by(email=email)
+        usr = user.one()
+    except NoResultFound:
+        return "Email does not exist in database!"
+
+    with transaction.manager:
+        code = gen_security_code()
+        user.update({'verification': code})
+
+        body = 'To recover your password, please visit this link: http://localhost:6543/recover?code=' + code
+        send_email(request, usr.email, "Flax password recovery", body)
+        transaction.commit()
+    return "A recovery email has been sent!"
+
+
+def recover_password(new, code):
+    try:
+        user = DBSession.query(User).filter_by(verification=code)
+        usr = user.one()
+    except NoResultFound:
+        return "Invalid or expired verification1"
+    except MultipleResultsFound:
+        return "Invalid or expired verification2"
+
+    if not usr.verification == code:
+        return "Invalid or expired verification!3"
+
+    if not is_okay_password(new):
+        return "Password does not meet criteria, please review! Remember: Your password needs: To be atleast 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character"
+
+    user.update({'password': hash_password(new), 'verification': ''})
+    return "Password changed successfully"
 
 
 def change_setting(username, password, setting, new):

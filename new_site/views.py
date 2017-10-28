@@ -38,7 +38,9 @@ from .security import (
     create_user,
     verify_login,
     change_setting,
-    verify_security_code
+    verify_security_code,
+    start_recovery,
+    recover_password
 )
 
 
@@ -126,12 +128,27 @@ def login(request):
     return HTTPFound(location=return_to_sender(request))
 
 
-@view_config(route_name='verify')
+@view_config(route_name='verify')  # Maybe create another table for this?
 def verify(request):
     code = request.params['code']
     verification_attempt = verify_security_code(code)
     request.session.flash(verification_attempt, 'login')
     return HTTPFound(location='/')
+
+
+@view_config(route_name='recover_password', renderer='templates/recover.pt')
+def recover_password_view(request):
+    code = request.params.get('code')
+
+    if request.method == 'POST':
+        if 'startprocess' in request.params:
+            action = start_recovery(request=request, email=request.params['email'])
+            request.session.flash(action, 'recovery')
+        elif 'changepass' in request.params:
+            action = recover_password(new=request.params['password'], code=code)
+            request.session.flash(action, 'recovery')
+
+    return {'code': code}
 
 
 @view_config(route_name='logout')

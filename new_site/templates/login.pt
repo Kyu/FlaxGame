@@ -50,7 +50,7 @@
            name="password"/><br/>
     <button type="submit" name="register">Register</button>
 </form>
-<p>Forgot your password? <a href="/TODO_RECOVER_PASSWORD">Click here to tecover your password</a></p>
+<p>Forgot your password? <a href="${request.route_url('recover_password')}">Click here to recover your password</a></p>
 
 </div>
 </body>

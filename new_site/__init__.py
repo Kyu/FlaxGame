@@ -63,6 +63,7 @@ def main(global_config, **settings):
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
     config.add_route('verify', '/verify')
+    config.add_route('recover_password', '/recover')
 
     # Admin views
     config.add_route('admin', '/admin')
