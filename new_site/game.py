@@ -186,7 +186,7 @@ def artillery_attack(attacker, defender):
     # Send kill messages etc
 
 
-# Fixed, one instance of unreproducible wild attack
+# Fixed, one instance of unreproducible wild attack, cannot remember how it goes
 def player_attack(attacker, defender):
     can_attack = player_can_attack(attacker=attacker, defender=defender)
     if can_attack is not True:
