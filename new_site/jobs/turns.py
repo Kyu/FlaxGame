@@ -127,13 +127,13 @@ def update_hex_resources():
             DBSession.commit()
 
 
-# TODO this isn't effective, ask around how to ignore certain columns in `ON UPDATE`
 def deactivate_inactive_players():
     # Make is_active False for players who haven't been on for more than 14 days
     now = datetime.now()
     fortnight = now - timedelta(days=14)
     with transaction.manager:
         DBSession.query(Player).filter(Player.is_active).filter(Player.last_active < fortnight).update({Player.is_active: False})
+
         DBSession.commit()
 
 

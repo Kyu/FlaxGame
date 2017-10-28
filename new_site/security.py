@@ -145,6 +145,7 @@ def verify_login(username, password):
             expected_password = expected_user.password
             if check_password(password, expected_password):
                 usr['username'] = expected_user.username
+            DBSession.query(Player).filter_by(username=username).update({Player.is_active: True})
         except NoResultFound:
             pass
         except Exception as e:
