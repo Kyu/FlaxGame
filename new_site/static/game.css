@@ -95,13 +95,18 @@ div#content {
     max-height: 500px;
 }
 
-/* TODO make scrollbar look like an actual scrollbar */
 .radio::-webkit-scrollbar {
     -webkit-box-shadow: black;
 
     border: 1px solid black;
     background-color: white;
     width: 7px;
+}
+
+.radio::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    border-color: black;
+    -webkit-box-shadow: inset 0 0 6px rgb(9, 255, 9);
 }
 p.message-text {
     margin-bottom: 0;
