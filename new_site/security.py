@@ -36,6 +36,18 @@ def check_password(pw, hashed_pw):
     return bcrypt.checkpw(pw.encode('utf8'), hashed_pw.encode('utf8'))
 
 
+def is_okay_username(username):
+    # Username should be between 3 and 16 characters and should not have any special characters except _ . -
+    if len(username) < 3 or len(username) > 16:
+        return False
+
+    for i in username:
+        if i in string.punctuation and i not in "_-.":
+            return False
+
+    return True
+
+
 def is_okay_password(password):
     if len(password) < 6:
         return False
@@ -84,9 +96,10 @@ def create_user(username, email, password, request=None):
     elif not password:
         return "Enter a password"
     else:
-        # TODO: Email and username criteria.
+        if not is_okay_username(username):
+            return "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
         if not is_okay_password(password):
-            return "Password does not meet criteria. Your password needs: To be atleast 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character"
+            return "Your password needs: To be atleast 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character"
         try:
             stats = gen_player()
             with transaction.manager:
