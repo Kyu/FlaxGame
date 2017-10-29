@@ -168,10 +168,9 @@
         <div id="content" class="container">
             <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
-                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control.lower() if hex_row.control != 'None' else ''}">
-                        <div id="placeholder1" title="${hex_row.name}"> <!-- Add x Infantry, y Tank located here-->
-                            <a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
-                        </div>
+                    <td tal:repeat="hex_row [i for i in hexes if i.x == hex_col]" title="${hex_row.name}" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control.lower() if hex_row.control != 'None' else ''}">
+                        <!-- Add x Infantry, y Tank located here to title-->
+                        <a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
                     </td>
                 </tr>
             </table>
