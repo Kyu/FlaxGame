@@ -31,7 +31,7 @@
     <script src="${request.static_url('new_site:static/game.js')}?v=${__import__('random').randint(1, 300)}"></script>
     -->
 
-    <title>Game Display ${'-- ' + current_hex.name if current_hex else ''}</title>
+    <title>Flax ${'-- ' + current_hex.name if current_hex else ''}</title>
 </head>
 
 <body>
