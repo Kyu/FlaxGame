@@ -4,6 +4,7 @@
 .idea/*
 new_site/static/bootstrap/*
 new_site/static/jquery/*
+new_site/design
 
 
 # Eggs
