@@ -1,6 +1,7 @@
 import logging
 from random import randrange, SystemRandom
 import string
+from smtplib import SMTPRecipientsRefused
 
 import bcrypt
 import transaction
@@ -15,6 +16,7 @@ from .models import (
     DBSession,
     gen_player
 )
+
 
 log = logging.getLogger(__name__)
 
@@ -122,14 +124,16 @@ def create_user(username, email, password, request=None):
             err = type(e).__name__ + ': ' + str(e)
         except IntegrityError:
             return "This username or email already exists"
+        except SMTPRecipientsRefused:
+            return "Could not send a verification email to this address, does it exist?"
         except Exception as e:
             err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
 
-    msg = "{err} on verify_login(username={username}, email={email}, password=****)" \
+    msg = "{err} on create_user(username={username}, email={email}, password=****)" \
         .format(err=err, username=username, email=email)
     log.warning(msg)
 
-    return err
+    return "User creation failed"
 
 
 def verify_login(username, password):
