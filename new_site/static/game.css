@@ -40,7 +40,7 @@ div#sidebar-left {
     width:200px;
     top:0;
     left:0;
-    background:royalblue;
+    background: #14A5C9;
     color:black;
     font-weight: bold;
 }
@@ -57,7 +57,7 @@ div#sidebar-right {
     width:200px;
     top:0;
     right:0;
-    background:royalblue;
+    background: #14A5C9;
     color:black;
     font-weight: bold;
 }
@@ -65,7 +65,7 @@ div#sidebar-right {
     border: 10px black;
 }
 div.sidebar a{
-    color: lawngreen;
+    color: #05fcbe;
 }
 div.sidebar button {
     background:darkseagreen;
@@ -126,7 +126,7 @@ p.message-timestamp {
 }
 
 .location {
-    background-color: grey;
+    background-color: #b5b5b5;
     font-weight: bold;
 }
 
@@ -158,6 +158,10 @@ a {
     font-weight: bold;
 }
 
+.location-city {
+    border-style: dashed;
+    font-weight: 900;
+}
 
 
 button#logout {
