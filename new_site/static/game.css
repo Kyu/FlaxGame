@@ -36,12 +36,12 @@ tbody {
 
 div#sidebar-left {
     position:fixed;
-    height:100%;
-    width:200px;
-    top:0;
-    left:0;
+    height: 100%;
+    width: 200px;
+    top: 0;
+    left: 0;
     background: #14A5C9;
-    color:black;
+    color: black;
     font-weight: bold;
 }
 
@@ -52,13 +52,13 @@ div#flash {
 div#sidebar-right {
     overflow: auto;
     overflow-x: hidden;
-    position:fixed;
-    height:100%;
-    width:200px;
-    top:0;
-    right:0;
+    position: fixed;
+    height: 100%;
+    width: 200px;
+    top: 0;
+    right: 0;
     background: #14A5C9;
-    color:black;
+    color: black;
     font-weight: bold;
 }
 .sidebar {
@@ -68,13 +68,13 @@ div.sidebar a{
     color: #05fcbe;
 }
 div.sidebar button {
-    background:darkseagreen;
+    background: white; /* placeholder color */
 }
 
 div.sidebar ul {
     list-style-type: none;
     margin: 0;
-    padding:0;
+    padding: 0;
 }
 
 div#content {
@@ -170,8 +170,8 @@ button#logout {
 }
 
 .col-md-1 {
-    width: 90;
-    height: 90;
+    width: 90px;
+    height: 90px;
 }
 
 
