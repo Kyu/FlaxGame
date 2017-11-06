@@ -107,13 +107,14 @@ def create_user(username, email, password, request=None):
             with transaction.manager:
                 code = gen_security_code()
                 new_user = User(username=username, email=email, password=hash_password(password), verification=code)
-                DBSession.add(new_user)
+
                 if request:
                     subject = "Welcome to Flax!"
                     recipient = email
                     body = 'Start playing now!\nVerify with http://localhost:6543/verify?code=' + code
                     send_email(request, recipient, subject, body)
 
+                DBSession.add(new_user)
                 transaction.commit()
                 player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
                                       squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])
