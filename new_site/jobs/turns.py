@@ -186,7 +186,11 @@ def turn():
 
 
 def start(path=''):
-    global DBSession
+    if not path:
+        print("No path defined!")
+        quit()
+
+    global DBSession  # yeah
     DBSession = create_session(path)
 
     turn_time = get_options(path)
