@@ -51,21 +51,10 @@ def is_okay_username(username):
 
 
 def is_okay_password(password):
-    if len(password) < 6:
+    if len(password) < 8 or len(password) > 64:
         return False
 
-    cap, low, num, spec = False, False, False, False
-    for i in password:
-        if i.isupper():
-            cap = True
-        elif i.islower():
-            low = True
-        elif i.isdigit():
-            num = True
-        # elif i in string.punctuation:
-            # spec = True
-
-    return cap and low and num  # and spec
+    return True
 
 
 def gen_security_code(size=16, chars=string.ascii_letters+ string.digits):
@@ -101,7 +90,7 @@ def create_user(username, email, password, request=None):
         if not is_okay_username(username):
             return "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
         if not is_okay_password(password):
-            return "Your password needs: To be atleast 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character"
+            return "Your password needs to be 8-64 characters long"
         try:
             stats = gen_player()
             with transaction.manager:
