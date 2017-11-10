@@ -32,9 +32,9 @@
 </div>
 <form action="${request.route_url('login')}" method="post">
      <input type="text" id="username" placeholder="username or email"
-           name="username" required/><br/>
+           name="username" title="Enter username or email here" required/><br/>
     <input type="password" id="password" placeholder="password"
-           name="password" required/><br/>
+           name="password" title="Enter password here" required/><br/>
     <button type="submit" name="login">Login</button>
 </form>
     <a href="${request.route_url('recover_password')}">Forgot your password?</a>
