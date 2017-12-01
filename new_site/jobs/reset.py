@@ -1,5 +1,6 @@
 import configparser
 import sys
+from datetime import datetime
 
 import transaction
 from sqlalchemy import (
@@ -50,7 +51,7 @@ def hard(path=''):
 def soft(path='', full=False):
     if not path:
         usage(path)
-    from ..models import gen_hexes, gen_player
+    from ..models import Radio, gen_hexes, gen_player
     from .models import Hex, Player, create_session
 
     DBSession = create_session(path)
@@ -59,6 +60,8 @@ def soft(path='', full=False):
         old_hexes = DBSession.query(Hex).delete()
         DBSession.add_all(gen_hexes())
         players = DBSession.query(Player)
+        now = datetime.utcnow().strftime('%D - %H:%M:%S')
+        DBSession.add(Radio(author='Admin', message='Game reset at {0}'.format(now), team='all'))
         for player in players:
             stats = gen_player()
 

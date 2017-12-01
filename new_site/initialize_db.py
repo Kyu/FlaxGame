@@ -10,7 +10,6 @@ from sqlalchemy import engine_from_config
 
 from .models import (
     DBSession,
-    Hex,
     Base,
     Team,
     gen_hexes,
@@ -46,17 +45,3 @@ def main(argv=sys.argv):
         DBSession.add(Team(name='Red', capital='2.2'))
 
         transaction.commit()
-
-    ''''
-    with transaction.manager:
-        user_model = User(username='admin', email='ee@gmail.com',
-            password=hash_password('pw'),
-            created_at=datetime.utcnow())
-        DBSession.add(user_model)
-        transaction.commit()
-        player_model = Player(id=user_model.id, username=user_model.username, squad_type="Captain",
-            team='Black', experience=1, level=1, troops=50, location=2.2, last_active=datetime.utcnow())
-        print(player_model.id)
-        DBSession.add(player_model)
-    '''
-
