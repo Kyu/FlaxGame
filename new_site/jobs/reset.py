@@ -53,6 +53,7 @@ def soft(path='', full=False):
         usage(path)
     from ..models import Radio, gen_hexes, gen_player
     from .models import Hex, Player, create_session
+    # Not sure why I have two of these but OK
 
     DBSession = create_session(path)
 
