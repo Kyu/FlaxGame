@@ -1,5 +1,15 @@
 <html lang="en">
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-102770740-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-102770740-1');
+    </script>
+
     <link rel="shortcut icon" href="${request.static_url('flax:static/fav.png')}">
     <title>Four oh Four</title>
 </head>
