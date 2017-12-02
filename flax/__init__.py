@@ -28,7 +28,7 @@ def main(global_config, **settings):
 
     # Security policies
     authn_policy = AuthTktAuthenticationPolicy(
-        settings['new_site.secret'], callback=groupfinder,
+        settings['flax.secret'], callback=groupfinder,
         hashalg='sha512')
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)

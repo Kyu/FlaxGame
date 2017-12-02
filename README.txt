@@ -1,4 +1,4 @@
-new_site
+flax
 ========
 
 Getting Started
@@ -6,7 +6,7 @@ Getting Started
 
 - Change directory into your newly created project.
 
-    cd new_site
+    cd flax
 
 - Create a Python virtual environment.
 
@@ -24,7 +24,7 @@ Getting Started
 
 - Initialize DataBase
 
-    env/bin/initialize_new_site_db development.ini
+    env/bin/initialize_flax_db development.ini
 
 - Run your project's tests.
 

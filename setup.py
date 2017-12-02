@@ -32,9 +32,9 @@ tests_require = [
 ]
 
 setup(
-    name='new_site',
+    name='flax',
     version='0.0',
-    description='new_site',
+    description='flax',
     long_description=README + '\n\n' + CHANGES,
     classifiers=[
         'Programming Language :: Python',
@@ -55,9 +55,9 @@ setup(
     install_requires=requires,
     entry_points={
         'paste.app_factory': [
-            'main = new_site:main',
+            'main = flax:main',
         ],
         'console_scripts': [
-            'initialize_new_site_db = new_site.initialize_db:main']
+            'initialize_flax_db = flax.initialize_db:main']
     },
 )

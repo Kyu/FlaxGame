@@ -1,5 +1,5 @@
 import sys
-from new_site.jobs import turns
+from flax.jobs import turns
 
 file = 'production.ini'
 

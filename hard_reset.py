@@ -1,5 +1,5 @@
 import sys
-from new_site.jobs import reset
+from flax.jobs import reset
 
 file = 'production.ini'
 

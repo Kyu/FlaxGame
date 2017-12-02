@@ -25,7 +25,7 @@ from .models import (
 
 log = logging.getLogger(__name__)
 
-
+# TODO DIG IN, FIX FIX FIX FIX FUCKING FIX ATTACK FORUMLA
 def get_hexes():
     hexes = DBSession.query(Hex)
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))

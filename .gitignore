@@ -2,9 +2,9 @@
 *.sublime-project
 *.sublime-workspace
 .idea/*
-new_site/static/bootstrap/*
-new_site/static/jquery/*
-new_site/design
+flax/static/bootstrap/*
+flax/static/jquery/*
+flax/design
 
 
 # Eggs
@@ -113,4 +113,4 @@ ENV/
 
 # mypy
 .mypy_cache/
-new_site/static/avatars/
+flax/static/avatars/

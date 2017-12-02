@@ -7,7 +7,7 @@ from pyramid import testing
 """
 Keep getting warning, investigate:
 
-new_site/test.py::GameViews::test_team_info
+flax/test.py::GameViews::test_team_info
   c:\ users\gp\desktop\dev\ firstsite\env\lib\site-packages\sqlalchemy\orm\scoping.py:106: SAWarning: At least one scoped session is already present.  configure() can not affect sessions that have already been created.
     warn('At least one scoped session is already present. '
 
