@@ -51,6 +51,7 @@ def main(global_config, **settings):
     config.add_route('move_to', 'goto')
     config.add_route('level_up', '/levelup')
     config.add_route('send_message', '/message')
+    config.add_route('dig_in', 'digin')
 
     # Personal/Information views
     config.add_route('team_info', '/team/{team}')

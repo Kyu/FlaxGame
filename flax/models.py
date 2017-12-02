@@ -70,6 +70,7 @@ class Player(Base):
     actions = Column(Integer, default=10)
     ammo = Column(Integer, default=200)
     morale = Column(Integer, default=100)
+    dug_in = Column(Integer, default=0)
 
     level = Column(Integer, default=1)
     experience = Column(Integer, default=0)

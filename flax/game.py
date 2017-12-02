@@ -113,6 +113,23 @@ def update_player_info(player, updates=None):
         return False, type(e).__name__ + ': ' + str(e)
 
 
+def player_dig_in(player):
+    player = DBSession.query(Player).filter_by(username=player).one()
+    if player.actions < 5:
+        return "You need 5 actions to dig in!"
+    if player.dug_in == 100:
+        return "You cant dig in any further!"
+
+    if player.dug_in > 95:
+        dug = 100
+    else:
+        dug = player.dug_in + 5
+
+    update_player_info(player, {'dug_in': dug})
+
+    return "Successfully dug in!"
+
+
 def remove_actions_from(player, actions):
     player = get_player_info(player)
 
@@ -330,7 +347,7 @@ def player_attack(attacker, defender):
         update_player_info(defender.username, updates={'troops': a_min, 'morale': 10, 'ammo': 0})
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
 
-    send_message(_from='', message=d_msg, to=defender.username)
+    send_message(_from='', message=d_msg, to=defender.username) #Also remove dug in if player is shit
     return msg
 
 
@@ -354,7 +371,7 @@ def send_player_to(location, player, force=False):
 
         remove_actions_from(player, round(actions_needed))
 
-    movement = update_player_info(player, updates={'location': location})
+    movement = update_player_info(player, updates={'location': location, 'dug_in': 0})
 
     if movement[0]:
         return "Successfully moved from {player_loc} to {new_loc}!".format(player_loc=player_loc, new_loc=location)

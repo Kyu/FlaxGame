@@ -42,6 +42,7 @@
                     <h3>Name: ${team_member.username}</h3>
                     <p>Location: <a href="${request.route_url('game')}/${team_member.location}">${team_member.location}</a></p>
                     <p>Troops: ${team_member.troops}</p>
+                    <p>Dug in: ${team_member.dug_in}%</p>
                     <p>Squad: ${team_member.squad_type}</p>
                 </td>
             </tr>

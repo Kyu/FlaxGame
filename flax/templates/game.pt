@@ -2,6 +2,7 @@
 
 <html lang="en">
 <head>
+    <!-- TOOD Make it look decent -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
@@ -126,6 +127,10 @@
                     <form tal:condition="friendly" action="${request.route_url('upgrade_infrastructure')}" method="post">
                         <button name="infrastructure">Upgrade!!</button>
                     </form>
+                    <h4>Available ammo: ${current_hex.ammo}</h4>
+                    <form tal:condition="friendly" action="${request.route_url('dig_in')}" method="post">
+                        <button name="dig_in">Dig in!</button>
+                    </form>
                     <h3 tal:condition="is_here">You are here!</h3>
                 </ul>
                 <?python
@@ -147,6 +152,7 @@
                                     <li>Squad type: ${here_info.squad_type}</li>
                                     <li>Team: <a href="/team/${here_info.team}">${here_info.team}</a></li>
                                     <li>Troops: ${here_info.troops}</li>
+                                    <li>Dug in: ${here_info.dug_in}%</li>
                                     <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
                                         <button name="player_called" value="${here_info.username}">Attack!</button>
                                     </form>
@@ -164,7 +170,7 @@
         </div>
 
         <div id="content" class="container">
-            <!-- TODO Add x Infantry, y Tank located here to title, edit border of city and capital tds -->
+            <!-- TODO edit border of city and capital tds -->
             <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
                     <td tal:repeat="hex_row [i for i in list(hexes.keys()) if i.x == hex_col]" title="${hex_row.name} - ${hex_row.type} ${hexes[hex_row]}" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control.lower() if hex_row.control != 'None' else ''}">

@@ -32,7 +32,8 @@ from .game import (
     upgrade_hex_for,
     upgrade_infrastructure_for,
     get_radio_for,
-    send_message
+    send_message,
+    player_dig_in
 )
 from .security import (
     create_user,
@@ -233,6 +234,13 @@ def increase_hex_infrastructure(request):
     return HTTPFound(location=return_to_sender(request))
 
 
+@view_config(route_name='dig_in', request_method='POST', permission='play')
+def dig_in(request):
+    dig = player_dig_in(request.authenticated_userid)
+    request.session.flash(dig, 'action')
+    return HTTPFound(location=return_to_sender(request))
+
+
 @view_config(route_name='team_info', renderer='templates/team.pt', permission='play')
 def team_info(request):
     team_name = request.matchdict['team']
@@ -313,9 +321,9 @@ def unban_player_view(request):
 
 @view_config(route_name='player_info', permission='admin')
 def player_info_view(request):
-    args = ['id', 'username', 'squad_type', 'team', 'troops', 'location', 'last_active', 'actions', 'ammo', 'level',
+    args = ['id', 'username', 'squad_type', 'team', 'troops', 'location', 'dug_in', 'last_active', 'actions', 'ammo', 'level',
             'banned', 'banned_by', 'time_banned', 'reason_banned']
-    zeroes = 'actions, ammo', 'banned'
+    zeroes = 'actions, ammo', 'banned', 'dug_in'
     player = get_player_info(request.params['username'])
     if not player:
         pinfo = "Invalid player: {}".format(request.params['username'])
