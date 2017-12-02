@@ -100,7 +100,7 @@ def create_user(username, email, password, request=None):
                 if request:
                     subject = "Welcome to Flax!"
                     recipient = email
-                    body = 'Start playing now!\nVerify with http://localhost:6543/verify?code=' + code
+                    body = 'Start playing now!\nVerify with https://flaxgame.net/verify?code=' + code
                     send_email(request, recipient, subject, body)
 
                 DBSession.add(new_user)
