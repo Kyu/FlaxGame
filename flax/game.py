@@ -29,7 +29,28 @@ log = logging.getLogger(__name__)
 def get_hexes():
     hexes = DBSession.query(Hex)
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))
-    return sorted_hexes
+    hexes = {}
+    for i in sorted_hexes:
+        hexes[i] = ''
+        tanks = 0
+        infantry = 0
+        try:
+            here = DBSession.query(Player).filter(Player.is_active).filter_by(location=i.name).all()
+            tanks += sum([i.troops for i in here if i.squad_type == 'Tank'])
+            infantry += sum([i.troops for i in here if i.squad_type == 'Infantry'])
+        except NoResultFound:
+            continue
+
+        if tanks:
+            hexes[i] += "-- {tanks} Tank troops".format(tanks=tanks)
+        if infantry:
+            if tanks:
+                hexes[i] += ", "
+            else:
+                hexes[i] += "-- "
+            hexes[i] += "{infantry} Infantry troops".format(infantry=infantry)
+
+    return hexes
 
 
 def get_location_called(name):
