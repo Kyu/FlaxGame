@@ -159,8 +159,8 @@ a {
 }
 
 .location-city {
-    border-style: dashed;
     font-weight: 900;
+    border-width: thick;
 }
 
 

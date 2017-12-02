@@ -170,7 +170,6 @@
         </div>
 
         <div id="content" class="container">
-            <!-- TODO edit border of city and capital tds -->
             <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
                     <td tal:repeat="hex_row [i for i in list(hexes.keys()) if i.x == hex_col]" title="${hex_row.name} - ${hex_row.type} ${hexes[hex_row]}" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control.lower() if hex_row.control != 'None' else ''}">
