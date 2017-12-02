@@ -7,6 +7,7 @@ from random import (
     randrange,
     choice
 )
+from collections import OrderedDict
 
 import transaction
 from sqlalchemy import (
@@ -50,7 +51,8 @@ def get_hexes():
                 hexes[i] += "-- "
             hexes[i] += "{infantry} Infantry troops".format(infantry=infantry)
 
-    return hexes
+    re_sort = OrderedDict(sorted(hexes.items(), key=lambda the_hex: (the_hex[0].x, the_hex[0].y)))
+    return re_sort
 
 
 def get_location_called(name):
