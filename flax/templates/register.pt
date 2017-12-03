@@ -1,4 +1,4 @@
-<!DOCTYPE html metal:define-macro="login">
+<!DOCTYPE html metal:define-macro="register">
 
 <html lang="en">
 <head>
@@ -8,7 +8,7 @@
     <meta name="referrer" content="always">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <meta property="og:title" content="Flax • Login">
+    <meta property="og:title" content="Flax • Register">
     <meta property="og:site_name" content="Flax">
     <meta property="og:description" content="Flax - A turn based web strategy game">
     <meta property="og:type" content="game">
@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-    <title>Flax • Login</title>
+    <title>Flax • Register</title>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-102770740-1"></script>
     <script>
@@ -38,47 +38,24 @@
     </script>
 </head>
 
-<body>
-<h1 class='login'>Login</h1>
-<div>
-
-<div id="flash" tal:condition="request.session.peek_flash('login')">
-  <span tal:omit-tag="" 
-        tal:repeat="message request.session.pop_flash('login')">
-      ${message}<br>
-  </span>
-</div>
-<form action="${request.route_url('login')}" method="post">
-     <input type="text" id="username" placeholder="username or email"
-           name="username" title="Enter username or email here" required/><br/>
-    <input type="password" id="password" placeholder="password"
-           name="password" title="Enter password here" required/><br/>
-    <button type="submit" name="login">Login</button>
-</form>
-    <a href="${request.route_url('recover_password')}">Forgot your password?</a>
-
-<h1>One click login</h1>
-
-    <div id="flash" tal:condition="request.session.peek_flash('oneclick')">
+<h1>Register</h1>
+    <div id="flash" tal:condition="request.session.peek_flash('register')">
         <span tal:omit-tag=""
-        tal:repeat="message request.session.pop_flash('oneclick')">
+        tal:repeat="message request.session.pop_flash('register')">
       ${message}<br>
         </span>
     </div>
-<form action="${request.route_url('ip_login')}" method="post">
-    <input type="text" id="username" placeholder="username"
-           name="username"/><br/>
-    <button type="submit" name="login">Register</button>
+<form action="${request.route_url('register')}" method="post">
+    <p tal:condition="player and player.uses_ip">Registering with username and email for: ${player.username}</p>
+    <input tal:condition="not player" type="text" id="username" placeholder="username"
+           name="username" required/><br/>
+    <input tal:condition="player and player.uses_ip" type="hidden" id="username" placeholder="username"
+           name="username" value="${player.username}" required/><br/>
+    <input type="text" id="email" placeholder="email"
+           name="email" required/><br/>
+    <input type="password" id="password" placeholder="password"
+           name="password" required/><br/>
+    <button type="submit" name="register">Register</button>
 </form>
-
-<h6><a href="${request.route_url('register')}">This type of login is IP based. If you want a persistent account, click here to register with a password.</a></h6>
-
-
-
-
-</div>
-
-
-</body>
 
 </html>

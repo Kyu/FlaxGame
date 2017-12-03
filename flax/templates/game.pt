@@ -68,6 +68,13 @@
             </span>
         </div>
 
+        <div id="flash" tal:condition="request.session.peek_flash('register')">
+            <span tal:omit-tag=""
+                tal:repeat="message request.session.pop_flash('register')">
+                <p>${message}</p><br>
+            </span>
+        </div>
+
         <div id="sidebar-left" class="sidebar">
             <form action="${request.route_url('logout')}" method="post">
                 <button id="logout">Logout!</button>
@@ -113,6 +120,7 @@
                 </form>
             </div>
             <h3><a href="${request.static_url('flax:static/guide.html')}">Unsure of how to play? Click here!</a></h3>
+            <h6 tal:condition="player.uses_ip"><a href="${request.route_url('register')}">Click here to register with a password and use your account on any device</a></h6>
         </div>
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">

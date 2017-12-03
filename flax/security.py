@@ -80,6 +80,66 @@ def verify_security_code(code):
         return "An error occurred"
 
 
+def create_ip_user(request):
+    if 'username' not in request.params:
+        return "Username not defined"
+    username = request.params['username']
+    ip = request.remote_addr
+
+    try:
+        DBSession.query(User).filter_by(username=username).one()
+        user_exists = True
+    except NoResultFound:
+        user_exists = False
+
+    try:
+        DBSession.query(User).filter_by(ip=ip).one()
+        ip_exists = True
+    except NoResultFound:
+        ip_exists = False
+
+    if ip_exists:
+        current = DBSession.query(Player).filter_by(username=username).one()
+        if current.uses_ip:
+            if username == current.username:
+                return "Account created Successfully"
+            return "This IP already has an account! Log in as {username}!".format(username=current.username)
+
+    if user_exists:
+        return "This username is already taken!"
+
+    if not is_okay_username(username):
+        return "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
+
+    # create_user(username, email='', password='', ip=ip)
+
+    try:
+        stats = gen_player()
+        with transaction.manager:
+            new_user = User(username=username, ip=ip)
+            DBSession.add(new_user)
+            transaction.commit()
+            player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
+                                  squad_type=stats['squad'], location=stats['location'], troops=stats['troops'],
+                                  uses_ip=True)
+            DBSession.add_all([player_model])
+
+            return "Account created Successfully"
+    except transaction.interfaces.TransactionFailedError as e:
+        err = type(e).__name__ + ': ' + str(e)
+    except IntegrityError:
+        return "This username or email already exists"
+    except Exception as e:
+        err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
+
+    msg = "{err} on create_ip_user(username={username}, password=****)" \
+        .format(err=err, username=username)
+    log.warning(msg)
+
+    return "User creation failed"
+
+
+# TODO Refactor to make sure empty passwords don't get entered with IP registration
 def create_user(username, email, password, request=None):
     # Creates a new User and a Player to match
     # team, squad_type are random
@@ -94,35 +154,69 @@ def create_user(username, email, password, request=None):
             return "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
         if not is_okay_password(password):
             return "Your password needs to be 8-64 characters long"
-        try:
-            stats = gen_player()
-            with transaction.manager:
-                code = gen_security_code()
-                new_user = User(username=username, email=email, password=hash_password(password), verification=code)
 
+    def mailinator(code):
+        if request:
+            subject = "Welcome to Flax!"
+            recipient = email
+            body = 'Start playing now!\nVerify with https://flaxgame.net/verify?code=' + code
+            send_email(request, recipient, subject, body)
+
+    def continue_creating(taken=False):
+        code = gen_security_code()
+        if taken:
+            DBSession.query(User).filter_by(username=username).update({'email': email,
+                                                                       'password': hash_password(password),
+                                                                       'verification': code})
+            DBSession.query(Player).filter_by(username=username).update({'uses_ip': False})
+            mailinator(code)
+            return "Account officially made official!"
+        else:
+            try:
                 if request:
-                    subject = "Welcome to Flax!"
-                    recipient = email
-                    body = 'Start playing now!\nVerify with https://flaxgame.net/verify?code=' + code
-                    send_email(request, recipient, subject, body)
+                    ip = request.remote_addr
+                else:
+                    ip = ''
+                stats = gen_player()
+                with transaction.manager:
+                    code = gen_security_code()
+                    new_user = User(username=username, email=email, password=hash_password(password), verification=code,
+                                    ip=ip)
 
-                DBSession.add(new_user)
-                transaction.commit()
-                player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
-                                      squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])
-                DBSession.add_all([player_model])
+                    mailinator(code)
 
-                return "Account created Successfully"
-        except transaction.interfaces.TransactionFailedError as e:
-            err = type(e).__name__ + ': ' + str(e)
-        except IntegrityError:
-            return "This username or email already exists"
-        except Exception as e:
-            err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
+                    DBSession.add(new_user)
+                    transaction.commit()
+                    player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
+                                          squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])
+                    DBSession.add_all([player_model])
 
-    msg = "{err} on create_user(username={username}, email={email}, password=****)" \
-        .format(err=err, username=username, email=email)
-    log.warning(msg)
+                    return "Account created Successfully"
+            except transaction.interfaces.TransactionFailedError as e:
+                err = type(e).__name__ + ': ' + str(e)
+            except IntegrityError:
+                return "This username or email already exists"
+            except Exception as e:
+                err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
+
+        msg = "{err} on create_user(username={username}, email={email}, password=****)" \
+            .format(err=err, username=username, email=email)
+        log.warning(msg)
+
+    try:
+        prospective_user = DBSession.query(User).filter_by(username=username).one()
+    except NoResultFound:
+        creation = continue_creating()
+        if creation:
+            return creation
+    else:
+        if prospective_user.username != request.authenticated_userid:
+            # Username already exists, checking to see if logged in as user
+            return "Username already taken!"
+        else:
+            creation = continue_creating(taken=True)
+            if creation:
+                return creation
 
     return "User creation failed"
 

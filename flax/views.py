@@ -41,7 +41,8 @@ from .security import (
     change_setting,
     verify_security_code,
     start_recovery,
-    recover_password
+    recover_password,
+    create_ip_user
 )
 
 
@@ -81,29 +82,37 @@ def test_view(request):
     return {'page_title': 'Test View'}
 
 
-@view_config(route_name='register', request_method='POST')
+@view_config(route_name='register', renderer='templates/register.pt')
 def register(request):
-    if request.authenticated_userid:
-        return HTTPFound(location='/')
-
-    if 'register' in request.params:
-        if 'username' not in request.params:
-            message = request.session.flash("No username defined")
-        elif 'password' not in request.params:
-            message = request.session.flash("Enter a password")
-        elif 'email' not in request.params:
-            message = request.session.flash("Enter an email address")
+    player = None
+    if request.authenticated_userid and request.method != 'POST':
+        player = get_player_info(request.authenticated_userid)
+        if player.uses_ip:  # TODO Add IP to admin thingy
+            pass
         else:
-            username = request.params['username']
-            password = request.params['password']
-            email = request.params['email']
-            if email and password and username:
-                message = create_user(username, email, password, request)
-            else:
-                message = "All fields must be filled!"
-        request.session.flash(message, 'register')
+            return HTTPFound(location='/')
 
-    return HTTPFound(location=request.route_url('home'))
+    if request.method == 'POST':
+        if 'register' in request.params:
+            if 'username' not in request.params:
+                message = request.session.flash("No username defined")
+            elif 'password' not in request.params:
+                message = request.session.flash("Enter a password")
+            elif 'email' not in request.params:
+                message = request.session.flash("Enter an email address")
+            else:
+                username = request.params['username']
+                password = request.params['password']
+                email = request.params['email']
+                if email and password and username:
+                    message = create_user(username, email, password, request)
+                else:
+                    message = "All fields must be filled!"
+            request.session.flash(message, 'register')
+
+        return HTTPFound(location=request.route_url('register'))
+    else:
+        return {'player': player}
 
 
 @view_config(route_name='login', request_method='POST')
@@ -125,6 +134,17 @@ def login(request):
                 message = verified['status']
 
         request.session.flash(message, 'login')
+
+    return HTTPFound(location=return_to_sender(request))
+
+
+@view_config(route_name='ip_login', request_method='POST')
+def ip_login(request):
+    msg = create_ip_user(request)
+    request.session.flash(msg, 'oneclick')
+    if msg == 'Account created Successfully':
+        headers = remember(request, request.params['username'])
+        return HTTPFound(location=return_to_sender(request), comment='Logged in successfully', headers=headers)
 
     return HTTPFound(location=return_to_sender(request))
 

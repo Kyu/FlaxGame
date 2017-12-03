@@ -41,14 +41,15 @@ class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     username = Column(String(20), unique=True, nullable=False)
-    email = Column(String(256), unique=True, nullable=False)
-    password = Column(String(256), nullable=False)
+    email = Column(String(256), unique=True, nullable=True)
+    ip = Column(String(257))
+    password = Column(String(256), nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
-    verification = Column(String(256), unique=True, nullable=False)
+    verification = Column(String(256), unique=True, nullable=True)
     is_verified = Column(Boolean, nullable=False, server_default=expression.false())
     admin = Column(Boolean, nullable=False, server_default=expression.false())
 
-
+# ALTER TABLE players ADD ip VARCHAR(257) NULL;
 class Player(Base):
     __tablename__ = 'players'
     id = Column(Integer, primary_key=True)
@@ -61,6 +62,7 @@ class Player(Base):
     is_active = Column(Boolean, server_default=expression.true())
     last_active = Column(DateTime, server_default=func.now(), onupdate=func.current_timestamp())
     is_new = Column(Boolean, server_default=expression.true())
+    uses_ip = Column(Boolean, server_default=expression.false())
 
     banned = Column(Boolean, server_default=expression.false())
     banned_by = Column(String(20))
