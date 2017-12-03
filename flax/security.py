@@ -25,7 +25,10 @@ def send_email(request, recipient, subject, body):
     mailer = request.registry['mailer']
     message = Message(subject=subject, sender='theflaxgame@gmail.com', recipients=[recipient],
                       body=body)
-    mailer.send(message)
+    try:
+        mailer.send(message)
+    except SMTPRecipientsRefused:
+        pass
 
 
 def hash_password(pw):
@@ -114,8 +117,6 @@ def create_user(username, email, password, request=None):
             err = type(e).__name__ + ': ' + str(e)
         except IntegrityError:
             return "This username or email already exists"
-        except SMTPRecipientsRefused:
-            return "Could not send a verification email to this address, does it exist?"
         except Exception as e:
             err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
 
