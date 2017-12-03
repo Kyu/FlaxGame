@@ -175,7 +175,10 @@ def can_move(to, player):
             return to, 'This location does not exist'
     if player.location == to.name:
         return False, 'The location you are trying to move to is the same location you are currently in'
-    if (to.control not in friendly and currently_at.control not in friendly) and player.squad_type != 'Tank':
+    # Infantry, artillery cant move enemy -> enemy
+    # Tanks cant move enemy controlled capital -> enemy controlled location
+    if (to.control not in friendly and currently_at.control not in friendly) and \
+            (player.squad_type != 'Tank' or (player.squad_type == 'Tank' and to.type in ('city', 'capital'))):
         return False, 'One of the locations you are moving to/from must be friendly'
     if to.control != 'None' and to.control != player.team:
         status = 'Enemy'
