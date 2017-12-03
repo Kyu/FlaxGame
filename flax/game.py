@@ -26,7 +26,7 @@ from .models import (
 
 log = logging.getLogger(__name__)
 
-# TODO DIG IN, FIX FIX FIX FIX FUCKING FIX ATTACK FORUMLA
+
 def get_hexes():
     hexes = DBSession.query(Hex)
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))
@@ -222,11 +222,12 @@ def artillery_attack(attacker, defender):
             loss = 1
         else:
             loss = 10
+        loss += 1  # DELETE THIS LINE WHEN WORKING ON ACTUAL FORMULA. ONLY HERE TO APPEASE PYCHARM
 
     # Send kill messages etc
 
 
-# Fixed, one instance of unreproducible wild attack, cannot remember how it goes
+# TODO Implement dig in
 def player_attack(attacker, defender):
     can_attack = player_can_attack(attacker=attacker, defender=defender)
     if can_attack is not True:
@@ -234,66 +235,97 @@ def player_attack(attacker, defender):
 
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
-    #  Returns negative if morale < 1, error if 0
+    # Default: 100 troops, 2 attack, 100 morale
 
-    attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale+0.1) + (randrange(11, 20)/10))
-    defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale+0.1) + (randrange(11, 20)/10))
+    # Returns negative if morale < 1, error if 0, make +1 instead?
+    # 21.x at default
+    attacker_strength = (sqrt(attacker.troops*attacker.attack) * log10(attacker.morale+1.1) + (randrange(11, 20)/10))
+    defender_strength = (sqrt(defender.troops*defender.defense) * log10(defender.morale+1.1) + (randrange(11, 20)/10))
 
     a_ammo_needed = attacker.troops//attacker.logistics  # 5
     d_ammo_needed = defender.troops//defender.logistics
 
-    a_troops = attacker.troops  # 5
-    d_troops = defender.troops
-    a_min = 10
+    a_min = 10  # Minimum amount of troops you can have
     d_min = 10
 
-    a_multiplier = 1
-    d_multiplier = 1
+    a_max = 100 * attacker.charisma  # Maximum amount of troops you can have
+    d_max = 100 * defender.charisma
 
+    tank_multiplier_choices = \
+        [2.5, 2.5,
+         3, 3, 3, 3,
+         3.5, 3.5, 3.5, 3.5, 3.5, 3.5,
+         4, 4, 4, 4,
+         5, 5,
+         5.5]  # Choices for attack_strength multiplier if tank
+
+    '''
+    43.1 makes it 50/50? of getting 1 or 0 taken out if Infantry vs Tank
+    14.4 makes it 50/50? or getting 1 or 2
+    10 is sure 2, 20 is sure 1
+    '''
+    infantry_demultiplier_choices = \
+        [10, 10, 10,
+         20, 20, 20, 20, 20, 20,
+         14.4, 14.4, 14.4, 14.4, 14.4,
+         43.1, 43.1, 43.1]
+
+    # Tweak minimum and maximum troops if attacker is a Tank. Also tweak strength
     if attacker.squad_type == 'Tank':
-        a_min = 1
-        a_multiplier = 10
-        attacker_strength *= choice((3, 4, 5))
-        defender_strength /= 10
-        a_ammo_needed *= 100  # 500
-        a_troops *= 100  # 500
+        a_min = 2
+        a_max = 10 * attacker.charisma
+        attacker_strength *= choice(tank_multiplier_choices)
+        a_ammo_needed *= 100
+        if defender.squad_type == 'Infantry':  # Decrease defender strength because 10-21
+            defender_strength /= choice(infantry_demultiplier_choices)
+        elif defender.squad_type == 'Tank':
+            defender_strength /= 10
+
     if defender.squad_type == 'Tank':
-        d_min = 1
-        d_multiplier = 10
-        defender_strength *= choice((3, 4, 5))
-        attacker_strength /= 10
+        d_min = 2
+        d_max = 10 * defender.charisma
+        defender_strength *= choice(tank_multiplier_choices)
         d_ammo_needed *= 100
-        d_troops *= 100
+        if attacker.squad_type == 'Infantry':
+            attacker_strength /= choice(infantry_demultiplier_choices)
+        elif attacker.squad_type == 'Tank':
+            attacker_strength /= 10
 
-    if a_ammo_needed > attacker.ammo:
-        attacker_strength = attacker_strength * (attacker.ammo / attacker.troops)
+    if a_ammo_needed > attacker.ammo:  # If player doesnt have enough ammo, decrease strength by ammo/ammo needed
+        attacker_strength *= (attacker.ammo / a_ammo_needed)
     if d_ammo_needed > defender.ammo:
-        defender_strength = defender_strength * (defender.ammo / defender.troops)
+        defender_strength *= (defender.ammo / d_ammo_needed)
 
-    if attacker_strength*a_multiplier > defender_strength*d_multiplier:
-        attacker_loss = round(defender_strength)
-        defender_loss = round(attacker_strength)
-        if attacker_loss*a_multiplier == defender_loss*d_multiplier:
-            status = dict(result='win', draw=True)
-        else:
-            status = dict(result='win', draw=False)
+    # Calculate percent of max troops lost. Will be used to calculate winner/loser
+    attacker_loss_percent = defender_strength/a_max * 100
+    defender_loss_percent = attacker_strength/d_max * 100
+
+    # Round off strengths to get actual losses
+    attacker_loss = round(defender_strength)
+    defender_loss = round(attacker_strength)
+
+    draw = False
+
+    # Since player attacked, they must always have a lower percent of loss
+    # Hmm using percent of loss might not always be a good idea. e.g 10/100 infantry loss vs 10/200 infantry loss
+    if defender_loss_percent > attacker_loss_percent:
+        win = True
     else:
-        attacker_loss = round(defender_strength)
-        defender_loss = round(attacker_strength)
-        if attacker_loss*a_multiplier == defender_loss*d_multiplier:
-            status = dict(result='loss', draw=True)
-        else:
-            status = dict(result='loss', draw=False)
+        win = False
+        if defender_loss_percent == attacker_loss_percent:
+            draw = True
 
+    # Remove actions and ammo from players
     remove_actions_from(attacker.username, 1)
     remove_ammo_from(attacker.username, a_ammo_needed)
 
     remove_ammo_from(defender.username, d_ammo_needed)
 
+    # Just checking for errors -- actually forgot why I put this here, but It seems important
     fight1 = update_player_info(attacker.username, updates={'troops': attacker.troops - attacker_loss})
     fight2 = update_player_info(defender.username, updates={'troops': defender.troops - defender_loss})
 
-    if status['result'] == 'win':
+    if win:
         update_player_info(defender.username, updates={'morale': defender.morale - 10})
     else:
         update_player_info(attacker.username, updates={'morale': attacker.morale - 10})
@@ -305,13 +337,14 @@ def player_attack(attacker, defender):
     elif fight1[0] is False:
         return "A problem occurred, investigating"
 
-    if status['result'] == 'win':
+    # Win and loss messages, update exp for winners
+    if win:
         msg = "You won! {defender} lost {d_loss} troops while you only lost {a_loss}. ".format(
                 defender=defender.username, d_loss=defender_loss, a_loss=attacker_loss)
         d_msg = "You were attacked by {attacker} and lost {d_loss} troops while they only lost {a_loss} troops.".format(
             attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
         update_player_info(attacker.username, updates={'experience': attacker.experience + defender_loss})
-        if status['draw']:
+        if draw:
             msg += ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
                     "the hearts of the enemy and they lose morale.")
             d_msg += ("Even though the losses were the same, your squad become discouraged "
@@ -323,13 +356,15 @@ def player_attack(attacker, defender):
         d_msg = "You were attacked by {attacker} and only lost {d_loss} troops while they lost {a_loss} troops.".format(
             attacker=attacker.username, d_loss=defender_loss, a_loss=attacker_loss)
         update_player_info(defender.username, updates={'experience': defender.experience + attacker_loss})
-        if status['draw']:
+        if draw:
             msg += "Even though losses are the same, your squad become discouraged at the lack of win and lose morale."
             d_msg += ("Even though the losses were the same, the vigour and skill of your squad strikes fear into "
                       "the hearts of the enemy and they lose morale.")
 
+    # Update players
     attacker, defender = get_player_info(attacker.username), get_player_info(defender.username)
 
+    # Reset any out of bound stats, send players home if need be
     if attacker.ammo < 0:
         update_player_info(attacker.username, updates={'ammo': 0})
     if defender.ammo < 0:
@@ -338,16 +373,21 @@ def player_attack(attacker, defender):
     if attacker.troops < a_min or attacker.morale < 10:
         msg += " You drop everything and hurry back to the capital to regenerate."
         d_msg += "Their losses are heavy and they rush back to the capital to regenerate"
-        update_player_info(attacker.username, updates={'troops': a_min, 'morale': 10, 'ammo': 0})
+        update_player_info(attacker.username, updates={'troops': a_min, 'morale': 10, 'ammo': 0, 'dug_in': 0,
+                                                       'actions': 0})
         send_player_to(get_team_info(attacker.team)['capital'], attacker.username, force=True)
 
     if defender.troops < d_min or defender.morale < 10:
         msg += " The enemy rushes back to their capital to regenerate."
         d_msg += "Your losses are great so and you drop everything hurry back to the capital to regenerate"
-        update_player_info(defender.username, updates={'troops': a_min, 'morale': 10, 'ammo': 0})
+        update_player_info(defender.username, updates={'troops': d_min, 'morale': 10, 'ammo': 0, 'dug_in': 0,
+                                                       'actions': 0})
         send_player_to(get_team_info(defender.team)['capital'], defender.username, force=True)
 
-    send_message(_from='', message=d_msg, to=defender.username) #Also remove dug in if player is shit
+    # Send summary message to defender.
+    send_message(_from='', message=d_msg, to=defender.username)
+
+    # Returns summary message to attacker
     return msg
 
 
