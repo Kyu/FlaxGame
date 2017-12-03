@@ -10,7 +10,7 @@
       gtag('config', 'UA-102770740-1');
     </script>
     <title>Banned</title>
-    <link rel="shortcut icon" href="${request.static_url('flax:static/fav.png')}">
+    <link rel="shortcut icon" href="${request.static_url('flax:static/favicon-16x16.ico')}">
 </head>
 
 <body>

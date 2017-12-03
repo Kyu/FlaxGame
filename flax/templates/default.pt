@@ -2,5 +2,5 @@
 
 <div tal:condition="not request.authenticated_userid" metal:use-macro="load: login.pt"></div>
 
-<div tal:condition="request.unauthenticated_userid">Error, please clear your coookies</div>
+<div tal:condition="request.unauthenticated_userid">Error, please clear your coookies. If this message insists, please contact an admin</div>
 

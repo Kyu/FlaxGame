@@ -9,8 +9,8 @@
 
       gtag('config', 'UA-102770740-1');
     </script>
-
-    <title>Password Recovery</title>
+    <link rel="shortcut icon" href="${request.static_url('flax:static/favicon-16x16.ico')}">
+    <title>Flax • Password Recovery</title>
 </head>
 
 <body>

@@ -1,5 +1,24 @@
 <html lang="en">
 <head>
+    <meta charset="utf-8">
+    <meta name="keywords" content=" flax, flaxgame, game, webgame, browsergame, turns ">
+    <meta name="description" content="Flax - A turn based web strategy game">
+    <meta name="referrer" content="always">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <meta property="og:title" content="Flax • 404">
+    <meta property="og:site_name" content="Flax">
+    <meta property="og:description" content="Flax - A turn based web strategy game">
+    <meta property="og:type" content="game">
+    <meta property="og:image" content="${request.static_url('flax:static/favicon.png')}">
+
+    <meta property="twitter:site" content="flaxgame">
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:title" content="Flax - A turn based web strategy game">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="canonical" href="${request.route_url('game')}">
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-102770740-1"></script>
     <script>
@@ -10,8 +29,8 @@
       gtag('config', 'UA-102770740-1');
     </script>
 
-    <link rel="shortcut icon" href="${request.static_url('flax:static/fav.png')}">
-    <title>Four oh Four</title>
+    <link rel="shortcut icon" href="${request.static_url('flax:static/favicon-16x16.ico')}">
+    <title>Flax • 404</title>
 </head>
 
 <body>

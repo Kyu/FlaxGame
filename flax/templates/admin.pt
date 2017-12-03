@@ -11,7 +11,7 @@
     </script>
 
     <title>Admin: ${name}</title>
-    <link rel="shortcut icon" href="${request.static_url('flax:static/fav.png')}">
+    <link rel="shortcut icon" href="${request.static_url('flax:static/favicon-16x16.ico')}">
 </head>
 
 <body>
