@@ -149,7 +149,7 @@
                     <form tal:condition="friendly" action="${request.route_url('upgrade_industry')}" method="post">
                         <button name="industry">Upgrade!</button>
                     </form>
-                    <h4>Industry: ${current_hex.infrastructure}</h4>
+                    <h4>Infrastructure: ${current_hex.infrastructure}</h4>
                     <form tal:condition="friendly" action="${request.route_url('upgrade_infrastructure')}" method="post">
                         <button name="infrastructure">Upgrade!!</button>
                     </form>
