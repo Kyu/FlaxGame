@@ -5,7 +5,7 @@ CREATE TRIGGER on_player_action
     FOR EACH ROW
 BEGIN
     IF OLD.actions > NEW.actions THEN
-    SET last_active = NOW();
+    SET NEW.last_active = NOW();
 END IF;
 END$$
 DELIMITER ;
