@@ -40,6 +40,7 @@ div#sidebar-left {
     width: 200px;
     top: 0;
     left: 0;
+    padding: 5px;
     background: #14A5C9;
     color: black;
     font-weight: bold;
@@ -73,7 +74,7 @@ div.sidebar button {
 
 div.sidebar ul {
     list-style-type: none;
-    margin: 5px;
+    margin: 0;
     padding: 0;
 }
 
