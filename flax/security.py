@@ -28,7 +28,7 @@ def send_email(request, recipient, subject, body):
     try:
         mailer.send(message)
     except SMTPRecipientsRefused:
-        pass
+        return "Could not send a verification email to this address, does it exist?"
 
 
 def hash_password(pw):
@@ -175,8 +175,10 @@ def start_recovery(request, email):
         user.update({'verification': code})
 
         body = 'To recover your password, please visit this link: http://localhost:6543/recover?code=' + code
-        send_email(request, usr.email, "Flax password recovery", body)
+        msg = send_email(request, usr.email, "Flax password recovery", body)
         transaction.commit()
+        if msg is not None:
+            return msg
     return "A recovery email has been sent!"
 
 
