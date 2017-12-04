@@ -1,5 +1,5 @@
 import logging
-from random import randrange, SystemRandom
+from random import SystemRandom
 import string
 from smtplib import SMTPRecipientsRefused
 
@@ -22,6 +22,8 @@ log = logging.getLogger(__name__)
 
 
 def send_email(request, recipient, subject, body):
+    # Send email to person.
+    # TODO find a way to do this without request param. Also add way to un sub from emails. Also add Fancy emails.
     mailer = request.registry['mailer']
     message = Message(subject=subject, sender='theflaxgame@gmail.com', recipients=[recipient],
                       body=body)
@@ -31,14 +33,14 @@ def send_email(request, recipient, subject, body):
         return "Could not send a verification email to this address, does it exist?"
 
 
-def hash_password(pw):
-    # Returns hashed password as string
+def hash_string(pw):
+    # Returns a hashed string
     return bcrypt.hashpw(pw.encode('utf8'), bcrypt.gensalt())
 
 
-def check_password(pw, hashed_pw):
+def matches_hash(_string, hash_string):
     # Return True if hashed `pw` matches `hashed_password`
-    return bcrypt.checkpw(pw.encode('utf8'), hashed_pw.encode('utf8'))
+    return bcrypt.checkpw(_string.encode('utf8'), hash_string.encode('utf8'))
 
 
 def is_okay_username(username):
@@ -54,6 +56,7 @@ def is_okay_username(username):
 
 
 def is_okay_password(password):
+    # See if password matches criteria of 8-64 chars
     if len(password) < 8 or len(password) > 64:
         return False
 
@@ -61,7 +64,8 @@ def is_okay_password(password):
 
 
 def gen_security_code(size=16, chars=string.ascii_letters + string.digits):
-    return ''.join(SystemRandom().choice(chars) for _ in range(size))
+    code = ''.join(SystemRandom().choice(chars) for _ in range(size))
+    return code  # return hash_string(code)
 
 
 def verify_security_code(code):
@@ -170,7 +174,7 @@ def create_user(username, email, password, request=None):
         code = gen_security_code()
         if taken:
             DBSession.query(User).filter_by(username=username).update({'email': email,
-                                                                       'password': hash_password(password),
+                                                                       'password': hash_string(password),
                                                                        'verification': code})
             DBSession.query(Player).filter_by(username=username).update({'uses_ip': False})
             mailinator(code)
@@ -184,7 +188,7 @@ def create_user(username, email, password, request=None):
                 stats = gen_player()
                 with transaction.manager:
                     code = gen_security_code()
-                    new_user = User(username=username, email=email, password=hash_password(password), verification=code,
+                    new_user = User(username=username, email=email, password=hash_string(password), verification=code,
                                     ip=ip)
 
                     mailinator(code)
@@ -236,7 +240,7 @@ def verify_login(username, password):
         try:
             expected_user = DBSession.query(User).filter(or_(User.username == username, User.email == username)).one()
             expected_password = expected_user.password
-            if check_password(password, expected_password):
+            if matches_hash(password, expected_password):
                 usr['username'] = expected_user.username
             DBSession.query(Player).filter_by(username=username).update({Player.is_active: True})
         except NoResultFound:
@@ -258,7 +262,7 @@ def change_password(username, new, old, force=False):
     if not verified:
         return "Could not verify old credentials"
 
-    DBSession.query(User).filter_by(username=username).update({'password': hash_password(new)})
+    DBSession.query(User).filter_by(username=username).update({'password': hash_string(new)})
 
 
 def start_recovery(request, email):
@@ -296,7 +300,7 @@ def recover_password(new, code):
         return ("Password does not meet criteria, please review! Remember: Your password needs: "
                 "To be at least 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character")
 
-    user.update({'password': hash_password(new), 'verification': ''})
+    user.update({'password': hash_string(new), 'verification': ''})
     return "Password changed successfully"
 
 
@@ -310,7 +314,7 @@ def change_setting(username, password, setting, new):
     if setting not in valid_settings:
         return "Invalid setting!"
     if setting == 'password':
-        new = hash_password(new)
+        new = hash_string(new)
     try:
         with transaction.manager:
             DBSession.query(User).filter_by(username=username).update({setting: new})

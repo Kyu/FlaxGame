@@ -49,7 +49,7 @@ class User(Base):
     is_verified = Column(Boolean, nullable=False, server_default=expression.false())
     admin = Column(Boolean, nullable=False, server_default=expression.false())
 
-# ALTER TABLE players ADD ip VARCHAR(257) NULL;
+
 class Player(Base):
     __tablename__ = 'players'
     id = Column(Integer, primary_key=True)
@@ -137,12 +137,16 @@ class Root(object):
 def gen_hexes():
     hexes = dict()
     hex_objects = list()
+
+    # Loop makes `hexes` look something like {'1.1': [1, 1], '1.2': [1, 2], '1.3': [1, 3]...} for each x and y
     for x in range(1, 11):
         for y in range(1, 11):
             value = "{0}.{1}".format(x, y)
             if value not in hexes:
                 hexes[value] = [x, y]
 
+    # Append each hex to `hex_objects` and give attributes based location type.
+    # `type` default = plains, `industry`, `infrastructure` default= 1
     for k, v in hexes.items():
         if k in CAPITALS:
             hex_objects.append(Hex(name=k, x=v[0], y=v[1], type='capital', industry=10, infrastructure=10))
@@ -154,6 +158,9 @@ def gen_hexes():
 
 
 def gen_player():
+    # Create a player. Choose random team from `TEAMS` and pop into capital.
+    # Squad type is chosen randomly from `SQUAD_TYPES`
+    # Default start troops are 50. If squad is Tank or Artillery, starter troops are 5
     team = list(TEAMS.keys())[randrange(0, 4)]
     location = TEAMS[team]
     squad = choice(SQUAD_TYPES)  # Make chances unequal

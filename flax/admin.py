@@ -13,6 +13,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
+# Ban a player. If until=None, ban is permanent
 def ban_player(username, reason, banner, until=None):
     updates = {'banned': True, 'reason_banned': reason, 'time_banned': until, 'banned_by': banner}
     ban = update_player_info(username, updates=updates)
@@ -22,6 +23,7 @@ def ban_player(username, reason, banner, until=None):
         return ban[1]
 
 
+# Unban a player
 def unban_player(username):
     updates = {'banned': False, 'banned_by': None, 'time_banned': None, 'reason_banned': None}
     ub = update_player_info(username, updates=updates)
@@ -31,6 +33,7 @@ def unban_player(username):
         return ub[1]
 
 
+# Get a user.
 def get_user(username):
     try:
         user = DBSession.query(User).filter_by(username=username).one()
@@ -40,6 +43,8 @@ def get_user(username):
     return user
 
 
+# Hide an announcement by ID(Admins can see announcement IDs)
+# TODO create_announcment
 def hide_announcement(_id):
     try:
         msg = DBSession.query(Radio).filter_by(id=_id).filter_by(team='all')

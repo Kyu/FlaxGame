@@ -17,6 +17,7 @@ from .models import (
 
 
 # If invalid arguments used
+# only arg needed is path to config file
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri>\n'
@@ -28,7 +29,7 @@ def main(argv=sys.argv):
     if len(argv) != 2:
         usage(argv)
 
-    # SQLAlchemy setup
+    # Set up a DB from config file
     config_uri = argv[1]
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
@@ -36,6 +37,7 @@ def main(argv=sys.argv):
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
 
+    # Generate hexes and teams, insert into DB
     hexes = gen_hexes()
     with transaction.manager:
         DBSession.add_all(hexes)
