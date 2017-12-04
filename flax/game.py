@@ -7,6 +7,10 @@ from random import (
     randrange,
     choice
 )
+from datetime import (
+    datetime,
+    timedelta
+)
 from collections import OrderedDict
 
 import transaction
@@ -597,6 +601,8 @@ def get_all_game_info_for(player, location=''):
     game_info = dict()
     game_info['hexes'] = get_hexes()
     game_info['player'] = get_player_info(player)
+    game_info['online'] = \
+        DBSession.query(Player).filter(Player.last_active > (datetime.now() - timedelta(minutes=16))).all()
 
     if location:
         loc = get_location_called(location)

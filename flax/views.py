@@ -186,7 +186,7 @@ def game(request):
     username = request.authenticated_userid
     info = get_all_game_info_for(username)
     return {'hexes': info['hexes'], 'player': info['player'], 'user': get_user(username), 'current_hex': '',
-            'radio': get_radio_for(username)}
+            'radio': get_radio_for(username), 'online': len(info['online'])}
 
 
 @view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
@@ -199,7 +199,7 @@ def hex_view(request):
 
     return {'hexes': info['hexes'], 'current_hex': info['current_hex'], 'currently_here': info['currently_here'],
             'player': info['player'], 'user': get_user(username), 'movable': info['movable'],
-            'radio': get_radio_for(username)}
+            'radio': get_radio_for(username), 'online': len(info['online'])}
 
 
 @view_config(route_name='move_to', renderer='templates/game.pt', request_method='POST', permission='play')
