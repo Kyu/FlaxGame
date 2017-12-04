@@ -45,7 +45,7 @@ class User(Base):
     ip = Column(String(257))
     password = Column(String(256), nullable=True)
     created_at = Column(DateTime, nullable=False, server_default=func.now())
-    verification = Column(String(256), unique=True, nullable=True)
+    verification = Column(String(256), nullable=True)
     is_verified = Column(Boolean, nullable=False, server_default=expression.false())
     admin = Column(Boolean, nullable=False, server_default=expression.false())
 
