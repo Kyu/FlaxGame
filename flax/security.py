@@ -60,11 +60,13 @@ def is_okay_password(password):
     return True
 
 
-def gen_security_code(size=16, chars=string.ascii_letters+ string.digits):
+def gen_security_code(size=16, chars=string.ascii_letters + string.digits):
     return ''.join(SystemRandom().choice(chars) for _ in range(size))
 
 
 def verify_security_code(code):
+    if not code:
+        return "Account already verified!"
     try:
         with transaction.manager:
             user = DBSession.query(User).filter_by(verification=code)
@@ -151,7 +153,8 @@ def create_user(username, email, password, request=None):
         return "Enter a password"
     else:
         if not is_okay_username(username):
-            return "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
+            return \
+                "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
         if not is_okay_password(password):
             return "Your password needs to be 8-64 characters long"
 
@@ -159,7 +162,8 @@ def create_user(username, email, password, request=None):
         if request:
             subject = "Welcome to Flax!"
             recipient = email
-            body = 'Start playing now!\nVerify with https://flaxgame.net/verify?code=' + code
+            body = 'Welcome to Flax, {username}\nVerify with https://flaxgame.net/verify?code={code)'\
+                .format(username=username, code=code)
             send_email(request, recipient, subject, body)
 
     def continue_creating(taken=False):
@@ -289,7 +293,8 @@ def recover_password(new, code):
         return "Invalid or expired verification!3"
 
     if not is_okay_password(new):
-        return "Password does not meet criteria, please review! Remember: Your password needs: To be atleast 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character"
+        return ("Password does not meet criteria, please review! Remember: Your password needs: "
+                "To be at least 6 characters long, 1 upper and 1 lowercase letter, 1 number, and one special character")
 
     user.update({'password': hash_password(new), 'verification': ''})
     return "Password changed successfully"
