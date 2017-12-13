@@ -31,6 +31,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
+# TODO Comment this and views.py
 def get_hexes():
     hexes = DBSession.query(Hex)
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))
@@ -84,10 +85,8 @@ def update_location_info(name, update, new):
 def get_team_info(team, get_all=None):
     try:
         team_info = DBSession.query(Team).filter_by(name=team).one()
-    except NoResultFound as e:
-        msg = "{err} on get_team_info(team={team}, all={all})".format(
-            err=str(type(e).__name__ + ': ' + str(e)), team=team, all=get_all)
-        log.warning(msg)
+    except NoResultFound:
+        # No need to log this error, user gets redirected
         return {}
 
     team = dict()
