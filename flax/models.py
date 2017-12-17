@@ -119,6 +119,16 @@ class Radio(Base):
     active = Column(Boolean, server_default=expression.true())
 
 
+class Log(Base):
+    __tablename__ = 'logs'
+    id = Column(Integer, primary_key=True)
+    logger = Column(String(256))  
+    level = Column(String(256))  
+    trace = Column(String(535))
+    msg = Column(String(535))
+    created_at = Column(DateTime, default=func.now())
+
+
 # Called when checking for permissions. Deny perms go first or are ignored.
 class Root(object):
     __acl__ = [(Deny, 'group:Banned', 'play'),
