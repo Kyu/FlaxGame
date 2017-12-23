@@ -1,0 +1,18 @@
+{
+  "apps" : [{
+    "name"        : "flaxgame",
+    "script"      : "/usr/local/bin/pserve",
+    "args": "production.ini --reload",
+    "interpreter"  : "python3",
+    "interpreter_args"  : "-u",
+    "autorestart": false
+  },{
+    "name"       : "do_turns",
+    "script"     : "do_turns.py",
+    "interpreter"  : "python3",
+    "interpreter_args"  : "-u",
+    "autorestart": false
+  }]
+}
+
+
