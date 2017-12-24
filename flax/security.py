@@ -105,8 +105,9 @@ def create_ip_user(request):
         ip_exists = False
 
     if ip_exists:
-        current = DBSession.query(Player).filter_by(ip=ip).one()
-        if current.uses_ip:
+        current = DBSession.query(User).filter_by(ip=ip).one()
+        current_player = DBSession.query(Player).filter_by(username=current.username).one()
+        if current_player.uses_ip:
             if username == current.username:
                 return "Account created Successfully"
             return "This IP already has an account! Log in as {username}!".format(username=current.username)
