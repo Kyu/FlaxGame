@@ -36,7 +36,7 @@ from .game import (
     get_radio_for,
     send_message,
     player_dig_in,
-    get_own_info_for,
+    get_player_json_info_for,
     get_location_info_for
 )
 from .security import (
@@ -210,7 +210,7 @@ def hex_view(request):
 
 @view_config(route_name='my_info', renderer='json', permission='play')
 def get_my_info(request):
-    return get_own_info_for(request.authenticated_userid)
+    return get_player_json_info_for(request.authenticated_userid, self=True)
 
 
 @view_config(route_name='current_hex_info', renderer='json', permission='play')

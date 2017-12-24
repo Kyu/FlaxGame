@@ -616,15 +616,43 @@ def get_location_info_for(username, location):
     # also_here, amount_here
     is_here = current.name == player.location
     friendly = is_here and (current.control == 'None' or current.control == player.team)
-    return {'name': current.name, 'terrain': current.type, 'population': current.population, 'ammo': current.ammo,
+    info = {'name': current.name, 'terrain': current.type, 'population': current.population, 'ammo': current.ammo,
             'industry': current.industry, 'infrastructure': current.infrastructure, 'dug_in': player.dug_in,
             'is_here': is_here, 'friendly': friendly}
 
+    currently_here = get_players_located_at(location)
+    if is_here:
+        also_here = []
+        for i in currently_here:
 
-def get_own_info_for(username):
+            if i.username != player.username:
+                p_info = get_player_json_info_for(i.username)
+                is_enemy = {'is_enemy': i.team != player.team}
+                p_info.update(is_enemy)
+                also_here.append(p_info)
+
+        info['also_here'] = also_here
+
+    blue_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Blue']), 'team': 'Blue'}
+    red_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Red']), 'team': 'Red'}
+    yellow_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Yellow']), 'team': 'Yellow'}
+    black_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Black']), 'team': 'Black'}
+    totals = [i for i in (blue_total, red_total, yellow_total, black_total) if i['sum'] > 0]
+
+    amount_here = [i['team'] + " troops: " + str(i['sum']) for i in totals]
+    info['amount_here'] = amount_here
+
+    return info
+
+
+def get_player_json_info_for(username, self=False):
     player = get_player_info(username)
-    player_info = {'actions': player.actions, 'ammo': player.ammo, 'morale': player.morale, 'squad': player.squad_type,
-                   'team': player.team, 'troops': player.troops, 'location': player.location}
+    player_info = {'name': player.username, 'morale': player.morale, 'squad': player.squad_type,
+                   'team': player.team, 'troops': player.troops, 'dug_in': player.dug_in}
+    if self:
+        player_info['actions'] = player.actions
+        player_info['location'] = player.location
+        player_info['ammo'] = player.ammo
 
     return player_info
 
