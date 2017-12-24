@@ -401,10 +401,20 @@ def send_player_to(location, player, force=False):
     player_info = get_player_info(player)
     player_loc = player_info.location
 
+    success = False
     movable = can_move(to=location, player=player_info)
+
+    def resulting(text):
+        r = {'result': text, 'succeed': success}
+        if success:
+            r['new'] = location
+        return r
+
     if not force:
         if not movable[0]:
-            return "You are cannot move to this location! {}".format(movable[1])
+            msg = "You cannot move to this location! {}".format(movable[1])
+            return resulting(msg)
+
         actions_needed = 2
         if movable[1] == 'Enemy':
             actions_needed = 5
@@ -413,16 +423,20 @@ def send_player_to(location, player, force=False):
 
         actions_needed //= player_info.pathfinder
         if not player_info.actions >= actions_needed:
-            return "You do not have enough actions!"
+            msg = "You do not have enough actions!"
+            return resulting(msg)
 
         remove_actions_from(player, round(actions_needed))
 
     movement = update_player_info(player, updates={'location': location, 'dug_in': 0})
 
     if movement[0]:
-        return "Successfully moved from {player_loc} to {new_loc}!".format(player_loc=player_loc, new_loc=location)
+        move_message = "Successfully moved from {player_loc} to {new_loc}!".format(player_loc=player_loc, new_loc=location)
+        success = True
     else:
-        return "An error occurred while trying to move!"
+        move_message = "An error occurred while trying to move!"
+
+    return resulting(move_message)
 
 
 def give_player_ammo(player, amount=0):
@@ -594,6 +608,25 @@ def send_message(message, _from='', to='', broadcast_by=''):
         transaction.commit()
 
     return "Message sent successfully!"
+
+
+def get_location_info_for(username, location):
+    current = get_location_called(location)
+    player = get_player_info(username)
+    # also_here, amount_here
+    is_here = current.name == player.location
+    friendly = is_here and (current.control == 'None' or current.control == player.team)
+    return {'name': current.name, 'terrain': current.type, 'population': current.population, 'ammo': current.ammo,
+            'industry': current.industry, 'infrastructure': current.infrastructure, 'dug_in': player.dug_in,
+            'is_here': is_here, 'friendly': friendly}
+
+
+def get_own_info_for(username):
+    player = get_player_info(username)
+    player_info = {'actions': player.actions, 'ammo': player.ammo, 'morale': player.morale, 'squad': player.squad_type,
+                   'team': player.team, 'troops': player.troops, 'location': player.location}
+
+    return player_info
 
 
 def get_all_game_info_for(player, location=''):

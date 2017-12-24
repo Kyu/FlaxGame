@@ -42,16 +42,19 @@ def main(global_config, **settings):
     config.add_route('test_view', '/test')
 
     # Game/Action views
-    config.add_route('hex_view', '/game/{name}')
+    config.add_route('hex_view', '/game/{loc_name}')
     config.add_route('get_ammo', '/game/action/ammo')
     config.add_route('recruit', '/game/action/recruit')
-    config.add_route('upgrade_industry', '/game/action/upgrade')
+    config.add_route('upgrade_industry', '/game/action/industry')
     config.add_route('upgrade_infrastructure', '/game/action/infrastructure')
-    config.add_route('attack_player', '/attack')
-    config.add_route('move_to', 'goto')
-    config.add_route('level_up', '/levelup')
-    config.add_route('send_message', '/message')
-    config.add_route('dig_in', 'digin')
+    config.add_route('attack_player', 'game/action/attack')
+    config.add_route('movement', '/game/action/go_to')
+    config.add_route('level_up', '/game/action/level_up')
+    config.add_route('send_message', '/game/action/message')
+    config.add_route('dig_in', '/game/action/dig_in')
+
+    config.add_route('my_info', '/game/info/my_info')
+    config.add_route('current_hex_info', '/game/info/current_hex_info')
 
     # Personal/Information views
     config.add_route('team_info', '/team/{team}')

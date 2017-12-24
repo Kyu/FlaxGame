@@ -1,21 +1,164 @@
 /**
  * Created by P.O on 7/29/2017.
  * Filename: game.js
+ * #
  */
+function get_my_info() {
+    $.get('/game/info/my_info', function(player) {
+        $("h4#actions").text("Actions: " + player.actions);
+        $("h4#ammo").text("Ammo: " + player.ammo);
+        $("h4#morale").text("Morale: " + player.morale);
+        // $("h4#team").html('Team: <a href="/team/' + player.team + '">' + player.team + '</a>');
+        $("h4#squad").text("Squad: "  + player.squad);
+        $("h4#troops").text("Troops: " + player.troops);
+        // TODO text formatter smh
+        // TODO currently online update
+        // TODO hex info update
+        $("h4#location").html("Located at: <a href=\"/game/" + player.location + "\">" + player.location + "</a>");
+    }, 'json');
+}
+
+
+function get_current_location_info() {
+    var c_location = $(location).attr('pathname').replace('/game/', '');
+    var data = {};
+    data['location'] = c_location;
+    $.get('/game/info/current_hex_info', data, function(here) {
+        $('h3#this_location').html("Location: <a href=\"/game/" + here['name'] + "\">" + here['name'] + "</a>");
+        $('h3#terrain').text("Terrain: " + here.terrain);
+        var pop = $('h4#population').text("Population: " +  here.population);
+        var a_ammo = $('h4#available_ammo').text("Available ammo: " + here.ammo);
+        var industry = $('h4#industry').text("Industry: " + here.industry);
+        var inf = $('h4#infrastructure').text("Infrastructure: " + here.infrastructure);
+        var dug = $('h4#dug_in');
+        dug.text("Dig in: " + here.dug_in);
+        var here_dom = $('h3#is_here');
+        if (here.is_here) {
+            if (here_dom.length) {
+                here_dom.text("You are here!");
+            } else {
+                var add = $('<h3>You are here!</h3>');
+                add.attr('id', 'is_here');
+                dug.after(add);
+            }
+            var move_btn = $('#move_here');
+            if (move_btn.length) {
+                move_btn[0].form.remove();
+            }
+
+            if (here.friendly) {
+                var recruit_form = $('<form>').attr('action', '/game/action/recruit').attr('method', 'post')
+                    .append($('<button>').attr('id', 'recruit').text("Recruit!")
+                    ),
+                ammo_form = $('<form>').attr('action', '/game/action/ammo').attr('method', 'post')
+                    .append($('<button>').attr('id', 'take_ammo').text("Take ammo!")
+                    ),
+                industry_form = $('<form>').attr('action', '/game/action/industry').attr('method', 'post')
+                    .append($('<button>').attr('id', 'industry').text("Upgrade industry!")
+                    ),
+                infrastructure_form = $('<form>').attr('action', '/game/action/infrastructure').attr('method', 'post')
+                    .append($('<button>').attr('id', 'infrastructure').text("Upgrade infrastructure!")
+                    ),
+                dig_in_form = $('<form>').attr('action', '/game/action/dig_in').attr('method', 'post')
+                    .append($('<button>').attr('id', 'dig_in').text("Dig in!")
+                    );
+               $('button#recruit').length ? void(0) : pop.after(recruit_form);
+               $('button#take_ammo').length ? void(0) : a_ammo.after(ammo_form);
+               $('button#industry').length ? void(0) : industry.after(industry_form);
+               $('button#infrastructure').length ? void(0) : inf.after(infrastructure_form);
+               $('button#dig_in').length ? void(0) : dug.after(dig_in_form);
+               // TODO text in buttons?
+            }
+        } else {
+            if (here_dom.length) {
+                here_dom.remove();
+            }
+        }
+
+
+    }, 'json');
+    // TODO get info for players in location
+}
+
+
+function update_location(update) {
+    var name = update['name'];
+    var tb_element = $('td#loc_' + name);
+    tb_element.attr('title', name['title']).removeClass(
+        function (index, className) {
+            return (className.match (/(^|\s)color-\S+/g) || []).join(' ');
+        }).addClass('location-' + update['type']);
+    if (update['control']) {
+        tb_element.addClass('location-' + update['control']);
+    }
+
+}
+
+// TODO test
+function get_location_info_called(name) {
+    var data = {};
+    data['name'] = name;
+
+    $.get('/game/info/location', data, function(locations) {
+        for (var i = 0; i < locations['locations'].length; i++) {
+            update_location(locations[i]);
+
+}
+    }, 'json');
+
+}
+
+
+function get_new() {
+    setTimeout(function () {
+        get_my_info();
+        get_current_location_info();
+    }, 2000);
+
+}
+
+
+function slideUpAndRemoveAfter(element, time) {
+    setTimeout(function () {
+        element.slideUp("slow", "linear", function() {element.remove();});
+    }, time);
+}
+
+function do_action(action) {
+    if (action.action === 'movement' && action.succeed) {
+        history.pushState("", "", "/game/" + action.new);
+    }
+    var add = $('<p>' + action.result + '</p>');
+    add.attr('id', 'flash');
+    $("#sidebar-right").append(add);
+    get_new();
+    slideUpAndRemoveAfter(add, 20000);
+}
+
+
+function send_message(message) {
+    var add = $('<p>' + message.message + '</p>');
+    add.attr('id', 'flash');
+    $($("#messages")[0].children[0]).after(add);
+    slideUpAndRemoveAfter(add, 20000);
+}
 
 
 $(document).ready(function() {
-    $("a#logout").click(function(event){
-       $.post(
-          "/logout",
-          {},
-          function(data) {
-             window.location = '/'
-          }
-       );
+    $('#take_ammo, #recruit, #industry, #infrastructure, #dig_in, #move_here, #attack').click(function(event){
+        var data = {};
+        if (event.currentTarget.name) {
+            data[event.currentTarget.name] = event.currentTarget.value
+        }
+       $.post(event.currentTarget.form.action, data,  do_action, 'json');
        return false;
     });
 
-
+    $('#send_message').click(function(event) {
+        var data = {};
+        data[event.currentTarget.form[0].name] = event.currentTarget.form[0].value;
+        $.post(event.currentTarget.form.action, data, send_message, 'json');
+        return false;
+    });
 
 });

@@ -38,15 +38,7 @@
     </script>
 
     <link rel="stylesheet" href="${request.static_url('flax:static/game.css')}">
-    <!--
-    <script src="${request.static_url('flax:static/jquery/jquery-3.2.1.min.js')}"></script>
-    <script src="${request.static_url('flax:static/bootstrap/js/bootstrap.min.js')}"></script>
-    <link rel="stylesheet" href="${request.static_url('flax:static/bootstrap/css/bootstrap.min.css')}">
-    <link rel="stylesheet" href="${request.static_url('flax:static/bootstrap/css/bootstrap-theme.min.css')}">
-
-
     <script src="${request.static_url('flax:static/game.js')}"></script>
-    -->
 
     <title>Flax ${'-- ' + current_hex.name if current_hex else ''}</title>
 </head>
@@ -80,20 +72,18 @@
                 <button id="logout">Logout!</button>
             </form>
 
-            <div>
-                <ul>
-                    <li><h4><a href="${request.route_url('profile')}">${player.username}</a></h4></li>
-                    <li><h4>Actions: ${player.actions}</h4></li>
-                    <li><h4>Ammo: ${player.ammo}</h4></li>
-                    <li><h4>Morale: ${player.morale}</h4></li>
-                    <li><h4>Squad: ${player.squad_type}</h4></li>
-                    <li><h4>Team: <a href="/team/${player.team}">${player.team}</a></h4></li>
-                    <li><h4>Troops: ${player.troops}</h4></li>
-                    <li><h4>Located at: <a href="${request.route_url('game')}/${player.location}">${player.location}</a></h4></li>
-                </ul>
+            <div id="my_info">
+                <h4 id="username"><a href="${request.route_url('profile')}">${player.username}</a></h4>
+                <h4 id="actions">Actions: ${player.actions}</h4>
+                <h4 id="ammo">Ammo: ${player.ammo}</h4>
+                <h4 id="morale">Morale: ${player.morale}</h4>
+                <h4 id="squad">Squad: ${player.squad_type}</h4>
+                <h4 id="team">Team: <a href="/team/${player.team}">${player.team}</a></h4>
+                <h4 id="troops">Troops: ${player.troops}</h4>
+                <h4 id="location">Located at: <a href="${request.route_url('game')}/${player.location}">${player.location}</a></h4>
             </div>
 
-            <div>
+            <div id="messages">
                 <h3>Radio: </h3>
                 <div id="flash" tal:condition="request.session.peek_flash('radio')">
                 <span tal:omit-tag=""
@@ -116,7 +106,7 @@
                 </div>
                 <form action="${request.route_url('send_message')}" method="post">
                     <textarea name="message" placeholder="Type your message here" maxlength="140"></textarea>
-                    <button>Send message!</button>
+                    <button id="send_message">Send message!</button>
                 </form>
             </div>
             <h3><a href="${request.static_url('flax:static/guide.html')}">Unsure of how to play? Click here!</a></h3>
@@ -134,31 +124,34 @@
                 <?python
                 is_here = current_hex.name == player.location
                 friendly = is_here and (current_hex.control == 'None' or current_hex.control == player.team) ?>
-                <ul>
-                    <h3>Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
-                    <h3>Terrain: ${current_hex.type}</h3>
-                    <h4>Population: ${current_hex.population}</h4>
+
+                    <h3 id="this_location">Location: <a href="${request.route_url('game')}/${current_hex.name}">${current_hex.name}</a></h3>
+                    <h3 id="terrain">Terrain: ${current_hex.type}</h3>
+                    <h4 id="population">Population: ${current_hex.population}</h4>
                     <form tal:condition="friendly" action="${request.route_url('recruit')}" method="post">
-                        <button name="recruit">Recruit!</button>
+                        <button id="recruit">Recruit!</button>
                     </form>
-                    <h4>Available ammo: ${current_hex.ammo}</h4>
+                    <h4 id="available_ammo">Available ammo: ${current_hex.ammo}</h4>
                     <form tal:condition="friendly" action="${request.route_url('get_ammo')}" method="post">
-                        <button name="take_ammo">Take Ammo!</button>
+                        <button id="take_ammo">Take ammo!</button>
                     </form>
-                    <h4>Industry: ${current_hex.industry}</h4>
+                    <h4 id="industry">Industry: ${current_hex.industry}</h4>
                     <form tal:condition="friendly" action="${request.route_url('upgrade_industry')}" method="post">
-                        <button name="industry">Upgrade!</button>
+                        <button id="industry">Upgrade indsutry!</button>
                     </form>
-                    <h4>Infrastructure: ${current_hex.infrastructure}</h4>
+                    <h4 id="infrastructure">Infrastructure: ${current_hex.infrastructure}</h4>
                     <form tal:condition="friendly" action="${request.route_url('upgrade_infrastructure')}" method="post">
-                        <button name="infrastructure">Upgrade!!</button>
+                        <button id="infrastructure">Upgrade infrastructure!</button>
                     </form>
-                    <h4>Available ammo: ${current_hex.ammo}</h4>
+                    <h4 id="dug_in">Dig in: ${player.dug_in}%</h4>
                     <form tal:condition="friendly" action="${request.route_url('dig_in')}" method="post">
-                        <button name="dig_in">Dig in!</button>
+                        <button id="dig_in">Dig in!</button>
                     </form>
-                    <h3 tal:condition="is_here">You are here!</h3>
-                </ul>
+                    <h3 id="is_here" tal:condition="is_here">You are here!</h3>
+                    <form tal:condition="movable" action="${request.route_url('movement')}" method="post">
+                    <button id="move_here" name="position" value="${current_hex.name}">Move here!</button>
+                    </form>
+
                 <?python
                         blue_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Blue']), 'team': 'Blue'}
                         red_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Red']), 'team': 'Red'}
@@ -180,17 +173,13 @@
                                     <li>Troops: ${here_info.troops}</li>
                                     <li>Dug in: ${here_info.dug_in}%</li>
                                     <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
-                                        <button name="player_called" value="${here_info.username}">Attack!</button>
+                                        <button id="attack" name="player_called" value="${here_info.username}">Attack!</button>
                                     </form>
                             </ul>
                         </li>
                     </ul>
 
                 </div>
-
-                <form tal:condition="movable" action="${request.route_url('move_to')}" method="post">
-                <button name="position" value="${current_hex.name}">Move here!</button>
-                </form>
             </div>
 
         </div>
@@ -198,7 +187,7 @@
         <div id="content" class="container">
             <table cellspacing="0" class="table">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
-                    <td tal:repeat="hex_row [i for i in list(hexes.keys()) if i.x == hex_col]" title="${hex_row.name} - ${hex_row.type} ${hexes[hex_row]}" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control.lower() if hex_row.control != 'None' else ''}">
+                    <td tal:repeat="hex_row [i for i in list(hexes.keys()) if i.x == hex_col]" title="${hex_row.name} - ${hex_row.type} ${hexes[hex_row]}" id="loc_${hex_row.name}" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control.lower() if hex_row.control != 'None' else ''}">
                         <a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
                     </td>
                 </tr>

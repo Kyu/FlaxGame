@@ -1,8 +1,10 @@
+import logging
+
 from pyramid.httpexceptions import (
     HTTPFound,
     HTTPForbidden
 )
-from pyramid.response import Response
+
 from pyramid.security import (
     remember,
     forget
@@ -33,7 +35,9 @@ from .game import (
     upgrade_infrastructure_for,
     get_radio_for,
     send_message,
-    player_dig_in
+    player_dig_in,
+    get_own_info_for,
+    get_location_info_for
 )
 from .security import (
     create_user,
@@ -44,6 +48,8 @@ from .security import (
     recover_password,
     create_ip_user
 )
+
+log = logging.getLogger(__name__)
 
 
 def return_to_sender(request):
@@ -191,7 +197,7 @@ def game(request):
 
 @view_config(route_name='hex_view', renderer='templates/game.pt', permission='play')
 def hex_view(request):
-    hex_name = request.matchdict['name']
+    hex_name = request.matchdict['loc_name']
     username = request.authenticated_userid
     info = get_all_game_info_for(username, location=hex_name)
     if not info:
@@ -202,14 +208,27 @@ def hex_view(request):
             'radio': get_radio_for(username), 'online': len(info['online'])}
 
 
-@view_config(route_name='move_to', renderer='json', request_method='POST', permission='play')
+@view_config(route_name='my_info', renderer='json', permission='play')
+def get_my_info(request):
+    return get_own_info_for(request.authenticated_userid)
+
+
+@view_config(route_name='current_hex_info', renderer='json', permission='play')
+def get_this_location_info(request):
+    if 'location' in request.params:
+        location = request.params['location']
+        return get_location_info_for(request.authenticated_userid, location)
+    return {}
+
+
+@view_config(route_name='movement', renderer='json', request_method='POST', permission='play')
 def move_to(request):
     if 'position' in request.params:
         location = request.params['position']
         movement = send_player_to(location, request.authenticated_userid)
-        request.session.flash(movement, 'action')
-
-    return HTTPFound(location=return_to_sender(request))
+        movement['action'] = 'movement'
+        return movement
+    return {}
 
 
 @view_config(route_name='attack_player', renderer='json', request_method='POST', permission='play')
@@ -217,7 +236,7 @@ def attack_player(request):
     if 'player_called' in request.params:
         attacker, defender = request.authenticated_userid, request.params['player_called']
         attack = player_attack(attacker=attacker, defender=defender)
-        request.session.flash(attack, 'action')
+        return {'result': attack}
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -225,40 +244,31 @@ def attack_player(request):
 @view_config(route_name='get_ammo', renderer='json', request_method='POST', permission='play')
 def increase_ammo(request):
     increase = give_player_ammo(request.authenticated_userid)
-    request.session.flash(increase, 'action')
-    # return {'result': increase}
-    return HTTPFound(location=return_to_sender(request))
+    return {'result': increase, 'action': 'get_ammo'}
 
 
 @view_config(route_name='recruit', renderer='json', request_method='POST', permission='play')
 def recruit(request):
     increase = increase_player_troops(request.authenticated_userid)
-    request.session.flash(increase, 'action')
-
-    return HTTPFound(location=return_to_sender(request))
+    return {'result': increase, 'action': 'recruit'}
 
 
 @view_config(route_name='upgrade_industry', renderer='json', request_method='POST', permission='play')
 def increase_hex_industry(request):
     increase = upgrade_hex_for(request.authenticated_userid)
-    request.session.flash(increase, 'action')
-
-    return HTTPFound(location=return_to_sender(request))
+    return {'result': increase, 'action': 'upgrade_industry'}
 
 
 @view_config(route_name='upgrade_infrastructure', renderer='json', request_method='POST', permission='play')
 def increase_hex_infrastructure(request):
     increase = upgrade_infrastructure_for(request.authenticated_userid)
-    request.session.flash(increase, 'action')
-
-    return HTTPFound(location=return_to_sender(request))
+    return {'result': increase, 'action': 'upgrade_infrastructure'}
 
 
 @view_config(route_name='dig_in', renderer='json', request_method='POST', permission='play')
 def dig_in(request):
     dig = player_dig_in(request.authenticated_userid)
-    request.session.flash(dig, 'action')
-    return HTTPFound(location=return_to_sender(request))
+    return {'result': dig, 'action': 'dig_in'}
 
 
 @view_config(route_name='team_info', renderer='templates/team.pt', permission='play')
@@ -275,8 +285,7 @@ def team_info(request):
 def broadcast_message(request):
     if 'message' in request.params:
         msg = send_message(_from=request.authenticated_userid, message=request.params['message'])
-        request.session.flash(msg, 'radio')
-
+        return {'message': msg, 'action': 'send_message'}
     return HTTPFound(location=return_to_sender(request))
 
 
@@ -354,6 +363,7 @@ def player_info_view(request):
             request.session.flash(i, 'player_info')
 
     return HTTPFound(location=return_to_sender(request))
+
 
 # TODO IMPLEMENT THIS
 @view_config(route_name='broadcast', request_method='POST', permission='admin')
