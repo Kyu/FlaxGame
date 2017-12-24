@@ -36,7 +36,7 @@ def main(global_config, **settings):
 
     # Views
     # Home/Main views
-    config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('static', 'static', cache_max_age=int(settings['cache_max_age']))
     config.add_route('home', '/')
     config.add_route('game', '/game')
     config.add_route('test_view', '/test')
