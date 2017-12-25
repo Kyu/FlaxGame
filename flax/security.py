@@ -147,29 +147,32 @@ def create_ip_user(request):
 
 
 # TODO Refactor to make sure empty passwords don't get entered with IP registration
+# Create_full_user
 def create_user(username, email, password, request=None):
     # Creates a new User and a Player to match
     # team, squad_type are random
+    to_create = {'status': '', 'username': ''}
     if not username:
-        return "Enter a username"
+        to_create['status'] = "Enter a username"
     elif not email:
-        return "Enter an email"
+        to_create['status'] = "Enter an email"
     elif not password:
-        return "Enter a password"
+        to_create['status'] = "Enter a password"
     else:
         if not is_okay_username(username):
-            return \
+            to_create['status'] = \
                 "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
         if not is_okay_password(password):
-            return "Your password needs to be 8-64 characters long"
+            to_create['status'] = "Your password needs to be 8-64 characters long"
 
     def mailinator(code):
         if request:
             subject = "Welcome to Flax!"
             recipient = email
-            body = 'Welcome to Flax, {username}\nVerify with https://flaxgame.net/verify?code={code)'\
+            body = 'Welcome to Flax, {username}\nVerify with https://flaxgame.net/verify?code={code})'\
                 .format(username=username, code=code)
             send_email(request, recipient, subject, body)
+            # TODO Test every error that can rise from this.
 
     def continue_creating(taken=False):
         code = gen_security_code()
@@ -179,7 +182,9 @@ def create_user(username, email, password, request=None):
                                                                        'verification': code})
             DBSession.query(Player).filter_by(username=username).update({'uses_ip': False})
             mailinator(code)
-            return "Account officially made official!"
+            to_create['status'] = "Account officially made official!"
+            to_create['username'] = username
+            return
         else:
             try:
                 if request:
@@ -193,41 +198,45 @@ def create_user(username, email, password, request=None):
                                     ip=ip)
 
                     mailinator(code)
-
                     DBSession.add(new_user)
                     transaction.commit()
                     player_model = Player(id=new_user.id, username=new_user.username, team=stats['team'],
                                           squad_type=stats['squad'], location=stats['location'], troops=stats['troops'])
                     DBSession.add_all([player_model])
-
-                    return "Account created Successfully"
+                    to_create['status'] = "Account created Successfully"
+                    to_create['username'] = username
+                    return
             except transaction.interfaces.TransactionFailedError as e:
                 err = type(e).__name__ + ': ' + str(e)
             except IntegrityError:
-                return "This username or email already exists"
+                to_create['status'] = "This username or email already exists"
+                return
             except Exception as e:
-                err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
-
+                err = "Unknown Error: {0}".format(type(e).__name__ + ': ' + str(e))
         msg = "{err} on create_user(username={username}, email={email}, password=****)" \
             .format(err=err, username=username, email=email)
         log.warning(msg)
 
+    if to_create['status']: # If account creation has already failed
+        return to_create
+
     try:
         prospective_user = DBSession.query(User).filter_by(username=username).one()
     except NoResultFound:
-        creation = continue_creating()
-        if creation:
-            return creation
+        # If username not found
+        continue_creating()
+        return to_create
     else:
+        # Username already exists, checking to see if logged in as taken username
         if prospective_user.username != request.authenticated_userid:
-            # Username already exists, checking to see if logged in as user
-            return "Username already taken!"
+            to_create['status'] = "Username already taken!"
+            return to_create
         else:
-            creation = continue_creating(taken=True)
-            if creation:
-                return creation
+            continue_creating(taken=True)
+            return to_create   # This establishes an already existing user with an email and password. 
+            # taken=True does not attempt to catch errors
 
-    return "User creation failed"
+    return to_create
 
 
 def verify_login(username, password):

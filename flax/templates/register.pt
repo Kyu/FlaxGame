@@ -27,6 +27,8 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
     <title>Flax • Register</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="${request.static_url('flax:static/login.js')}"></script>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-102770740-1"></script>
     <script>
@@ -37,25 +39,21 @@
       gtag('config', 'UA-102770740-1');
     </script>
 </head>
-
-<h1>Register</h1>
-    <div id="flash" tal:condition="request.session.peek_flash('register')">
-        <span tal:omit-tag=""
-        tal:repeat="message request.session.pop_flash('register')">
-      ${message}<br>
-        </span>
-    </div>
-<form action="${request.route_url('register')}" method="post">
-    <p tal:condition="player and player.uses_ip">Registering with username and email for: ${player.username}</p>
-    <input tal:condition="not player" type="text" id="username" placeholder="username"
-           name="username" required/><br/>
-    <input tal:condition="player and player.uses_ip" type="hidden" id="username" placeholder="username"
-           name="username" value="${player.username}" required/><br/>
-    <input type="text" id="email" placeholder="email"
-           name="email" required/><br/>
-    <input type="password" id="password" placeholder="password"
-           name="password" required/><br/>
-    <button type="submit" name="register">Register</button>
-</form>
-
+<body>
+  <h1>Register</h1>
+  <div id="registration_form">
+    <form action="${request.route_url('register')}" method="post" id="register">
+        <p tal:condition="player and player.uses_ip">Registering with username and email for: ${player.username}</p>
+        <input tal:condition="not player" type="text" id="username" placeholder="username"
+               name="username" required/><br/>
+        <input tal:condition="player and player.uses_ip" type="hidden" id="username" 
+        placeholder="username" name="username" value="${player.username}" required/><br/>
+        <input type="text" id="email" placeholder="email"
+               name="email" required/><br/>
+        <input type="password" id="password" placeholder="password"
+               name="password" required/><br/>
+        <button type="submit" name="register">Register</button>
+    </form>
+  </div>
+</body>
 </html>

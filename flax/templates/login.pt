@@ -42,15 +42,8 @@
 </head>
 
 <body>
-<h1 class='login'>Login</h1>
-<div>
-
-<div id="flash" tal:condition="request.session.peek_flash('login')">
-  <span tal:omit-tag="" 
-        tal:repeat="message request.session.pop_flash('login')">
-      ${message}<br>
-  </span>
-</div>
+<h1 class="login">Login</h1>
+<div id="login_form">
 <form id="login" action="${request.route_url('login')}" method="post">
      <input type="text" id="username" placeholder="username or email"
            name="username" title="Enter username or email here" required/><br/>
@@ -58,10 +51,11 @@
            name="password" title="Enter password here" required/><br/>
     <button type="submit" name="login">Login</button>
 </form>
-    <a href="${request.route_url('recover_password')}">Forgot your password?</a>
+<a href="${request.route_url('recover_password')}">Forgot your password?</a>
+</div>
 
 <h1>One click login</h1>
-
+<div id="oneclick_form">
     <div id="flash" tal:condition="request.session.peek_flash('oneclick')">
         <span tal:omit-tag=""
         tal:repeat="message request.session.pop_flash('oneclick')">
@@ -73,13 +67,9 @@
            name="username"/><br/>
     <button type="submit" name="login">Register</button>
 </form>
+</div>
 
 <h6><a href="${request.route_url('register')}">This type of login is IP based. If you want a persistent account, click here to register with a password.</a></h6>
-
-
-
-
-</div>
 
 
 </body>

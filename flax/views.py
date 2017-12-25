@@ -95,7 +95,8 @@ def test_view(request):
 @view_config(route_name='register', renderer='templates/register.pt')
 def register(request):
     player = None
-    if request.authenticated_userid and request.method != 'POST':
+    resp = {}
+    if request.authenticated_userid:
         player = get_player_info(request.authenticated_userid)
         if player.uses_ip:
             pass
@@ -103,24 +104,24 @@ def register(request):
             return HTTPFound(location='/')
 
     if request.method == 'POST':
+        request.override_renderer = 'json'  #######
         if 'register' in request.params:
             if 'username' not in request.params:
-                message = request.session.flash("No username defined")
+                resp['status'] = request.session.flash("No username defined")
             elif 'password' not in request.params:
-                message = request.session.flash("Enter a password")
+                resp['status'] = request.session.flash("Enter a password")
             elif 'email' not in request.params:
-                message = request.session.flash("Enter an email address")
+                resp['status'] = request.session.flash("Enter an email address")
             else:
                 username = request.params['username']
                 password = request.params['password']
                 email = request.params['email']
                 if email and password and username:
-                    message = create_user(username, email, password, request)
+                    resp = create_user(username, email, password, request)
                 else:
-                    message = "All fields must be filled!"
-            request.session.flash(message, 'register')
+                    resp['status'] = "All fields must be filled!"
 
-        return HTTPFound(location=request.route_url('register'))
+        return {'success': bool(resp.get('username')), 'status': resp['status']}
     else:
         return {'player': player}
 
@@ -128,8 +129,8 @@ def register(request):
 @view_config(route_name='login', renderer='json', request_method='POST')
 def login(request):
     verified = dict(username='', status='')
-    headerlist = None
-    if 'login' in request.params:
+    headers = None
+    if 'login' in request.params and not request.authenticated_userid:
         if 'username' not in request.params:
             verified['status'] = "No username defined"
         elif 'password' not in request.params:
@@ -139,9 +140,9 @@ def login(request):
             password = request.params['password']
             verified = verify_login(username, password)
             if verified.get('username'):
-                headerlist = remember(request, verified['username'])
-        
-    return Response(json={'success': bool(verified['username']), 'status': verified['status']}, headerlist=headerlist)
+                headers = remember(request, verified['username'])
+    
+    return Response(json={'success': bool(verified['username']), 'status': verified['status']}, headerlist=headers)
 
 
 @view_config(route_name='ip_login', request_method='POST')
