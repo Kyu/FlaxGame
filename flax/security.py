@@ -232,7 +232,7 @@ def create_user(username, email, password, request=None):
 
 def verify_login(username, password):
     # Verifies a login (username is interchangeable with email)
-    usr = {}
+    usr = {'username': ''}
     if not username:
         usr['status'] = "Enter a username"
     elif not password:
@@ -243,7 +243,9 @@ def verify_login(username, password):
             expected_password = expected_user.password
             if matches_hash(password, expected_password):
                 usr['username'] = expected_user.username
-            DBSession.query(Player).filter_by(username=username).update({Player.is_active: True})
+                usr['status'] = "Logged in successfully"
+                DBSession.query(Player).filter_by(username=username).update({Player.is_active: True})
+                return usr
         except NoResultFound:
             pass
         except Exception as e:

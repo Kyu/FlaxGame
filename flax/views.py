@@ -15,6 +15,8 @@ from pyramid.view import (
     notfound_view_config
 )
 
+from pyramid.response import Response
+
 from .admin import (
     ban_player,
     unban_player,
@@ -123,27 +125,23 @@ def register(request):
         return {'player': player}
 
 
-@view_config(route_name='login', request_method='POST')
+@view_config(route_name='login', renderer='json', request_method='POST')
 def login(request):
-    message = ''
+    verified = dict(username='', status='')
+    headerlist = None
     if 'login' in request.params:
         if 'username' not in request.params:
-            request.session.flash("No username defined")
+            verified['status'] = "No username defined"
         elif 'password' not in request.params:
-            request.session.flash("Enter a password")
+            verified['status'] = "Enter a password"
         else:
             username = request.params['username']
             password = request.params['password']
             verified = verify_login(username, password)
-            if 'username' in verified:
-                headers = remember(request, verified['username'])
-                return HTTPFound(location=return_to_sender(request), comment='Logged in successfully', headers=headers)
-            else:
-                message = verified['status']
-
-        request.session.flash(message, 'login')
-
-    return HTTPFound(location=return_to_sender(request))
+            if verified.get('username'):
+                headerlist = remember(request, verified['username'])
+        
+    return Response(json={'success': bool(verified['username']), 'status': verified['status']}, headerlist=headerlist)
 
 
 @view_config(route_name='ip_login', request_method='POST')
