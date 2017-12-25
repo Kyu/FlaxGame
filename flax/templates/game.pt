@@ -161,24 +161,22 @@
                 ?>
                 <div id="also-here" tal:condition="currently_here and [i for i in currently_here if i.username is not player.username]">
                     <h2>Currently here:</h2>
-                    <ul class="sidebar-nav">
-                        <li id="troops_here_count" tal:repeat="totals [i for i in (blue_total, red_total, yellow_total, black_total) if i['sum'] > 0]">
-                            <p>${totals['team']} Troops: ${totals['sum']}</p>
-                        </li>
+                    <div class="sidebar-nav">
+                        <p id="troops_here_count" tal:repeat="totals [i for i in (blue_total, red_total, yellow_total, black_total) if i['sum'] > 0]">${totals['team']} Troops: ${totals['sum']}</p>
                         <li tal:repeat="here_info [i for i in currently_here if i.username != player.username]">
-                            <ul id="player_here_also" tal:condition="here_info.team == player.team or current_hex.name == player.location">
-                                ${here_info.username}
-                                    <li>Squad type: ${here_info.squad_type}</li>
-                                    <li>Team: <a href="/team/${here_info.team}">${here_info.team}</a></li>
-                                    <li>Troops: ${here_info.troops}</li>
-                                    <li>Morale: ${here_info.morale}</li>
-                                    <li>Dug in: ${here_info.dug_in}%</li>
-                                    <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
-                                        <button id="attack" name="player_called" value="${here_info.username}">Attack!</button>
-                                    </form>
-                            </ul>
+                            <div id="player_here_also" tal:condition="here_info.team == player.team or current_hex.name == player.location">
+                                <p>${here_info.username}</p>
+                                <p>Squad type: ${here_info.squad_type}</p>
+                                <p>Team: <a href="/team/${here_info.team}">${here_info.team}</a></p>
+                                <p>Troops: ${here_info.troops}</p>
+                                <p>Morale: ${here_info.morale}</p>
+                                <p>Dug in: ${here_info.dug_in}%</p>
+                                <form tal:condition="player.location == current_hex.name and player.team != here_info.team" action="${request.route_url('attack_player')}" method="post">
+                                    <button id="attack" name="player_called" value="${here_info.username}">Attack!</button>
+                                </form>
+                            </div>
                         </li>
-                    </ul>
+                    </div>
 
                 </div>
             </div>

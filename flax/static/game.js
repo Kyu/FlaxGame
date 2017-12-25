@@ -3,18 +3,32 @@
  * Filename: game.js
  * TODO do this all with JS
  * TODO Ever heard about divs
+ * Put notifs in divs
  */
+
+// String Formatting
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) {
+      return typeof args[number] !== 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
+
 function get_my_info() {
     $.get('/game/info/my_info', function(player) {
-        $("h4#actions").text("Actions: " + player.actions);
-        $("h4#ammo").text("Ammo: " + player.ammo);
-        $("h4#morale").text("Morale: " + player.morale);
-        // $("h4#team").html('Team: <a href="/team/' + player.team + '">' + player.team + '</a>');
-        $("h4#squad").text("Squad: "  + player.squad);
-        $("h4#troops").text("Troops: " + player.troops);
-        // TODO text formatter smh
+        $("h4#actions").text("Actions: {0}".format(player['actions']));
+        $("h4#ammo").text("Ammo: {0}".format(player['ammo']));
+        $("h4#morale").text("Morale: {0}".format(player['morale']));
+        $("h4#team").html("Team: <a href=\"/team/{0}\">{0}</a>".format(player['team']));
+        $("h4#squad").text("Squad: {0}".format(player['squad']));
+        $("h4#troops").text("Troops: {0}".format(player['troops']));
         // TODO currently online update
-        $("h4#location").html("Located at: <a href=\"/game/" + player.location + "\">" + player.location + "</a>");
+        $("h4#location").html("Located at: <a href=\"/game/{0}\">{0}</a>".format(player['location']));
     }, 'json');
 }
 
@@ -74,43 +88,55 @@ function get_current_location_info() {
                 if (!here_div.length) {
                     here_div = $("<div>");
                     here_div.attr('id', 'also-here').append($('<h2>').text("Currently here:")
-                    ).append($('<ul>').addClass('sidebar-nav'))
+                    ).append($('<div>').addClass('sidebar-nav'))
                 }
                 here_dom.after(here_div);
-                $('[id=player_here_also]').remove();
-                $('[id=troops_here_count]').remove();
+                var sidenav = $('div.sidebar-nav');
+                $('div[id=player_here_also]').remove();
+                $('p[id=troops_here_count]').remove();
                 for (var i = 0; i < here['also_here'].length; i++) {
                     var cur = here['also_here'][i];
-                    var appendage = $('.sidebar-nav')
-                        .append($('<ul>').attr('id', 'player_here_also')
-                        .append($('<li>').text(cur['name']))
-                                .append($('<li>').text("Squad type: " + cur['squad']))
-                                .append($('<li>').html("Team: <a href=\"/team/" + cur['team'] + "\">" + cur['team'] + "</a>"))
-                                .append($('<li>').text("Troops: " + cur['troops']))
-                                .append($('<li>').text("Morale: " + cur['morale']))
-                                .append($('<li>').text("Dug in: " + cur['dug_in'] + "%"))
-                    );
-                    if (cur['is_enemy']) {
-                        appendage.append($('<form>')
+                    sidenav.append($('<li>')
+                        .append($('<div>').attr('id', 'player_here_also')
+                            .append($('<p>').text(cur['name']))
+                            .append($('<p>').text("Squad type: " + cur['squad']))
+                            .append($('<p>').html("Team: <a href=\"/team/" + cur['team'] + "\">" + cur['team'] + "</a>"))
+                            .append($('<p>').text("Troops: " + cur['troops']))
+                            .append($('<p>').text("Morale: " + cur['morale']))
+                            .append($('<p>').text("Dug in: " + cur['dug_in'] + "%"))
+                            .append(function () {
+                                if (cur['is_enemy']) {
+                                    return ($('<form>')
+                                        .attr('action', '/game/action/attack').attr('method', 'post')
+                                        .append($('<button>')
+                                        .attr('id', 'attack').attr('name', 'player_called').attr('value', cur['name'])
+                                        .text("Attack!")
+                                        ));
+                                }
+                            })
+                        ));
+
+                    /*if (cur['is_enemy']) {
+                        sidenav.append($('<form>')
                             .attr('action', '/game/action/attack').attr('method', 'post')
                             .append($('<button>')
                                 .attr('id', 'attack').attr('name', 'player_called').attr('value', cur['name'])
-                                .text("Attack! ")
+                                .text("Attack!!!")
                         ));
-                    }
+                    }*/
                 }
 
 
                 for (var ih = 0; ih < here['amount_here'].length; ih++) {
-                    $('.sidebar-nav').prepend($('<li>').attr('id', 'troops_here_count').append($('<p>')
-                        .text(here['amount_here'][ih])
-                    ));
+                    $('.sidebar-nav').prepend($('<p>').attr('id', 'troops_here_count').text(here['amount_here'][ih])
+                    );
                 }
             }
         } else {
             if (here_dom.length) {
                 here_dom.remove();
                 dug.remove();
+                $('button#dig_in').remove();
                 }
         }
     }, 'json');
