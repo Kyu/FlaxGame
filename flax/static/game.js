@@ -14,7 +14,6 @@ function get_my_info() {
         $("h4#troops").text("Troops: " + player.troops);
         // TODO text formatter smh
         // TODO currently online update
-        // TODO hex info update
         $("h4#location").html("Located at: <a href=\"/game/" + player.location + "\">" + player.location + "</a>");
     }, 'json');
 }
@@ -48,7 +47,6 @@ function get_current_location_info() {
             }
 
             if (here.friendly) {
-                // TODO remove player info if not here
                 var recruit_form = $('<form>').attr('action', '/game/action/recruit').attr('method', 'post')
                         .append($('<button>').attr('id', 'recruit').text("Recruit!")
                         ),
@@ -69,7 +67,6 @@ function get_current_location_info() {
                 $('button#industry').length ? void(0) : industry.after(industry_form);
                 $('button#infrastructure').length ? void(0) : inf.after(infrastructure_form);
                 $('button#dig_in').length ? void(0) : dug.after(dig_in_form);
-                // TODO text in buttons?
             }
 
             if (here['amount_here'].length) {
@@ -94,10 +91,12 @@ function get_current_location_info() {
                                 .append($('<li>').text("Dug in: " + cur['dug_in'] + "%"))
                     );
                     if (cur['is_enemy']) {
-                        appendage.append($('<form>').attr('action', '/game/action/attack').attr('method', 'post')
-                            .append($('<button>').attr('id', 'attack').attr('name', 'player_called').attr('value', cur[name])
-                            ).text("Attack!")
-                        );
+                        appendage.append($('<form>')
+                            .attr('action', '/game/action/attack').attr('method', 'post')
+                            .append($('<button>')
+                                .attr('id', 'attack').attr('name', 'player_called').attr('value', cur['name'])
+                                .text("Attack! ")
+                        ));
                     }
                 }
 
@@ -132,7 +131,7 @@ function update_location(update) {
 
 }
 
-// TODO test
+
 function get_location_info_called(name) {
     var data = {};
     data['location'] = name;
@@ -169,7 +168,7 @@ function do_action(action) {
     }
     var add = $('<p>' + action.result + '</p>');
     add.attr('id', 'flash');
-    $("#sidebar-right").append(add);
+    $("#sidebar-right").prepend(add);
     get_new();
     slideUpAndRemoveAfter(add, 20000);
 }
