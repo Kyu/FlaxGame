@@ -19,6 +19,7 @@ from .admin import (
     ban_player,
     unban_player,
     get_user,
+    create_announcement,
     hide_announcement
 )
 from .game import (
@@ -37,7 +38,8 @@ from .game import (
     send_message,
     player_dig_in,
     get_player_json_info_for,
-    get_location_info_for
+    get_location_info_for,
+    get_map_info_for
 )
 from .security import (
     create_user,
@@ -93,7 +95,7 @@ def register(request):
     player = None
     if request.authenticated_userid and request.method != 'POST':
         player = get_player_info(request.authenticated_userid)
-        if player.uses_ip:  # TODO Add IP to admin thingy
+        if player.uses_ip:
             pass
         else:
             return HTTPFound(location='/')
@@ -209,8 +211,31 @@ def hex_view(request):
 
 
 @view_config(route_name='my_info', renderer='json', permission='play')
-def get_my_info(request):
-    return get_player_json_info_for(request.authenticated_userid, self=True)
+def get_my_info(request):  # rename
+    if 'player' in request.params:
+        player = request.params['player']
+        me = False
+    else:
+        player = request.authenticated_userid
+        me = True
+
+    return get_player_json_info_for(player, me=me)
+
+
+@view_config(route_name='map_info', renderer='json', permission='play')
+def get_map_info(request):
+    if 'location' in request.params:
+        location = request.params['location']
+    else:
+        location = 'all'
+    map_info = get_map_info_for(location)
+    locations = []
+
+    # Make sure not to return all the location's info
+    for k, v in map_info.items():
+        locations.append({'name': k.name, 'title': v, 'control': k.control, 'type': k.type})
+
+    return {'locations': locations}
 
 
 @view_config(route_name='current_hex_info', renderer='json', permission='play')
@@ -350,27 +375,27 @@ def unban_player_view(request):
 
 @view_config(route_name='player_info', permission='admin')
 def player_info_view(request):
-    args = ['id', 'username', 'squad_type', 'team', 'troops', 'location', 'dug_in', 'last_active', 'actions', 'ammo', 'level',
-            'banned', 'banned_by', 'time_banned', 'reason_banned']
+    args = ['id', 'username', 'squad_type', 'team', 'troops', 'location', 'dug_in', 'last_active', 'actions', 'ammo',
+            'level', 'banned', 'banned_by', 'time_banned', 'reason_banned']
     zeroes = 'actions, ammo', 'banned', 'dug_in'
     player = get_player_info(request.params['username'])
     if not player:
         pinfo = "Invalid player: {}".format(request.params['username'])
         request.session.flash(pinfo, 'player_info')
     else:
-        prep = ["{0}: {1}".format(arg, getattr(player, arg)) for arg in args if (getattr(player, arg) or (not getattr(player, arg) and arg in zeroes))]
+        prep = ["{0}: {1}".format(arg, getattr(player, arg)) for arg in args
+                if (getattr(player, arg) or (not getattr(player, arg) and arg in zeroes))]
         for i in prep:
             request.session.flash(i, 'player_info')
 
     return HTTPFound(location=return_to_sender(request))
 
 
-# TODO IMPLEMENT THIS
 @view_config(route_name='broadcast', request_method='POST', permission='admin')
 def send_announcement_view(request):
     msg = request.params['message']
     author = request.authenticated_userid
-    sent = send_message(message=msg, broadcast_by=author)
+    sent = create_announcement(author, msg)
     request.session.flash(sent, 'announcement_info')
     return HTTPFound(location=return_to_sender(request))
 

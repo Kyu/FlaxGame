@@ -53,8 +53,10 @@ def main(global_config, **settings):
     config.add_route('send_message', '/game/action/message')
     config.add_route('dig_in', '/game/action/dig_in')
 
+    # Game info views
     config.add_route('my_info', '/game/info/my_info')
-    config.add_route('current_hex_info', '/game/info/current_hex_info')
+    config.add_route('current_hex_info', '/game/info/current_loc_info')
+    config.add_route('map_info', '/game/info/map')
 
     # Personal/Information views
     config.add_route('team_info', '/team/{team}')

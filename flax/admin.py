@@ -3,7 +3,10 @@ import logging
 import transaction
 from sqlalchemy.orm.exc import NoResultFound
 
-from .game import update_player_info
+from .game import (
+    update_player_info,
+    send_message
+)
 from .models import (
     DBSession,
     User,
@@ -44,7 +47,11 @@ def get_user(username):
 
 
 # Hide an announcement by ID(Admins can see announcement IDs)
-# TODO create_announcment
+def create_announcement(author, message):
+    sent = send_message(message=message, broadcast_by=author)
+    return sent
+
+
 def hide_announcement(_id):
     try:
         msg = DBSession.query(Radio).filter_by(id=_id).filter_by(team='all')

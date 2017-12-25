@@ -32,10 +32,18 @@ log = logging.getLogger(__name__)
 
 
 # TODO Comment this and views.py
-def get_hexes():
-    hexes = DBSession.query(Hex)
+def get_map_info_for(location='all'):
+    # Returns all location info if no location specified
+    if location == 'all':
+        hexes = DBSession.query(Hex)
+    else:
+        hexes = DBSession.query(Hex).filter_by(name=location)
+
+    # Sorts the hexes by x component, then y component
     sorted_hexes = sorted(hexes, key=lambda the_hex: (the_hex.x, the_hex.y))
     hexes = {}
+    # For each item in sorted_hexes, this adds the item to the hexes dict, with an empty string value
+    # If there are any players in the location, the string is updated to say so
     for i in sorted_hexes:
         hexes[i] = ''
         tanks = 0
@@ -56,6 +64,7 @@ def get_hexes():
                 hexes[i] += "-- "
             hexes[i] += "{infantry} Infantry troops".format(infantry=infantry)
 
+    # Re sorts the the dict by the x and y components of each key
     re_sort = OrderedDict(sorted(hexes.items(), key=lambda the_hex: (the_hex[0].x, the_hex[0].y)))
     return re_sort
 
@@ -645,11 +654,11 @@ def get_location_info_for(username, location):
     return info
 
 
-def get_player_json_info_for(username, self=False):
+def get_player_json_info_for(username, me=False):
     player = get_player_info(username)
     player_info = {'name': player.username, 'morale': player.morale, 'squad': player.squad_type,
                    'team': player.team, 'troops': player.troops, 'dug_in': player.dug_in}
-    if self:
+    if me:
         player_info['actions'] = player.actions
         player_info['location'] = player.location
         player_info['ammo'] = player.ammo
@@ -659,7 +668,7 @@ def get_player_json_info_for(username, self=False):
 
 def get_all_game_info_for(player, location=''):
     game_info = dict()
-    game_info['hexes'] = get_hexes()
+    game_info['hexes'] = get_map_info_for()
     game_info['player'] = get_player_info(player)
     game_info['online'] = \
         DBSession.query(Player).filter(Player.last_active > (datetime.now() - timedelta(minutes=16))).all()

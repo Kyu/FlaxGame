@@ -2,6 +2,7 @@
  * Created by P.O on 7/29/2017.
  * Filename: game.js
  * TODO do this all with JS
+ * TODO Ever heard about divs
  */
 function get_my_info() {
     $.get('/game/info/my_info', function(player) {
@@ -23,7 +24,7 @@ function get_current_location_info() {
     var c_location = $(location).attr('pathname').replace('/game/', '');
     var data = {};
     data['location'] = c_location;
-    $.get('/game/info/current_hex_info', data, function(here) {
+    $.get('/game/info/current_loc_info', data, function(here) {
         $('h3#this_location').html("Location: <a href=\"/game/" + here['name'] + "\">" + here['name'] + "</a>");
         $('h3#terrain').text("Terrain: " + here.terrain);
         var pop = $('h4#population').text("Population: " +  here.population);
@@ -119,12 +120,13 @@ function get_current_location_info() {
 
 function update_location(update) {
     var name = update['name'];
-    var tb_element = $('td#loc_' + name);
-    tb_element.attr('title', name['title']).removeClass(
+    var tb_element = $('td[id="loc_' + name + '"]');
+    var title = update['name'] + " - " + update['type'] + update['title'];
+    tb_element.attr('title', title).removeClass(
         function (index, className) {
-            return (className.match (/(^|\s)color-\S+/g) || []).join(' ');
+            return (className.match (/(^|\s)location-\S+/g) || []).join(' ');
         }).addClass('location-' + update['type']);
-    if (update['control']) {
+    if (update['control'] !== 'None') {
         tb_element.addClass('location-' + update['control']);
     }
 
@@ -133,11 +135,11 @@ function update_location(update) {
 // TODO test
 function get_location_info_called(name) {
     var data = {};
-    data['name'] = name;
+    data['location'] = name;
 
-    $.get('/game/info/location', data, function(locations) {
+    $.get('/game/info/map', data, function(locations) {
         for (var i = 0; i < locations['locations'].length; i++) {
-            update_location(locations[i]);
+            update_location(locations['locations'][i]);
 
 }
     }, 'json');
@@ -149,6 +151,7 @@ function get_new() {
     setTimeout(function () {
         get_my_info();
         get_current_location_info();
+        get_location_info_called('all')
     }, 2000);
 
 }
@@ -194,7 +197,7 @@ $(document).ready(function() {
         var data = {};
         data[event.currentTarget.form[0].name] = event.currentTarget.form[0].value;
         $.post(event.currentTarget.form.action, data, send_message, 'json');
-        return false;
+        return false; // TODO update radio for message
     });
 
 });
