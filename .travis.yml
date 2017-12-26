@@ -1,0 +1,24 @@
+python:
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.5-dev"  # 3.5 development branch
+  - "3.6"
+  - "3.6-dev"  # 3.6 development branch
+  - "3.7-dev"  # 3.7 development branch
+  - "nightly"
+# command to install dependencies
+install:
+  - pip install -e ".[testing]"
+# command to run tests
+script:
+  - py.test # or py.test for Python versions 3.5 and below
+services:
+  - mysql
+
+
+before_script:
+- mysql -u root -e 'CREATE DATABASE flaxgame;'
+- mysql -u root -e "CREATE USER 'flaxgame'@'localhost' IDENTIFIED BY '*Flax*Game*2017*;';"
+- mysql -u root -e "GRANT ALL ON flaxgame.* TO 'flaxgame'@'localhost';"
+- initialize_flax_db development.ini
