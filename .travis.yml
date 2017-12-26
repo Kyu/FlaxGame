@@ -22,3 +22,4 @@ before_script:
 - mysql -u root -e "CREATE USER 'flaxgame'@'localhost' IDENTIFIED BY '*Flax*Game*2017*;';"
 - mysql -u root -e "GRANT ALL ON flaxgame.* TO 'flaxgame'@'localhost';"
 - initialize_flax_db development.ini
+
