@@ -24,3 +24,12 @@ before_script:
 - initialize_flax_db development.ini
 - cd flax
 
+notifications:
+  webhooks:
+    urls:
+     - https://discordapp.com/api/webhooks/395361170032164867/I0iNb1gOWKVetBbE6ubQU_Z7PcGkuNkLNN5MkkKwnsQ88no_9f2JN4oMLCgRPzeKvkFX
+    on_success: always # default: always
+    on_failure: always # default: always
+    on_start: never   # default: never
+    on_cancel: never # default: always
+    on_error: always
