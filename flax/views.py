@@ -76,6 +76,7 @@ def home(request):
 
 @forbidden_view_config(renderer='templates/403.pt')
 def view_forbidden(request):
+    request.response.status_code = 403
     if request.authenticated_userid:
         player = get_player_info(request.authenticated_userid)
         return {'player': player, 'banned': player.banned}
@@ -104,7 +105,7 @@ def register(request):
             return HTTPFound(location='/')
 
     if request.method == 'POST':
-        request.override_renderer = 'json'  #######
+        request.override_renderer = 'json'
         if 'register' in request.params:
             if 'username' not in request.params:
                 resp['status'] = request.session.flash("No username defined")
@@ -129,7 +130,7 @@ def register(request):
 @view_config(route_name='login', renderer='json', request_method='POST')
 def login(request):
     verified = dict(username='', status='')
-    headers = None
+    headers = []
     if 'login' in request.params and not request.authenticated_userid:
         if 'username' not in request.params:
             verified['status'] = "No username defined"
@@ -140,9 +141,9 @@ def login(request):
             password = request.params['password']
             verified = verify_login(username, password)
             if verified.get('username'):
-                headers = remember(request, verified['username'])
-    
-    return Response(json={'success': bool(verified['username']), 'status': verified['status']}, headerlist=headers)
+                headers.extend(remember(request, verified['username']))
+    request.response.headerlist.extend(headers)
+    return {'success': bool(verified['username']), 'status': verified['status']}
 
 
 @view_config(route_name='ip_login', request_method='POST')
@@ -179,11 +180,12 @@ def recover_password_view(request):
     return {'code': code}
 
 
-@view_config(route_name='logout')
+@view_config(route_name='logout', permission='play')
 def logout(request):
     if not request.authenticated_userid:
         return HTTPForbidden()
     headers = forget(request)
+
     return HTTPFound(location='/', headers=headers)
     # return Response(json_body={'logged_out': True}, headers=headers)
 

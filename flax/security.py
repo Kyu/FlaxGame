@@ -350,11 +350,11 @@ def groupfinder(userid, request):
         if user.admin:
             result.append("group:Admin")
     except NoResultFound:
-        return
+        pass
     except Exception as e:
         msg = "{err} on change_setting(userid={userid}, request={request})".format(
             err=str(type(e).__name__ + ': ' + str(e)), userid=userid, request=request)
         log.warning(msg)
-        return
+        pass
 
     return result
