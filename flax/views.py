@@ -180,14 +180,14 @@ def recover_password_view(request):
     return {'code': code}
 
 
-@view_config(route_name='logout', permission='play')
+@view_config(route_name='logout', permission='play', renderer='json')
 def logout(request):
     if not request.authenticated_userid:
         return HTTPForbidden()
-    headers = forget(request)
-
-    return HTTPFound(location='/', headers=headers)
-    # return Response(json_body={'logged_out': True}, headers=headers)
+    headers = []
+    headers.extend(forget(request))
+    request.response.headerlist.extend(headers)
+    return {'success': bool(headers)}
 
 
 @view_config(route_name='game', renderer='templates/game.pt', permission='play')

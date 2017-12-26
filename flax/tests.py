@@ -38,10 +38,11 @@ def _initTestingDB():
     with transaction.manager:
         new_test = User(username='test', email='test', password=hash_string('test'))
         DBSession.add(new_test)
+        transaction.commit()
         test = Player(id=new_test.id, username='test', squad_type='Infantry', team='Red', location='2.2')
         testdummy = Player(id=random.randint(4000, 90000), username='testdummy', squad_type='Infantry', team='Yellow', location='2.2')
         testin99 = Player(id=random.randint(4000, 90000), username='testin99', squad_type='Infantry', team='Blue', location='9.9')
-        DBSession.add_all([new_test, test, testdummy, testin99])
+        DBSession.add_all([test, testdummy, testin99])
         transaction.commit()
     return DBSession
 
@@ -80,10 +81,13 @@ class GameViews(unittest.TestCase):
     def setUpClass(cls):
         from .models import Player, User
         cls.session = _initTestingDB()
-        test_usr = cls.session.query(Player).filter_by(username='test').one()
-        tst_usr = cls.session.query(User).filter_by(username='test').one()
-        assert test_usr
-        assert tst_usr
+        test_player = cls.session.query(Player).filter_by(username='test').one()
+        test_user = cls.session.query(User).filter_by(username='test').one()
+        assert test_player
+        assert test_user
+        assert test_player.id == test_user.id
+        assert test_player.username == test_user.username
+        # This is just PTSD don't worry about it
 
     def setUp(self):
         from pyramid.paster import get_app
@@ -202,8 +206,10 @@ class GameViews(unittest.TestCase):
         random_text = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
         self.testapp.post('/message', params={'message': random_text})
         home = self.testapp.get('/game')
-        self.assertIn(random_text, home.text)
+        self.assertIn(random_text, home.text)'''
     
     def test_logout(self):
         logout = self.testapp.post('/logout')
-        self.assertIn('{"logged_out":true}', logout.text)'''
+        logout_json = logout.json
+        self.assertTrue(logout_json['success'])
+        self.assertFalse(self.testapp.cookiejar)
