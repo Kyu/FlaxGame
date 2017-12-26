@@ -262,7 +262,7 @@ def attack_player(request):
     if 'player_called' in request.params:
         attacker, defender = request.authenticated_userid, request.params['player_called']
         attack = player_attack(attacker=attacker, defender=defender)
-        return {'result': attack}
+        return {'result': attack}  # success: True?
 
     return HTTPFound(location=return_to_sender(request))
 
@@ -311,7 +311,7 @@ def team_info(request):
 def broadcast_message(request):
     if 'message' in request.params:
         msg = send_message(_from=request.authenticated_userid, message=request.params['message'])
-        return {'message': msg, 'action': 'send_message'}
+        return {'message': msg, 'action': 'send_message'}  # 'message' -> 'result'
     return HTTPFound(location=return_to_sender(request))
 
 

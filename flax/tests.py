@@ -75,7 +75,6 @@ class StaticViews(unittest.TestCase):
         self.assertIsNone(response['name'])
 
 
-# TODO Tests failing because not being allowed to log in
 class GameViews(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -100,6 +99,12 @@ class GameViews(unittest.TestCase):
         json_resp = login.json
         self.assertTrue(json_resp['success'])
 
+    def tearDown(self):
+        logout = self.testapp.post('/logout')
+        logout_json = logout.json
+        self.assertTrue(logout_json['success'])
+        self.assertFalse(self.testapp.cookiejar)
+
     @classmethod
     def tearDownClass(cls):
         remove_test_users()
@@ -110,61 +115,59 @@ class GameViews(unittest.TestCase):
         self.assertIn('Actions:', game_page.text)
         # self.assertIn('Logout', game_page.text)
 
-
-    '''
     def text_hex_view(self):
         hex_page = self.testapp.get('/game/2.2', status=200)
         self.assertIn("Currently here", hex_page.text)
         self.assertIn("You are here!", hex_page.text)
 
     def move_to(self, position):
-        self.testapp.post('/goto', params={'position': position})
-        home = self.testapp.get('/game')
-        return home
+        movement = self.testapp.post('/game/action/go_to', params={'position': position})
+        return movement
 
     def test_moving(self):
         bad_move = self.move_to('2.2')
-        self.assertIn('The location you are trying to move to is the same location you are currently in', bad_move.text)
+        self.assertIn('The location you are trying to move to is the same location you are currently in',
+                      bad_move.json['result'])
 
         non_existent_move = self.move_to('11.10')
-        self.assertIn('This location does not exist', non_existent_move.text)
+        self.assertIn('This location does not exist', non_existent_move.json['result'])
 
         too_far_movement = self.move_to('9.9')
-        self.assertIn('This location is not next to your current location', too_far_movement.text)
+        self.assertIn('This location is not next to your current location', too_far_movement.json['result'])
 
         from .models import Player
         old_location = self.session.query(Player).filter_by(username='test').one().location
 
         good_movement = self.move_to('3.2')
-        self.assertIn("Successfully moved from 2.2 to 3.2", good_movement.text)
+        self.assertIn("Successfully moved from 2.2 to 3.2", good_movement.json['result'])
         new_location = self.session.query(Player).filter_by(username='test').one().location
 
         self.assertEqual(new_location, '3.2')
         self.assertNotEqual(new_location, old_location)
 
         move_back = self.move_to('2.2')
-        self.assertIn("Successfully moved from 3.2 to 2.2", move_back.text)
+        self.assertIn("Successfully moved from 3.2 to 2.2", move_back.json['result'])
 
         back = self.session.query(Player).filter_by(username='test').one().location
         self.assertEqual(back, '2.2')
 
     def attack_player(self, player):
-        self.testapp.post('/attack', params={'player_called': player})
-        home = self.testapp.get('/game')
-        return home
+        attack = self.testapp.post('/game/action/attack', params={'player_called': player})
+        return attack
 
     def test_attacking(self):
         from .models import Player
         random_user = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
         nonexistent_attack = self.attack_player(random_user)
-        self.assertIn("Player does not exist", nonexistent_attack.text)
+        self.assertIn("Player does not exist", nonexistent_attack.json['result'])
 
         too_far_attack = self.attack_player('testin99')
-        self.assertIn("You are not in the same location as this player!", too_far_attack.text)
+        self.assertIn("You are not in the same location as this player!", too_far_attack.json['result'])
 
         current_troops = self.session.query(Player).filter_by(username='test').one().troops
         good_attack = self.attack_player('testdummy')
-        self.assertIn('lost', good_attack.text)
+        self.assertIn('lost', good_attack.json['result'])  # How did I know he was gonna lose?
+
         new_troops = self.session.query(Player).filter_by(username='test').one().troops
 
         self.assertLess(new_troops, current_troops)
@@ -179,10 +182,12 @@ class GameViews(unittest.TestCase):
         my_team = self.testapp.get('/team/Red')
         self.assertIn('Name:', my_team.text)
 
-    def test_profile_pate(self):
+    def test_profile_pate(self):  # add a /info/player
         info = self.testapp.get('/profile')
         self.assertIn('Player: test', info.text)
 
+    # TODO Doesn't work
+    ''' 
     def test_setting_change(self):
         from .models import User
 
@@ -193,6 +198,7 @@ class GameViews(unittest.TestCase):
 
         self.assertEqual(new_email, 'test@test.test')
         self.assertNotEqual(old_email, new_email)
+    '''
 
     def delete_message(self, msg):
         import transaction
@@ -204,12 +210,12 @@ class GameViews(unittest.TestCase):
 
     def test_send_message(self):
         random_text = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
-        self.testapp.post('/message', params={'message': random_text})
+        send_msg = self.testapp.post('/game/action/message', params={'message': random_text})
+        self.assertIn("Message sent successfully!", send_msg.json['message'])
+
         home = self.testapp.get('/game')
-        self.assertIn(random_text, home.text)'''
+        self.assertIn(random_text, home.text)
+
+        self.delete_message(random_text)
     
-    def test_logout(self):
-        logout = self.testapp.post('/logout')
-        logout_json = logout.json
-        self.assertTrue(logout_json['success'])
-        self.assertFalse(self.testapp.cookiejar)
+
