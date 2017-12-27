@@ -57,12 +57,11 @@ div.sidebar {
 }
 
 div#sidebar-right {
-    width: 300px;
+    width: 15%;
     float: left;
 }
 div#sidebar-left {
-    width: 300px;
-    float: left;
+    width: 15%;
 }
 /*
 div#sidebar-right {
@@ -215,7 +214,7 @@ button#logout {
 }
 
 .container {
-    size: auto;
+    width: 65% !important;
 }
 /*
 .top {
