@@ -37,113 +37,261 @@ function get_my_info() {
 }
 
 
+function add_action_btns() {
+    var recruit_form = $('<form>').attr('action', '/game/action/recruit').attr('method', 'post')
+        .append($('<button>').attr('id', 'recruit').text("Recruit!")
+        ),
+    ammo_form = $('<form>').attr('action', '/game/action/ammo').attr('method', 'post')
+        .append($('<button>').attr('id', 'take_ammo').text("Take ammo!")
+        ),
+    industry_form = $('<form>').attr('action', '/game/action/industry').attr('method', 'post')
+        .append($('<button>').attr('id', 'industry').text("Upgrade industry!")
+        ),
+    infrastructure_form = $('<form>').attr('action', '/game/action/infrastructure').attr('method', 'post')
+        .append($('<button>').attr('id', 'infrastructure').text("Upgrade infrastructure!")
+        ),
+    dig_in_form = $('<form>').attr('action', '/game/action/dig_in').attr('method', 'post')
+        .append($('<button>').attr('id', 'dig_in').text("Dig in!")
+        );
+    var pop = $('h4#population'),
+        a_ammo = $('h4#available_ammo'),
+        industry = $('h4#industry'),
+        inf = $('h4#infrastructure'),
+        dug = $('h4#dug_in');
+
+    $('button#recruit').length ? void(0) : pop.after(recruit_form);
+    $('button#take_ammo').length ? void(0) : a_ammo.after(ammo_form);
+    $('button#industry').length ? void(0) : industry.after(industry_form);
+    $('button#infrastructure').length ? void(0) : inf.after(infrastructure_form);
+    $('button#dig_in').length ? void(0) : dug.after(dig_in_form);
+}
+
+
+function remove_action_btns() {
+    var recruit_btn = $('button#recruit'),
+                    take_ammo_btn = $('button#take_ammo'),
+                    industry_btn = $('button#industry'),
+                    infrastructure_btn = $('button#infrastructure'),
+                    dig_in_btn = $('button#dig_in');
+
+    recruit_btn.length ? $(recruit_btn[0].parentNode).remove() : void(0);
+    take_ammo_btn.length ? $(take_ammo_btn[0].parentNode).remove() : void(0);
+    industry_btn.length ? $(industry_btn[0].parentNode).remove() : void(0);
+    infrastructure_btn.length ? $(infrastructure_btn[0].parentNode).remove() : void(0);
+    dig_in_btn.length ? $(dig_in_btn[0].parentNode).remove() : void(0);
+}
+
+
+function create_sidebar_right() {
+    // check for div#sidebar-left
+    $("div#sidebar-left").after(
+        $('<div>').attr('id', 'sidebar-right').addClass('sidebar')
+    );
+    console.log("Sidebar-right created!")
+}
+
+
+function create_hex_div() {
+    var sidebar_right = $('div#sidebar-right');
+    if (!sidebar_right.length) {
+        create_sidebar_right();
+        sidebar_right = $('div#sidebar-right');
+    }
+
+    sidebar_right.append(
+        $('<div>').addClass('hex')
+    );
+    console.log("hex div created!");
+}
+
+
+function create_here_div() {
+    var hex_div = $('div.hex');
+    if (!hex_div.length) {
+        create_hex_div();
+        hex_div = $('div.hex');
+    }
+
+    hex_div.append( // why not also_here
+        $('<div>').attr('id', 'also-here').append(
+            $('<h2>').text("Currently here:")
+        )
+    );
+    console.log("Here div created!");
+}
+
+
+function create_sidenav() { // Return the side nav?
+    var here_div = $("div#also-here");
+    if (!here_div.length) {
+        create_here_div();
+        here_div = $("div#also-here");
+    }
+
+    here_div.append(
+        $('<div>').addClass('sidebar-nav')
+    );
+
+    console.log("Sidenav created!");
+}
+
+
+function populate_amount_players(all_here) {
+    var side_nav = $('div.sidebar-nav');
+    if (!side_nav.length) {
+        create_sidenav();
+        side_nav = $('div.sidebar-nav');
+    }
+    for (var ih = 0; ih < all_here.length; ih++) {
+        side_nav.prepend($('<p>').attr('id', 'troops_here_count').text(all_here[ih])
+        );
+    }
+}
+
+
+function populate_sidebar_players (players) {
+
+    if (!players.length || !players) {
+        return;
+    }
+    var sidenav = $('div.sidebar-nav');
+    if (!sidenav.length) {
+        create_sidenav();
+        sidenav = $('div.sidebar-nav');
+    }
+    $('div#also-here').prepend(
+        $('<h2>').text("Currently here:")
+    );
+    console.log(sidenav);
+    for (var i = 0; i < players.length; i++) {
+        var cur = players[i];
+        console.log(cur);
+
+        // TODO EVERYTHING ABOVE THIS CHECKS OUT
+        sidenav.append($('<li>')
+            .append($('<div>').attr('id', 'player_here_also')
+                .append($('<p>').text(cur['name']))
+                .append($('<p>').text("Squad type: " + cur['squad']))
+                .append($('<p>').html("Team: <a href=\"/team/" + cur['team'] + "\">" + cur['team'] + "</a>"))
+                .append($('<p>').text("Troops: " + cur['troops']))
+                .append($('<p>').text("Morale: " + cur['morale']))
+                .append($('<p>').text("Dug in: " + cur['dug_in'] + "%"))
+                .append(function () {
+                    if (cur['is_enemy']) {
+                        return ($('<form>')
+                            .attr('action', '/game/action/attack').attr('method', 'post')
+                            .append($('<button>')
+                                .attr('id', 'attack').attr('name', 'player_called').attr('value', cur['name'])
+                                .text("Attack!")
+                            ));
+                    }
+                })
+            ));
+    }
+
+}
+
+
+function populate_sidebar(location) {
+    var sidebar = $("div#sidebar-right");
+    var sidebar_exists = !!sidebar.length;
+    if (!sidebar_exists) {
+        create_hex_div();
+    }
+    console.log(location);
+    var loc_html = "Location: <a href=\"/game/" + location['name'] + "\">" + location['name'] + "</a>",
+        terrain_text = "Terrain: " + location['terrain'],
+        pop_text = "Population: " + location['population'],
+        ammo_text = "Available ammo: " + location['ammo'],
+        industry_text = "Industry: " + location['industry'],
+        infrastructure_text = "Infrastructure: " + location['infrastructure'],
+        inf_dom = $('h4#infrastructure');
+
+    if (sidebar_exists) {
+        $('h3#this_location').html(loc_html);
+        $('h3#terrain').text(terrain_text);
+        $('h4#population').text(pop_text);
+        $('h4#available_ammo').text(ammo_text);
+        $('h4#industry').text(industry_text);
+        inf_dom.text(infrastructure_text);
+    } else {
+        $('div.hex').append(
+            $('<h3>').attr('id', 'this_location').html(loc_html)).append(
+            $('<h3>').attr('id', 'terrain').text(terrain_text)).append(
+            $('<h4>').attr('id', 'population').text(pop_text)).append(
+            $('<h4>').attr('id', 'available_ammo').text(ammo_text)).append(
+            $('<h4>').attr('id', 'industry').text(industry_text)).append(
+            $('<h4>').attr('id', 'infrastructure').text(industry_text)
+        );
+        inf_dom = $('h4#infrastructure');
+    }
+
+    var here_dom = $('h3#is_here'),
+        dug = $('h4#dug_in');
+
+    if (location['is_here']) {
+        var dug_in_text = "Dug in: " + location['dug_in'] + "%";
+
+        if (!dug.length) {
+            inf_dom.after($('<h4>').attr('id', 'dug_in').text(dug_in_text));
+            dug = $('h4#dug_in');
+        } else {
+            dug.text(dug_in_text);
+        }
+
+        if (here_dom.length) {
+            here_dom.text("You are here!");
+        } else {
+            dug.after(
+                $('<h3>').text("You are here!").attr('id', 'is_here')
+            );
+        }
+
+        if (location['friendly']) {
+            add_action_btns();
+        } else {
+            remove_action_btns();
+        }
+
+        populate_sidebar_players(location['also_here']);
+
+    } else {
+        remove_action_btns();
+        here_dom.remove();
+        dug.remove();
+        // $("div.sidebar-nav li").remove();
+        $("div#also-here").html("");
+    }
+
+    var move_btn = $('#move_here');
+    if (location['movable']) {
+        if (move_btn.length) {
+            move_btn.val(location['name']);
+        } else {
+            var move_form = $('<form>').attr('method', 'post').attr('action', '/game/action/go_to')
+                .append($('<button>').attr('id', 'move_here').attr('name', 'position').attr('value', location['name'])
+                    .text("Move Here!"));
+            inf_dom.after(move_form);
+        }
+    } else if (move_btn.length) {
+        move_btn[0].form.remove();
+    }
+
+    var all_here = location['amount_here'];
+    populate_amount_players(all_here);
+
+
+
+}
+
+
+
+
 function get_current_location_info() {
     var current_location = $(location).attr('pathname').replace('/game/', '');
     var data = {};
     data['location'] = current_location;
-    $.get('/game/info/current_loc_info', data, function(here) {
-        $('h3#this_location').html("Location: <a href=\"/game/" + here['name'] + "\">" + here['name'] + "</a>");
-        $('h3#terrain').text("Terrain: " + here.terrain);
-        var pop = $('h4#population').text("Population: " +  here.population);
-        var a_ammo = $('h4#available_ammo').text("Available ammo: " + here.ammo);
-        var industry = $('h4#industry').text("Industry: " + here.industry);
-        var inf = $('h4#infrastructure').text("Infrastructure: " + here.infrastructure);
-        var dug = $('h4#dug_in');
-        dug.text("Dig in: " + here.dug_in + "%");
-        var here_dom = $('h3#is_here');
-        if (here.is_here) {
-            if (here_dom.length) {
-                here_dom.text("You are here!");
-            } else {
-                var add = $('<h3>You are here!</h3>');
-                add.attr('id', 'is_here');
-                dug.after(add);
-            }
-            var move_btn = $('#move_here');
-            if (move_btn.length) {
-                move_btn[0].form.remove();
-            }
-
-            if (here.friendly) {
-                var recruit_form = $('<form>').attr('action', '/game/action/recruit').attr('method', 'post')
-                        .append($('<button>').attr('id', 'recruit').text("Recruit!")
-                        ),
-                    ammo_form = $('<form>').attr('action', '/game/action/ammo').attr('method', 'post')
-                        .append($('<button>').attr('id', 'take_ammo').text("Take ammo!")
-                        ),
-                    industry_form = $('<form>').attr('action', '/game/action/industry').attr('method', 'post')
-                        .append($('<button>').attr('id', 'industry').text("Upgrade industry!")
-                        ),
-                    infrastructure_form = $('<form>').attr('action', '/game/action/infrastructure').attr('method', 'post')
-                        .append($('<button>').attr('id', 'infrastructure').text("Upgrade infrastructure!")
-                        ),
-                    dig_in_form = $('<form>').attr('action', '/game/action/dig_in').attr('method', 'post')
-                        .append($('<button>').attr('id', 'dig_in').text("Dig in!")
-                        );
-                $('button#recruit').length ? void(0) : pop.after(recruit_form);
-                $('button#take_ammo').length ? void(0) : a_ammo.after(ammo_form);
-                $('button#industry').length ? void(0) : industry.after(industry_form);
-                $('button#infrastructure').length ? void(0) : inf.after(infrastructure_form);
-                $('button#dig_in').length ? void(0) : dug.after(dig_in_form);
-            }
-
-            if (here['amount_here'].length) {
-                var here_div = $("div#also-here");
-                if (!here_div.length) {
-                    here_div = $("<div>");
-                    here_div.attr('id', 'also-here').append($('<h2>').text("Currently here:")
-                    ).append($('<div>').addClass('sidebar-nav'))
-                }
-                here_dom.after(here_div);
-                var sidenav = $('div.sidebar-nav');
-                $('div[id=player_here_also]').remove();
-                $('p[id=troops_here_count]').remove();
-                for (var i = 0; i < here['also_here'].length; i++) {
-                    var cur = here['also_here'][i];
-                    sidenav.append($('<li>')
-                        .append($('<div>').attr('id', 'player_here_also')
-                            .append($('<p>').text(cur['name']))
-                            .append($('<p>').text("Squad type: " + cur['squad']))
-                            .append($('<p>').html("Team: <a href=\"/team/" + cur['team'] + "\">" + cur['team'] + "</a>"))
-                            .append($('<p>').text("Troops: " + cur['troops']))
-                            .append($('<p>').text("Morale: " + cur['morale']))
-                            .append($('<p>').text("Dug in: " + cur['dug_in'] + "%"))
-                            .append(function () {
-                                if (cur['is_enemy']) {
-                                    return ($('<form>')
-                                        .attr('action', '/game/action/attack').attr('method', 'post')
-                                        .append($('<button>')
-                                        .attr('id', 'attack').attr('name', 'player_called').attr('value', cur['name'])
-                                        .text("Attack!")
-                                        ));
-                                }
-                            })
-                        ));
-
-                    /*if (cur['is_enemy']) {
-                        sidenav.append($('<form>')
-                            .attr('action', '/game/action/attack').attr('method', 'post')
-                            .append($('<button>')
-                                .attr('id', 'attack').attr('name', 'player_called').attr('value', cur['name'])
-                                .text("Attack!!!")
-                        ));
-                    }*/
-                }
-
-
-                for (var ih = 0; ih < here['amount_here'].length; ih++) {
-                    $('.sidebar-nav').prepend($('<p>').attr('id', 'troops_here_count').text(here['amount_here'][ih])
-                    );
-                }
-            }
-        } else {
-            if (here_dom.length) {
-                here_dom.remove();
-                dug.remove();
-                $('button#dig_in').remove();
-                }
-        }
-    }, 'json');
+    $.get('/game/info/current_loc_info', data, populate_sidebar, 'json');
 }
 
 
@@ -244,6 +392,14 @@ $(document).ready(function() {
         data[event.currentTarget.form[0].name] = event.currentTarget.form[0].value;
         $.post(event.currentTarget.form.action, data, send_message, 'json');
         return false; // TODO update radio for message
+    });
+
+    $("table#map a").click(function(event) {
+        history.pushState("", "", "/game/" + event.target.text);
+        setTimeout(function () {
+            get_new();
+        }, 2000);
+        return false;
     });
 
     $("#logout").click(function(event){
