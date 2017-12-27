@@ -670,15 +670,15 @@ def get_location_info_for(username, location):
             'is_here': is_here, 'friendly': friendly, 'movable': bool(movable)}
 
     currently_here = get_players_located_at(location)
-    if is_here:
-        also_here = []
-        for i in currently_here:
-            if i.username != player.username:
-                p_info = get_player_json_info_for(i.username)
-                is_enemy = {'is_enemy': i.team != player.team}
-                p_info.update(is_enemy)
-                also_here.append(p_info)
+    also_here = []
+    for i in currently_here:
+        if (i.username != player.username) and (i.location == player.location or i.team == player.team):
+            p_info = get_player_json_info_for(i.username)
+            is_enemy = {'is_enemy': i.team != player.team}
+            p_info.update(is_enemy)
+            also_here.append(p_info)
 
+    if also_here:
         info['also_here'] = also_here
 
     blue_total = {'sum': sum([i.troops for i in currently_here if i.team == 'Blue']), 'team': 'Blue'}

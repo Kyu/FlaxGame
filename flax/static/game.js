@@ -1,7 +1,6 @@
 /**
  * Created by P.O on 7/29/2017.
  * Filename: game.js
- * friendly troops not displayed
  */
 
 // String Formatting
@@ -147,7 +146,7 @@ function populate_amount_players(all_here) {
 
 function populate_sidebar_players (players) {
 
-    if (!players.length || !players) {
+    if (!players || !players.length) {
         return;
     }
     var sidenav = $('div.sidebar-nav');
@@ -246,8 +245,6 @@ function populate_sidebar(location) {
             remove_action_btns();
         }
 
-        populate_sidebar_players(location['also_here']);
-
     } else {
         remove_action_btns();
         here_dom.remove();
@@ -255,6 +252,7 @@ function populate_sidebar(location) {
         // $("div.sidebar-nav li").remove();
         $("div#also-here").html("");
     }
+    populate_sidebar_players(location['also_here']);
 
     var move_btn = $('#move_here');
     if (location['movable']) {
