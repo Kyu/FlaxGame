@@ -31,8 +31,8 @@ function get_my_info() {
         $("h4#team").html("Team: <a href=\"/team/{0}\">{0}</a>".format(player['team']));
         $("h4#squad").text("Squad: {0}".format(player['squad']));
         $("h4#troops").text("Troops: {0}".format(player['troops']));
-        // TODO currently online update
         $("h4#location").html("Located at: <a href=\"/game/{0}\">{0}</a>".format(player['location']));
+        $("h6#currently_online").text("Currently online: {0}".format(player['currently_online']));
     }, 'json');
 }
 

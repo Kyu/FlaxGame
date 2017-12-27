@@ -686,8 +686,13 @@ def get_location_info_for(username, location):
 def get_player_json_info_for(username, me=False):
     # Gets player info for frontend
     player = get_player_info(username)
+    # Could return NoResultFound Remember that
+    currently_online = len(
+        DBSession.query(Player).filter(Player.last_active > (datetime.now() - timedelta(minutes=16))).all())
+
     player_info = {'name': player.username, 'morale': player.morale, 'squad': player.squad_type,
-                   'team': player.team, 'troops': player.troops, 'dug_in': player.dug_in}
+                   'team': player.team, 'troops': player.troops, 'dug_in': player.dug_in,
+                   'currently_online': currently_online if currently_online else 1}
     if me:
         player_info['actions'] = player.actions
         player_info['location'] = player.location

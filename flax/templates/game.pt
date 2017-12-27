@@ -159,7 +159,7 @@
                     </td>
                 </tr>
             </table>
-            <h6>Currently online: ${online if online else 1}</h6>
+            <h6 id="currently_online">Currently online: ${online if online else 1}</h6>
         </div>
 
     </div>
