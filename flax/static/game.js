@@ -361,7 +361,7 @@ function send_message(message) { // TODO ws://? Maybe?
     slideUpAndRemoveAfter(add, 20000);
 }
 
-
+// TODO Minify
 $(document).ready(function() {
     $('#take_ammo, #recruit, #industry, #infrastructure, #dig_in, #move_here, #attack').click(function(event){
         event.preventDefault();
