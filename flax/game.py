@@ -176,7 +176,8 @@ def can_move_to(player, locations):
     diff_is_one = (-1, 0, 1)
     for i in locations:
         if currently_at.x - i.x in diff_is_one and currently_at.y - i.y in diff_is_one:
-            visitable.append(i)
+            if i.name != player.location:
+                visitable.append(i)
 
     return visitable
 
@@ -659,16 +660,19 @@ def get_location_info_for(username, location):
     player = get_player_info(username)
     # also_here, amount_here
     is_here = current.name == player.location
+    player_location_obj = get_location_called(player.location)
+
+    movable = can_move_to(player, [current, player_location_obj])
+
     friendly = is_here and (current.control == 'None' or current.control == player.team)
     info = {'name': current.name, 'terrain': current.type, 'population': current.population, 'ammo': current.ammo,
             'industry': current.industry, 'infrastructure': current.infrastructure, 'dug_in': player.dug_in,
-            'is_here': is_here, 'friendly': friendly}
+            'is_here': is_here, 'friendly': friendly, 'movable': bool(movable)}
 
     currently_here = get_players_located_at(location)
     if is_here:
         also_here = []
         for i in currently_here:
-
             if i.username != player.username:
                 p_info = get_player_json_info_for(i.username)
                 is_enemy = {'is_enemy': i.team != player.team}
