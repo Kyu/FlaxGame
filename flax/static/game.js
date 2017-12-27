@@ -2,7 +2,6 @@
  * Created by P.O on 7/29/2017.
  * Filename: game.js
  * TODO do this all with JS
- * TODO Ever heard about divs
  * Put notifs in divs
  */
 
@@ -22,6 +21,8 @@ if (!String.prototype.format) {
 function logout() {
     window.location = '/';
 }
+
+
 function get_my_info() {
     $.get('/game/info/my_info', function(player) {
         $("h4#actions").text("Actions: {0}".format(player['actions']));
@@ -37,9 +38,9 @@ function get_my_info() {
 
 
 function get_current_location_info() {
-    var c_location = $(location).attr('pathname').replace('/game/', '');
+    var current_location = $(location).attr('pathname').replace('/game/', '');
     var data = {};
-    data['location'] = c_location;
+    data['location'] = current_location;
     $.get('/game/info/current_loc_info', data, function(here) {
         $('h3#this_location').html("Location: <a href=\"/game/" + here['name'] + "\">" + here['name'] + "</a>");
         $('h3#terrain').text("Terrain: " + here.terrain);
@@ -196,9 +197,18 @@ function do_action(action) {
     if (action.action === 'movement' && action.succeed) {
         history.pushState("", "", "/game/" + action.new);
     }
-    var add = $('<p>' + action.result + '</p>');
-    add.attr('id', 'flash');
-    $("#sidebar-right").prepend(add);
+    var flash_div = $('div#flash');
+    console.log(flash_div);
+    var add = $('<p>').text(action.result).addClass('action-notification');
+    console.log(add);
+    if (flash_div.length) {
+        flash_div.prepend(add);
+    } else {
+        $("div#sidebar-right").prepend($('<div>').attr('id', 'flash'));
+        flash_div = $('div#flash');
+    }
+    console.log(flash_div);
+    flash_div.prepend(add);
     get_new();
     slideUpAndRemoveAfter(add, 20000);
 }
@@ -207,7 +217,7 @@ function do_action(action) {
 function send_message(message) {
     var add = $('<p>' + message.message + '</p>');
     add.attr('id', 'flash');
-    $($("#messages")[0].children[0]).after(add);
+    $($("div#messages")[0].children[0]).after(add);
     slideUpAndRemoveAfter(add, 20000);
 }
 

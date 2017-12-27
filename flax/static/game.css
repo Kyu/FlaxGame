@@ -46,7 +46,7 @@ div#sidebar-left {
     font-weight: bold;
 }
 
-#flash {
+p.action-notification {
     color: lawngreen;
 }
 
