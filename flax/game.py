@@ -618,14 +618,17 @@ def get_radio_for(player):
 
 
 def send_message(message, _from='', to='', broadcast_by=''):
+    result = dict(success=False, status='', message='')
     # Sends a message for a player.
     if not message:
-        return "https://www.youtube.com/watch?v=u9Dg-g7t2l4"
+        result['status'] = "https://www.youtube.com/watch?v=u9Dg-g7t2l4"
+        return result
     if len(message) > 140 and not to and not broadcast_by:
-        return "Your budget is not high enough to send this many words"
-
+        result['status'] = "Your budget is not high enough to send this many words"
+        return result
     if not _from and not to and not broadcast_by:
-        return "No author specified"
+        result['status'] = "No author specified"
+        return result
 
     if broadcast_by:
         team = 'all'
@@ -644,7 +647,10 @@ def send_message(message, _from='', to='', broadcast_by=''):
         DBSession.add(new_msg)
         transaction.commit()
 
-    return "Message sent successfully!"
+    result = DBSession.query(Radio).filter_by(id=new_msg.id).one()
+    return {'status': "Message sent successfully!", 'success': True,
+            'message': {'content': result.message, 'timestamp': str(result.timestamp)}}
+    # Sent as str because json can't render datetime? Not confirmed but I don't wanna test it now
 
 
 def get_location_info_for(username, location):

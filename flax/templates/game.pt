@@ -65,13 +65,13 @@
 
             <div id="messages">
                 <h3>Radio: </h3>
-                <div tal:condition="radio" class="radio">
+                <div class="radio">
 
-                    <ul tal:repeat="message [m for m in radio if m.team != 'all']">
-                        <div class="message">
+                    <ul id="message-list">
+                        <li class="message" tal:repeat="message [m for m in radio if m.team != 'all']">
                             <p class="message-text${' server-log' if message.author == 'Server' else None}">${message.author}: ${message.message}</p>
                             <p class="message-timestamp">${message.timestamp}</p>
-                        </div>
+                        </li>
                     </ul>
 
                     <ul tal:repeat="announcement [i for i in radio if i.team == 'all' and i.active]" class="announcement">

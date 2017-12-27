@@ -214,10 +214,17 @@ function do_action(action) {
 }
 
 
-function send_message(message) {
-    var add = $('<p>' + message.message + '</p>');
-    add.attr('id', 'flash');
+function send_message(message) { // TODO ws://? Maybe?
+    var add = $('<p>').text(message['status']).addClass('action-notification');  // message-notification?
     $($("div#messages")[0].children[0]).after(add);
+    if (message['success']) {
+        console.log(message['message']['timestamp']);
+        $("ul#message-list").append(
+            $('<li>').addClass('message')
+                .append($("<p>").text(message['message']['content']).addClass('message-text'))
+                .append($("<p>").text(message['message']['timestamp']).addClass('message-timestamp'))
+        );
+    }
     slideUpAndRemoveAfter(add, 20000);
 }
 

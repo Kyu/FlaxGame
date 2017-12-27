@@ -211,7 +211,8 @@ class GameViews(unittest.TestCase):
     def test_send_message(self):
         random_text = ''.join(random.choice(string.ascii_lowercase) for i in range(50))
         send_msg = self.testapp.post('/game/action/message', params={'message': random_text})
-        self.assertIn("Message sent successfully!", send_msg.json['message'])
+        self.assertTrue(send_msg.json['success'])
+        self.assertEqual(send_msg.json['message']['content'], random_text)
 
         home = self.testapp.get('/game')
         self.assertIn(random_text, home.text)

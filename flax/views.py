@@ -315,10 +315,10 @@ def team_info(request):
 
 
 @view_config(route_name='send_message', renderer='json', request_method='POST', permission='play')
-def broadcast_message(request):
+def broadcast_message(request):  # Very misleading function name
     if 'message' in request.params:
         msg = send_message(_from=request.authenticated_userid, message=request.params['message'])
-        return {'message': msg, 'action': 'send_message'}  # 'message' -> 'result'
+        return msg
     return HTTPFound(location=return_to_sender(request))
 
 
