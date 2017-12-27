@@ -30,7 +30,7 @@ def _initTestingDB():
         )
     DBSession.remove()
     from .security import hash_string
-    settings = get_appsettings('../development.ini')
+    settings = get_appsettings('development.ini')
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
@@ -90,7 +90,7 @@ class GameViews(unittest.TestCase):
 
     def setUp(self):
         from pyramid.paster import get_app
-        app = get_app('../development.ini')
+        app = get_app('development.ini')
         from webtest import TestApp
         self.testapp = TestApp(app)
 

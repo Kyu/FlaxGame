@@ -22,7 +22,6 @@ before_script:
 - mysql -u root -e "CREATE USER 'flaxgame'@'localhost' IDENTIFIED BY '*Flax*Game*2017*;';"
 - mysql -u root -e "GRANT ALL ON flaxgame.* TO 'flaxgame'@'localhost';"
 - initialize_flax_db development.ini
-- cd flax
 
 # Because Travis CI doesn't currently support Discord (They should soon though, check https://github.com/travis-ci/travis-tasks/pull/71)
 after_success:
