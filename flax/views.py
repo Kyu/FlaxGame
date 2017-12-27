@@ -56,7 +56,9 @@ from .security import (
 log = logging.getLogger(__name__)
 
 
+# TODO document
 def return_to_sender(request):
+    # Is this even needed?
     try:
         if request.referer == request.url or not request.referrer:
             return '/'

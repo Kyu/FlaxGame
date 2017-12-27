@@ -31,7 +31,6 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
-# TODO Comment this and views.py
 def get_map_info_for(location='all'):
     # Returns all location info if no location specified
     if location == 'all':
@@ -70,6 +69,7 @@ def get_map_info_for(location='all'):
 
 
 def get_location_called(name):
+    # Returns Hex object for location name
     try:
         the_hex = DBSession.query(Hex).filter_by(name=name).one()
     except NoResultFound as e:
@@ -80,6 +80,7 @@ def get_location_called(name):
 
 
 def update_location_info(name, update, new):
+    # Update location info from dict
     try:
         with transaction.manager:
             DBSession.query(Hex).filter_by(name=name).update({update: new})
@@ -91,11 +92,13 @@ def update_location_info(name, update, new):
         return False, type(e).__name__ + ': ' + str(e)
 
 
-def get_team_info(team, get_all=None):
+def get_team_info(team, get_all=False):
+    # Gets info for a team name, or info for all teams.
     try:
         team_info = DBSession.query(Team).filter_by(name=team).one()
     except NoResultFound:
         # No need to log this error, user gets redirected
+        # Scratch that I should probably do something with this for safety sake
         return {}
 
     team = dict()
@@ -110,6 +113,7 @@ def get_team_info(team, get_all=None):
 
 
 def update_player_info(player, updates=None):
+    # Update Player info from dict.
     if type(player) is Player:
         username = player.username
     else:
@@ -126,13 +130,14 @@ def update_player_info(player, updates=None):
 
 
 def player_dig_in(player):
+    # Increases a Players dug_in stat by 5, if they have 5 actions and their dug_in is < 100
     player = DBSession.query(Player).filter_by(username=player).one()
     if player.actions < 5:
         return "You need 5 actions to dig in!"
     if player.dug_in == 100:
         return "You cant dig in any further!"
 
-    if player.dug_in > 95:
+    if player.dug_in >= 95:
         dug = 100
     else:
         dug = player.dug_in + 5
@@ -143,6 +148,7 @@ def player_dig_in(player):
 
 
 def remove_actions_from(player, actions):
+    # Remove actions from a player
     player = get_player_info(player)
 
     if not player.actions >= actions:
@@ -152,6 +158,7 @@ def remove_actions_from(player, actions):
 
 
 def remove_ammo_from(player, amount):
+    # Removes ammo from a player
     player = get_player_info(player)
 
     if player.ammo < amount:
@@ -161,6 +168,8 @@ def remove_ammo_from(player, amount):
 
 
 def can_move_to(player, locations):
+    # Checks to see which locations a player can visit (should this be a list?)
+    # Player can move to location if the difference between Hex(Player.location) and location.x AND location.y is <= 1
     visitable = []
     currently_at = [i for i in locations if i.name == player.location][0]
 
@@ -173,6 +182,7 @@ def can_move_to(player, locations):
 
 
 def can_move(to, player):
+    # See if Player can actually move to a location
     currently_at = get_location_called(player.location)
     diff_is_one = (-1, 0, 1)
     friendly = 'None', player.team
@@ -200,6 +210,7 @@ def can_move(to, player):
 
 
 def player_can_attack(attacker, defender):
+    # See if player can attack another player. Anything but True means they can't
     attacker, defender = get_player_info(attacker), get_player_info(defender)
 
     if not attacker or not defender:
@@ -242,7 +253,7 @@ def artillery_attack(attacker, defender):
     # Send kill messages etc
 
 
-# TODO Implement dig in, implement artillery, make frontend beautiful
+# TODO Implement dig in, implement artillery, comment later
 def player_attack(attacker, defender):
     can_attack = player_can_attack(attacker=attacker, defender=defender)
     if can_attack is not True:
@@ -407,6 +418,8 @@ def player_attack(attacker, defender):
 
 
 def send_player_to(location, player, force=False):
+    # Sends player to another location.
+    # Checks to see if player can move actually move there if force isn't true
     player_info = get_player_info(player)
     player_loc = player_info.location
 
@@ -449,6 +462,7 @@ def send_player_to(location, player, force=False):
 
 
 def give_player_ammo(player, amount=0):
+    # Gives a player ammo
     player = get_player_info(player)
 
     if not amount:
@@ -468,6 +482,12 @@ def give_player_ammo(player, amount=0):
 
 
 def increase_player_troops(player, amount=0):
+    # Increase the amount of troops a player has
+    # Amount is always increased by the level of the charisma attribute
+    # If player is a tank, amount = amount/10
+    # Requires one action, and that the population of the current location is enough
+    # Also player.management
+
     player = get_player_info(player)
     if not amount:
         increase = 10 * player.charisma
@@ -493,6 +513,7 @@ def increase_player_troops(player, amount=0):
 
 
 def upgrade_hex_for(player):
+    # Upgrades industry for the location a player is currently in. Requires 5 actions
     player = get_player_info(player)
 
     if not player.actions >= 5:
@@ -505,9 +526,10 @@ def upgrade_hex_for(player):
 
 
 def upgrade_infrastructure_for(player):
+    # Upgrades infrastructure for the location a player is currently in. Requires 5 actions
     player = get_player_info(player)
 
-    if not player.actions >= 5:
+    if not player.actions >= 5: # //player.development
         return "Not enough actions!"
     location = get_location_called(player.location)
     update_location_info(player.location, 'infrastructure', location.infrastructure + 1)
@@ -517,6 +539,7 @@ def upgrade_infrastructure_for(player):
 
 
 def get_player_info(username):
+    # Gets info for player
     if type(username) is Player:
         username = username.username
     try:
@@ -530,6 +553,7 @@ def get_player_info(username):
 
 
 def get_players_located_at(location):
+    # Gets all players located at a location
     try:
         players_at = DBSession.query(Player).filter(Player.is_active).filter_by(location=location).all()
     except NoResultFound as e:
@@ -541,6 +565,7 @@ def get_players_located_at(location):
 
 
 def xp_for_level_up(player):
+    # TODO Honestly don't remember what this does
     player = get_player_info(player)
 
     if player.level >= 10:
@@ -554,6 +579,7 @@ def xp_for_level_up(player):
 
 
 def level_up_player(player, attribute):
+    # Levels a player's attribute if they have enough xp for it, and haven't maxed it out.
     attributes = ['management', 'attack', 'defense', 'charisma', 'rallying', 'pathfinder', 'logistics']
     if attribute not in attributes:
         return "Invalid attribute"
@@ -579,6 +605,7 @@ def level_up_player(player, attribute):
 
 
 def get_radio_for(player):
+    # Returns all the Messages a player is allowed to see
     player = get_player_info(player)
     news_tag = "{name}_{id}".format(name=player.username, id=player.id)
     results = DBSession.query(Radio)\
@@ -591,6 +618,7 @@ def get_radio_for(player):
 
 
 def send_message(message, _from='', to='', broadcast_by=''):
+    # Sends a message for a player.
     if not message:
         return "https://www.youtube.com/watch?v=u9Dg-g7t2l4"
     if len(message) > 140 and not to and not broadcast_by:
@@ -620,6 +648,7 @@ def send_message(message, _from='', to='', broadcast_by=''):
 
 
 def get_location_info_for(username, location):
+    # Gets location info for frontend
     current = get_location_called(location)
     player = get_player_info(username)
     # also_here, amount_here
@@ -655,6 +684,7 @@ def get_location_info_for(username, location):
 
 
 def get_player_json_info_for(username, me=False):
+    # Gets player info for frontend
     player = get_player_info(username)
     player_info = {'name': player.username, 'morale': player.morale, 'squad': player.squad_type,
                    'team': player.team, 'troops': player.troops, 'dug_in': player.dug_in}
@@ -667,6 +697,7 @@ def get_player_json_info_for(username, me=False):
 
 
 def get_all_game_info_for(player, location=''):
+    # Returns all the game info. Dict
     game_info = dict()
     game_info['hexes'] = get_map_info_for()
     game_info['player'] = get_player_info(player)
