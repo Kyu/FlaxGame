@@ -111,8 +111,8 @@
                     <form tal:condition="friendly" action="${request.route_url('upgrade_infrastructure')}" method="post">
                         <button id="infrastructure">Upgrade infrastructure!</button>
                     </form>
-                    <h4 id="dug_in">Dig in: ${player.dug_in}%</h4>
-                    <form tal:condition="friendly" action="${request.route_url('dig_in')}" method="post">
+                    <h4 tal:condition="is_here" id="dug_in">Dig in: ${player.dug_in}%</h4>
+                    <form tal:condition="is_here and friendly" action="${request.route_url('dig_in')}" method="post">
                         <button id="dig_in">Dig in!</button>
                     </form>
                     <h3 id="is_here" tal:condition="is_here">You are here!</h3>
@@ -152,7 +152,7 @@
         </div>
 
         <div id="content" class="container">
-            <table cellspacing="0" class="table">
+            <table cellspacing="0" class="table" id="map">
                 <tr tal:repeat="hex_col [i for i in range(1, 11)]">
                     <td tal:repeat="hex_row [i for i in list(hexes.keys()) if i.x == hex_col]" title="${hex_row.name} - ${hex_row.type} ${hexes[hex_row]}" id="loc_${hex_row.name}" class="col-md-1 location ${'location-' + hex_row.type} ${'location-'+hex_row.control if hex_row.control != 'None' else ''}">
                         <a href="${request.route_url('game')}/${hex_row.name}">${hex_row.name}</a>
