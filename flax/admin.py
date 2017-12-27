@@ -16,6 +16,7 @@ from .models import (
 log = logging.getLogger(__name__)
 
 
+# TODO document
 # Ban a player. If until=None, ban is permanent
 def ban_player(username, reason, banner, until=None):
     updates = {'banned': True, 'reason_banned': reason, 'time_banned': until, 'banned_by': banner}
