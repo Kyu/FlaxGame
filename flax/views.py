@@ -15,8 +15,6 @@ from pyramid.view import (
     notfound_view_config
 )
 
-from pyramid.response import Response
-
 from .admin import (
     ban_player,
     unban_player,
@@ -87,6 +85,7 @@ def view_forbidden(request):
 
 @notfound_view_config(renderer='templates/404.pt')
 def not_found(request):
+    request.response.status_code = 404
     return {}
 
 
@@ -130,33 +129,39 @@ def register(request):
 
 
 @view_config(route_name='login', renderer='json', request_method='POST')
-def login(request):
-    verified = dict(username='', status='')
+def login(request):  # Rename?
+    verification = dict(success=False, status='')
     headers = []
     if 'login' in request.params and not request.authenticated_userid:
         if 'username' not in request.params:
-            verified['status'] = "No username defined"
+            verification['status'] = "No username defined"
         elif 'password' not in request.params:
-            verified['status'] = "Enter a password"
+            verification['status'] = "Enter a password"
         else:
             username = request.params['username']
             password = request.params['password']
-            verified = verify_login(username, password)
-            if verified.get('username'):
-                headers.extend(remember(request, verified['username']))
+            login_attempt = verify_login(username, password)
+            verification['status'] = login_attempt['status']
+            if login_attempt.get('username'):
+                headers.extend(remember(request, login_attempt['username']))
+                verification['success'] = True
+
     request.response.headerlist.extend(headers)
-    return {'success': bool(verified['username']), 'status': verified['status']}
+    return verification
 
 
-@view_config(route_name='ip_login', request_method='POST')
+@view_config(route_name='ip_login', request_method='POST', renderer='json')  # Combine this view and login()?
 def ip_login(request):
-    msg = create_ip_user(request)
-    request.session.flash(msg, 'oneclick')
-    if msg == 'Account created Successfully':
-        headers = remember(request, request.params['username'])
-        return HTTPFound(location=return_to_sender(request), comment='Logged in successfully', headers=headers)
+    verification = dict(success=False, status='')
+    headers = []
+    login_attempt = create_ip_user(request)
+    if login_attempt.get('username'):
+        headers.extend(remember(request, request.params['username']))
+        verification['success'] = True
+    verification['status'] = login_attempt['status']
 
-    return HTTPFound(location=return_to_sender(request))
+    request.response.headerlist.extend(headers)
+    return verification
 
 
 @view_config(route_name='verify')  # Maybe create another table for this?

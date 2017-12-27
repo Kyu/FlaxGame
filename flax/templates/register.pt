@@ -41,8 +41,8 @@
 </head>
 <body>
   <h1>Register</h1>
-  <div id="registration_form">
-    <form action="${request.route_url('register')}" method="post" id="register">
+  <div id="registration">
+    <form action="${request.route_url('register')}" method="post" id="registration_form">
         <p tal:condition="player and player.uses_ip">Registering with username and email for: ${player.username}</p>
         <input tal:condition="not player" type="text" id="username" placeholder="username"
                name="username" required/><br/>

@@ -19,6 +19,9 @@ if (!String.prototype.format) {
   };
 }
 
+function logout() {
+    window.location = '/';
+}
 function get_my_info() {
     $.get('/game/info/my_info', function(player) {
         $("h4#actions").text("Actions: {0}".format(player['actions']));
@@ -188,6 +191,7 @@ function slideUpAndRemoveAfter(element, time) {
     }, time);
 }
 
+
 function do_action(action) {
     if (action.action === 'movement' && action.succeed) {
         history.pushState("", "", "/game/" + action.new);
@@ -223,6 +227,10 @@ $(document).ready(function() {
         data[event.currentTarget.form[0].name] = event.currentTarget.form[0].value;
         $.post(event.currentTarget.form.action, data, send_message, 'json');
         return false; // TODO update radio for message
+    });
+
+    $("#logout").click(function(event){
+       $.post("/logout", {}, logout, 'json');
     });
 
 });

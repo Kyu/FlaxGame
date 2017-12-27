@@ -44,8 +44,8 @@
 
 <body>
 <h1 class="login">Login</h1>
-<div id="login_form">
-<form id="login" action="${request.route_url('login')}" method="post">
+<div id="login">
+<form id="login_form" action="${request.route_url('login')}" method="post">
      <input type="text" id="username" placeholder="username or email"
            name="username" title="Enter username or email here" required/><br/>
     <input type="password" id="password" placeholder="password"
@@ -56,14 +56,8 @@
 </div>
 
 <h1>One click login</h1>
-<div id="oneclick_form">
-    <div id="flash" tal:condition="request.session.peek_flash('oneclick')">
-        <span tal:omit-tag=""
-        tal:repeat="message request.session.pop_flash('oneclick')">
-      ${message}<br>
-        </span>
-    </div>
-<form id="one_click" action="${request.route_url('ip_login')}" method="post">
+<div id="oneclick">
+<form id="oneclick_form" action="${request.route_url('ip_login')}" method="post">
     <input type="text" id="oneclick_username" placeholder="username"
            name="username"/><br/>
     <button type="submit" name="login">Register</button>

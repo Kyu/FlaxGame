@@ -87,8 +87,10 @@ def verify_security_code(code):
 
 
 def create_ip_user(request):
+    user = dict(username='', status='')
     if 'username' not in request.params:
-        return "Username not defined"
+        user['status'] = "Username not defined"
+        return user
     username = request.params['username']
     ip = request.remote_addr
 
@@ -103,20 +105,30 @@ def create_ip_user(request):
         ip_exists = True
     except NoResultFound:
         ip_exists = False
+    except MultipleResultsFound:
+        user['status'] = "There already exist accounts using this ip"
+        return user
 
     if ip_exists:
-        current = DBSession.query(User).filter_by(ip=ip).one()
-        current_player = DBSession.query(Player).filter_by(username=current.username).one()
-        if current_player.uses_ip:
-            if username == current.username:
-                return "Account created Successfully"
-            return "This IP already has an account! Log in as {username}!".format(username=current.username)
+        current_ip_user = DBSession.query(User).filter_by(ip=ip).one()
+        current_ip_player = DBSession.query(Player).filter_by(username=current_ip_user.username).one()
+        if current_ip_player.uses_ip:  # TODO do I REALLY have to do two queries for this?
+            if username == current_ip_user.username:
+                user['status'] = "Account created Successfully"
+                user['username'] = username
+            else:
+                user['status'] = "This IP already has an account! Log in as {username}!"\
+                    .format(username=current_ip_user.username)
+            return user
 
     if user_exists:
-        return "This username is already taken!"
+        user['status'] = "This username is already taken!"
+        return user
 
     if not is_okay_username(username):
-        return "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
+        user['status'] \
+            = "Username should be between 3 and 16 characters and should not have any special characters except _ . -"
+        return user
 
     # create_user(username, email='', password='', ip=ip)
 
@@ -131,19 +143,23 @@ def create_ip_user(request):
                                   uses_ip=True)
             DBSession.add_all([player_model])
 
-            return "Account created Successfully"
+            user['status'] = "Account created Successfully"
+            user['username'] = username
+            return user
     except transaction.interfaces.TransactionFailedError as e:
         err = type(e).__name__ + ': ' + str(e)
     except IntegrityError:
-        return "This username or email already exists"
+        user['status'] = "This username already exists"
+        err = ''   # :thinking:
     except Exception as e:
         err = "Unknown Error: {}".format(type(e).__name__ + ': ' + str(e))
+        user['status'] = "An error occured"
 
     msg = "{err} on create_ip_user(username={username}, password=****)" \
         .format(err=err, username=username)
     log.warning(msg)
 
-    return "User creation failed"
+    return user
 
 
 # TODO Refactor to make sure empty passwords don't get entered with IP registration
@@ -169,8 +185,8 @@ def create_user(username, email, password, request=None):
         if request:
             subject = "Welcome to Flax!"
             recipient = email
-            body = 'Welcome to Flax, {username}\nVerify with https://flaxgame.net/verify?code={code})'\
-                .format(username=username, code=code)
+            body = 'Welcome to Flax, {username}\nVerify with {host}/verify?code={code})'\
+                .format(username=username, host=request.host_url, code=code)
             send_email(request, recipient, subject, body)
             # TODO Test every error that can rise from this.
 
@@ -241,7 +257,7 @@ def create_user(username, email, password, request=None):
 
 def verify_login(username, password):
     # Verifies a login (username is interchangeable with email)
-    usr = {'username': ''}
+    usr = dict(username='', status='')
     if not username:
         usr['status'] = "Enter a username"
     elif not password:
@@ -288,7 +304,8 @@ def start_recovery(request, email):
         code = gen_security_code()
         user.update({'verification': code})
 
-        body = 'To recover your password, please visit this link: http://localhost:6543/recover?code=' + code
+        body = 'Hello, {name}To recover your password, please visit this link: {host}/recover?code={code}'\
+            .format(name=usr.username, host=request.host_url, code=code)
         msg = send_email(request, usr.email, "Flax password recovery", body)
         transaction.commit()
         if msg is not None:
