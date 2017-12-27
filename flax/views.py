@@ -109,11 +109,11 @@ def register(request):
         request.override_renderer = 'json'
         if 'register' in request.params:
             if 'username' not in request.params:
-                resp['status'] = request.session.flash("No username defined")
+                resp['status'] = "No username defined"
             elif 'password' not in request.params:
-                resp['status'] = request.session.flash("Enter a password")
+                resp['status'] = "Enter a password"
             elif 'email' not in request.params:
-                resp['status'] = request.session.flash("Enter an email address")
+                resp['status'] = "Enter an email address"
             else:
                 username = request.params['username']
                 password = request.params['password']
