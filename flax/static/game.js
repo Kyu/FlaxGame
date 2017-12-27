@@ -285,8 +285,6 @@ function populate_sidebar(location) {
 }
 
 
-
-
 function get_current_location_info() {
     var current_location = $(location).attr('pathname').replace('/game/', '');
     var data = {};
@@ -329,7 +327,7 @@ function get_new() {
         get_my_info();
         get_current_location_info();
         get_location_info_called('all')
-    }, 2000);
+    }, 1000);
 
 }
 
@@ -342,8 +340,8 @@ function slideUpAndRemoveAfter(element, time) {
 
 
 function do_action(action) {
-    if (action.action === 'movement' && action.succeed) {
-        history.pushState("", "", "/game/" + action.new);
+    if (action.action === 'movement' && action['succeed']) {
+        history.pushState("", "", "/game/" + action['new']);
     }
     var flash_div = $('div#flash');
     console.log(flash_div);
@@ -366,7 +364,6 @@ function send_message(message) { // TODO ws://? Maybe?
     var add = $('<p>').text(message['status']).addClass('action-notification');  // message-notification?
     $($("div#messages")[0].children[0]).after(add);
     if (message['success']) {
-        console.log(message['message']['timestamp']);
         $("ul#message-list").append(
             $('<li>').addClass('message')
                 .append($("<p>").text(message['message']['content']).addClass('message-text'))
@@ -379,31 +376,37 @@ function send_message(message) { // TODO ws://? Maybe?
 
 $(document).ready(function() {
     $('#take_ammo, #recruit, #industry, #infrastructure, #dig_in, #move_here, #attack').click(function(event){
+        event.preventDefault();
         var data = {};
         if (event.currentTarget.name) {
             data[event.currentTarget.name] = event.currentTarget.value
         }
        $.post(event.currentTarget.form.action, data,  do_action, 'json');
+
        return false;
     });
 
     $('#send_message').click(function(event) {
+        event.preventDefault();
         var data = {};
         data[event.currentTarget.form[0].name] = event.currentTarget.form[0].value;
         $.post(event.currentTarget.form.action, data, send_message, 'json');
-        return false; // TODO update radio for message
+        return false;
     });
 
     $("table#map a").click(function(event) {
+        event.preventDefault();
         history.pushState("", "", "/game/" + event.target.text);
         setTimeout(function () {
             get_new();
-        }, 2000);
+        }, 500);
         return false;
     });
 
     $("#logout").click(function(event){
+        event.preventDefault();
        $.post("/logout", {}, logout, 'json');
+       return false;
     });
 
 });
