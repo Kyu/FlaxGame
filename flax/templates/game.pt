@@ -47,28 +47,6 @@
 
 <body>
     <div id="wrapper">
-        <div id="flash" tal:condition="not current_hex and request.session.peek_flash('action')">
-            <span tal:omit-tag=""
-                tal:repeat="message request.session.pop_flash('action')">
-                ${message}
-                <br>
-            </span>
-        </div>
-
-        <div id="flash" tal:condition="request.session.peek_flash('info')">
-            <span tal:omit-tag=""
-                tal:repeat="message request.session.pop_flash('info')">
-                <p>${message}</p><br>
-            </span>
-        </div>
-
-        <div id="flash" tal:condition="request.session.peek_flash('register')">
-            <span tal:omit-tag=""
-                tal:repeat="message request.session.pop_flash('register')">
-                <p>${message}</p><br>
-            </span>
-        </div>
-
         <div id="sidebar-left" class="sidebar">
             <form action="${request.route_url('logout')}" method="post">
                 <button id="logout">Logout!</button>
@@ -87,12 +65,6 @@
 
             <div id="messages">
                 <h3>Radio: </h3>
-                <div id="flash" tal:condition="request.session.peek_flash('radio')">
-                <span tal:omit-tag=""
-                    tal:repeat="message request.session.pop_flash('radio')">
-                    ${message}<br>
-                </span>
-                </div>
                 <div tal:condition="radio" class="radio">
 
                     <ul tal:repeat="message [m for m in radio if m.team != 'all']">
@@ -116,12 +88,6 @@
         </div>
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">
-            <div id="flash" tal:condition="request.session.peek_flash('action')">
-                <span tal:omit-tag=""
-                    tal:repeat="message request.session.pop_flash('action')">
-                    ${message}<br>
-                </span>
-            </div>
             <div class="hex">
                 <?python
                 is_here = current_hex.name == player.location
