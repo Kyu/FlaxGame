@@ -1,7 +1,10 @@
 <!DOCTYPE html metal:define-macro="game">
 
 <html lang="en">
-<head><meta charset="utf-8">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
     <meta name="keywords" content=" flax, flaxgame, game, webgame, browsergame, turns ">
     <meta name="description" content="Flax - A turn based web strategy game">
     <meta name="referrer" content="always">
@@ -17,7 +20,6 @@
     <meta property="twitter:card" content="summary">
     <meta property="twitter:title" content="Flax - A turn based web strategy game">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="canonical" href="${request.route_url('game')}">
     <!-- TODO Make it look decent -->
