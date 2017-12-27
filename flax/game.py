@@ -565,7 +565,7 @@ def get_players_located_at(location):
 
 
 def xp_for_level_up(player):
-    # TODO Honestly don't remember what this does
+    # Calculates how much xp a player needs to level up
     player = get_player_info(player)
 
     if player.level >= 10:

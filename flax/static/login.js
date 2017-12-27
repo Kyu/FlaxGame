@@ -57,7 +57,7 @@ function one_click_login(username) { // TODO DRY
 }
 
 
-function login(username, password) { // TODO One click
+function login(username, password) {
     var data = {};
     data['username'] = username;
     data['password'] = password;

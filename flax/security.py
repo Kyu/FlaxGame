@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 def send_email(request, recipient, subject, body):
     # Send email to person.
-    # TODO find a way to do this without request param. Also add way to un sub from emails. Also add Fancy emails.
+    # TODO add way to un sub from emails. Also add Fancy emails.
     mailer = request.registry['mailer']
     message = Message(subject=subject, sender='theflaxgame@gmail.com', recipients=[recipient],
                       body=body)
