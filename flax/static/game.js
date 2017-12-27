@@ -1,6 +1,7 @@
 /**
  * Created by P.O on 7/29/2017.
  * Filename: game.js
+ * friendly troops not displayed
  */
 
 // String Formatting
@@ -83,7 +84,7 @@ function remove_action_btns() {
 function create_sidebar_right() {
     // check for div#sidebar-left
     $("div#sidebar-left").after(
-        $('<div>').attr('id', 'sidebar-right').addClass('sidebar')
+        $('<div>').attr('id', 'sidebar-right').addClass('sidebar').addClass('navbar-right')
     );
 }
 
@@ -136,6 +137,7 @@ function populate_amount_players(all_here) {
         create_sidenav();
         side_nav = $('div.sidebar-nav');
     }
+    $('p#troops_here_count').remove();
     for (var ih = 0; ih < all_here.length; ih++) {
         side_nav.prepend($('<p>').attr('id', 'troops_here_count').text(all_here[ih])
         );
@@ -290,7 +292,7 @@ function update_location(update) {
     var title = update['name'] + " - " + update['type'] + update['title'];
     tb_element.attr('title', title).removeClass(
         function (index, className) {
-            return (className.match (/(^|\s)location-\S+/g) || []).join(' ');
+            return (className.match (/(^|\s)location-\S+/g) || []).join(' '); //
         }).addClass('location-' + update['type']);
     if (update['control'] !== 'None') {
         tb_element.addClass('location-' + update['control']);
