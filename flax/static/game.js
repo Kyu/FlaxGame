@@ -1,8 +1,6 @@
 /**
  * Created by P.O on 7/29/2017.
  * Filename: game.js
- * TODO do this all with JS
- * Put notifs in divs
  */
 
 // String Formatting
@@ -87,7 +85,6 @@ function create_sidebar_right() {
     $("div#sidebar-left").after(
         $('<div>').attr('id', 'sidebar-right').addClass('sidebar')
     );
-    console.log("Sidebar-right created!")
 }
 
 
@@ -101,7 +98,6 @@ function create_hex_div() {
     sidebar_right.append(
         $('<div>').addClass('hex')
     );
-    console.log("hex div created!");
 }
 
 
@@ -117,7 +113,6 @@ function create_here_div() {
             $('<h2>').text("Currently here:")
         )
     );
-    console.log("Here div created!");
 }
 
 
@@ -132,7 +127,6 @@ function create_sidenav() { // Return the side nav?
         $('<div>').addClass('sidebar-nav')
     );
 
-    console.log("Sidenav created!");
 }
 
 
@@ -162,12 +156,9 @@ function populate_sidebar_players (players) {
     $('div#also-here').prepend(
         $('<h2>').text("Currently here:")
     );
-    console.log(sidenav);
     for (var i = 0; i < players.length; i++) {
         var cur = players[i];
-        console.log(cur);
 
-        // TODO EVERYTHING ABOVE THIS CHECKS OUT
         sidenav.append($('<li>')
             .append($('<div>').attr('id', 'player_here_also')
                 .append($('<p>').text(cur['name']))
@@ -198,7 +189,7 @@ function populate_sidebar(location) {
     if (!sidebar_exists) {
         create_hex_div();
     }
-    console.log(location);
+
     var loc_html = "Location: <a href=\"/game/" + location['name'] + "\">" + location['name'] + "</a>",
         terrain_text = "Terrain: " + location['terrain'],
         pop_text = "Population: " + location['population'],
@@ -344,16 +335,13 @@ function do_action(action) {
         history.pushState("", "", "/game/" + action['new']);
     }
     var flash_div = $('div#flash');
-    console.log(flash_div);
     var add = $('<p>').text(action.result).addClass('action-notification');
-    console.log(add);
     if (flash_div.length) {
         flash_div.prepend(add);
     } else {
         $("div#sidebar-right").prepend($('<div>').attr('id', 'flash'));
         flash_div = $('div#flash');
     }
-    console.log(flash_div);
     flash_div.prepend(add);
     get_new();
     slideUpAndRemoveAfter(add, 20000);
