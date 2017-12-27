@@ -142,7 +142,7 @@ def player_dig_in(player):
     else:
         dug = player.dug_in + 5
 
-    update_player_info(player, {'dug_in': dug})
+    update_player_info(player, {'dug_in': dug, 'actions': player.actions - 5})
 
     return "Successfully dug in!"
 
