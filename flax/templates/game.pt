@@ -46,7 +46,9 @@
 </head>
 
 <body>
+
     <div id="wrapper">
+
         <div id="sidebar-left" class="sidebar">
             <form action="${request.route_url('logout')}" method="post">
                 <button id="logout">Logout!</button>
@@ -83,11 +85,13 @@
                     <button id="send_message">Send message!</button>
                 </form>
             </div>
+
             <h3><a href="${request.static_url('flax:static/guide.html')}">Unsure of how to play? Click here!</a></h3>
             <h6 tal:condition="player.uses_ip"><a href="${request.route_url('register')}">Click here to register with a password and use your account on any device</a></h6>
         </div>
 
         <div tal:condition="current_hex" id="sidebar-right" class="sidebar">
+
             <div class="hex">
                 <?python
                 is_here = current_hex.name == player.location
@@ -165,4 +169,5 @@
     </div>
 
 </body>
+
 </html>
