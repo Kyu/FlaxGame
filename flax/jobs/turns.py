@@ -182,6 +182,7 @@ def turn():
     increase_morale()
 
     end = datetime.now()
+    DBSession.close()
     print("Turn ran successfully, took {}\n".format(end-begin))
 
 
