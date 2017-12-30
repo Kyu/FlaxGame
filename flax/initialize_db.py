@@ -32,7 +32,7 @@ def main(argv=sys.argv):
     # Set up a DB from config file
     config_uri = argv[1]
     setup_logging(config_uri)
-    settings = get_appsettings(config_uri)
+    settings = get_appsettings(config_uri, name='flax')
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
