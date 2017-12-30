@@ -77,7 +77,7 @@
                     </ul>
 
                     <ul tal:repeat="announcement [i for i in radio if i.team == 'all' and i.active]" class="announcement">
-                        <li><span tal:condition="user.admin">${announcement.id} -- </span> ${announcement.author}: ${announcement.message}</li>
+                        <li><span tal:condition="user.admin">${announcement.id} -- </span> ${announcement.author}: ${announcement.message}</li> <!-- TODO remove li style -->
                     </ul>
                 </div>
                 <form action="${request.route_url('send_message')}" method="post">

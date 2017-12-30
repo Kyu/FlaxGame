@@ -354,7 +354,7 @@ function send_message(message) { // TODO ws://? Maybe?
     if (message['success']) {
         $("ul#message-list").append(
             $('<li>').addClass('message')
-                .append($("<p>").text(message['message']['content']).addClass('message-text'))
+                .append($("<p>").text("You: " + message['message']['content']).addClass('message-text'))
                 .append($("<p>").text(message['message']['timestamp']).addClass('message-timestamp'))
         );
     }
