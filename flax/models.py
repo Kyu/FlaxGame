@@ -31,7 +31,9 @@ DBSession = scoped_session(
 Base = declarative_base()
 
 TEAMS = {'Black': '2.9', 'Red': '2.2', 'Blue': '9.9', 'Yellow': '9.2'}
-SQUAD_TYPES = 'Infantry', 'Tank',  # 'Artillery'
+SQUAD_TYPES = 'Infantry', 'Tank',  # 'Artillery', 'Heli', 'Kaiamkazee'
+SQUAD_TYPES_2 = ['Infantry', 'Infantry', 'Infantry', 'Infantry', 'Infantry', 'Infantry', 'Infantry',
+                 'Tank', 'Tank',  'Tank']
 CAPITALS = ['2.9', '9.9', '2.2', '9.2']
 CITIES = ['6.6', '5.5', '6.9', '5.2']
 
