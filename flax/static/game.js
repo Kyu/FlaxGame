@@ -330,21 +330,31 @@ function slideUpAndRemoveAfter(element, time) {
 }
 
 
-function do_action(action) {
-    if (action.action === 'movement' && action['succeed']) {
-        history.pushState("", "", "/game/" + action['new']);
+function do_action(event) {
+    var currentTarget = $(event.target)[0];
+    var data = {};
+    if (currentTarget.name) {
+        data[currentTarget.name] = currentTarget.value
     }
-    var flash_div = $('div#flash');
-    var add = $('<p>').text(action.result).addClass('action-notification');
-    if (flash_div.length) {
+
+    function completeAction(action) {
+        if (action.action === 'movement' && action['succeed']) {
+            history.pushState("", "", "/game/" + action['new']);
+        }
+        var flash_div = $('div#flash');
+        var add = $('<p>').text(action.result).addClass('action-notification');
+        if (flash_div.length) {
+            flash_div.prepend(add);
+        } else {
+            $("div#sidebar-right").prepend($('<div>').attr('id', 'flash'));
+            flash_div = $('div#flash');
+        }
         flash_div.prepend(add);
-    } else {
-        $("div#sidebar-right").prepend($('<div>').attr('id', 'flash'));
-        flash_div = $('div#flash');
+        get_new();
+        slideUpAndRemoveAfter(add, 20000);
     }
-    flash_div.prepend(add);
-    get_new();
-    slideUpAndRemoveAfter(add, 20000);
+
+    $.post(currentTarget.form.action, data, completeAction, 'json');
 }
 
 
@@ -361,18 +371,22 @@ function send_message(message) { // TODO ws://? Maybe?
     slideUpAndRemoveAfter(add, 20000);
 }
 
+
+function clickListener(event) {
+    var actionBtns = ['take_ammo', 'recruit', 'industry', 'infrastructure', 'dig_in', 'move_here', 'attack'];
+    event.preventDefault();
+    if (actionBtns.includes($(event.target).attr('id'))) { //Includes may not work in some browsers
+        do_action(event);
+
+    }
+    return false;
+}
+
+
 // TODO Minify
 $(document).ready(function() {
-    $('#take_ammo, #recruit, #industry, #infrastructure, #dig_in, #move_here, #attack').click(function(event){
-        event.preventDefault();
-        var data = {};
-        if (event.currentTarget.name) {
-            data[event.currentTarget.name] = event.currentTarget.value
-        }
-       $.post(event.currentTarget.form.action, data,  do_action, 'json');
 
-       return false;
-    });
+    document.addEventListener('click', clickListener);
 
     $('#send_message').click(function(event) {
         event.preventDefault();
