@@ -374,12 +374,12 @@ function send_message(message) { // TODO ws://? Maybe?
 
 function clickListener(event) {
     var actionBtns = ['take_ammo', 'recruit', 'industry', 'infrastructure', 'dig_in', 'move_here', 'attack'];
-    event.preventDefault();
     if (actionBtns.includes($(event.target).attr('id'))) { //Includes may not work in some browsers
+        event.preventDefault();
         do_action(event);
+        return false;
 
     }
-    return false;
 }
 
 
