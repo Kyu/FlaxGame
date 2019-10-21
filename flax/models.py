@@ -23,10 +23,11 @@ from sqlalchemy.sql import (
     func,
     expression
 )
-from zope.sqlalchemy import ZopeTransactionExtension
+from zope.sqlalchemy import register
 
 DBSession = scoped_session(
-    sessionmaker(extension=ZopeTransactionExtension(), expire_on_commit=False))
+    sessionmaker(expire_on_commit=False))
+register(DBSession)
 
 Base = declarative_base()
 
